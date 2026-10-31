@@ -1,0 +1,844 @@
+openapi: 3.1.0
+info:
+  title: Masjid Digital API
+  version: 1.0.0
+  description: |
+    Backend API of Masjid Digital. Each deployment serves a single mosque.
+
+    ## Authentication
+    `POST /api/v1/auth/login` returns an access token. Send it on every other
+    request as `Authorization: Bearer <token>`.
+
+    A user has one session at a time: logging in again (on any device) makes
+    the previous token stop working. A token also stops working when the user
+    logs out, is disabled, has their role changed, or has their password reset
+    by an admin.
+
+    ## Roles
+    - `super_admin`: manages the whole app, including users
+    - `takmir`: runs the mosque's operations
+    - `bendahara`: the treasurer
+
+    ## Errors
+    Every error has the same body, `{"code": ..., "message": ...}`. `message`
+    is in Indonesian and meant to be shown to the user as is. `code` maps to
+    the HTTP status:
+
+    | code              | status |
+    |-------------------|--------|
+    | `INVALID_INPUT`   | 400    |
+    | `UNAUTHENTICATED` | 401    |
+    | `FORBIDDEN`       | 403    |
+    | `NOT_FOUND`       | 404    |
+    | `ALREADY_EXISTS`  | 409    |
+    | `BUSINESS_RULE`   | 422    |
+    | `INTERNAL`        | 500    |
+
+    Request bodies are limited to 1 MB (3 MB for the logo upload); a larger
+    one gets `413` with `"ukuran request terlalu besar"`.
+
+    ## Phone numbers
+    Phones are stored in E.164 (`+6281234567890`). When creating or updating,
+    `0812-3456-7890`, `6281234567890` and `+62 812 3456 7890` are all accepted
+    and normalized; Indonesian numbers must be mobile numbers (`+628...`).
+    On login the identifier is matched as is, so send the phone in E.164.
+servers:
+  - url: http://localhost:3000
+    description: Local development
+
+tags:
+  - name: Health
+  - name: Auth
+  - name: Users
+    description: User management, `super_admin` only.
+  - name: Mosque Profile
+
+security:
+  - bearerAuth: []
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      operationId: healthcheck
+      security: []
+      responses:
+        "200":
+          description: The server is up.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: ok
+
+  /api/v1/auth/login:
+    post:
+      tags: [Auth]
+      summary: Log in
+      operationId: login
+      description: |
+        Logs in with a phone number (E.164) or an email, and replaces any
+        earlier session of the user. A wrong identifier and a wrong password
+        give the same error, so the response does not reveal who is registered.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+            examples:
+              phone:
+                value:
+                  identifier: "+6281234567890"
+                  password: bismillah123
+              email:
+                value:
+                  identifier: admin@masjid.id
+                  password: bismillah123
+      responses:
+        "200":
+          description: Logged in.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          description: Wrong identifier or password.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: UNAUTHENTICATED
+                message: nomor HP/email atau password salah
+        "403":
+          description: The account is disabled.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: FORBIDDEN
+                message: akun dinonaktifkan
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Log out
+      operationId: logout
+      description: Ends the current session, so the token stops working before it expires.
+      responses:
+        "200":
+          description: Logged out.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: logout berhasil
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/auth/profile:
+    get:
+      tags: [Auth]
+      summary: Get own account
+      operationId: getProfile
+      description: Returns the logged in user. Any role.
+      responses:
+        "200":
+          description: The logged in user.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserData"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/UserNotFound"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/auth/password:
+    put:
+      tags: [Auth]
+      summary: Change own password
+      operationId: changePassword
+      description: Any role. The current session stays logged in.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordRequest"
+      responses:
+        "200":
+          description: Password changed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: password berhasil diganti
+        "400":
+          description: |
+            Invalid input, e.g. `password lama wajib di isi`,
+            `password minimal 8 karakter`, `password lama salah`,
+            `password baru harus berbeda dari password lama`.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: INVALID_INPUT
+                message: password lama salah
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/UserNotFound"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/users:
+    post:
+      tags: [Users]
+      summary: Create a user
+      operationId: createUser
+      description: "`super_admin` only. The new user is `active`."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+      responses:
+        "201":
+          description: User created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: user berhasil dibuat
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/UserAlreadyExists"
+        "500":
+          $ref: "#/components/responses/Internal"
+    get:
+      tags: [Users]
+      summary: List users
+      operationId: findAllUsers
+      description: "`super_admin` only. Includes disabled users."
+      responses:
+        "200":
+          description: All users.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/users/{id}:
+    parameters:
+      - $ref: "#/components/parameters/UserID"
+    get:
+      tags: [Users]
+      summary: Get a user
+      operationId: findUserByID
+      description: "`super_admin` only."
+      responses:
+        "200":
+          description: The user.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserData"
+        "400":
+          $ref: "#/components/responses/InvalidUserID"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/UserNotFound"
+        "500":
+          $ref: "#/components/responses/Internal"
+    put:
+      tags: [Users]
+      summary: Update a user
+      operationId: updateUser
+      description: |
+        `super_admin` only. Replaces every editable field, so send all of them;
+        an empty `email` clears it. Disabling a user or changing their role
+        logs them out. Admins cannot change their own role.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRequest"
+      responses:
+        "200":
+          description: The updated user.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserData"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          description: |
+            Not a `super_admin` (`anda tidak memiliki akses`), or changing
+            one's own role (`tidak bisa mengubah role sendiri`).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: FORBIDDEN
+                message: tidak bisa mengubah role sendiri
+        "404":
+          $ref: "#/components/responses/UserNotFound"
+        "409":
+          $ref: "#/components/responses/UserAlreadyExists"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/users/{id}/password:
+    parameters:
+      - $ref: "#/components/parameters/UserID"
+    put:
+      tags: [Users]
+      summary: Reset a user's password
+      operationId: resetPassword
+      description: |
+        `super_admin` only. Sets a new password without the old one and logs
+        the user out.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordRequest"
+      responses:
+        "200":
+          description: Password reset.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: password berhasil direset
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/UserNotFound"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/mosque-profile:
+    get:
+      tags: [Mosque Profile]
+      summary: Get the mosque profile
+      operationId: getMosqueProfile
+      description: Any role.
+      responses:
+        "200":
+          description: The mosque profile.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/MosqueProfile"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          description: The profile has not been saved yet.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: NOT_FOUND
+                message: profil masjid belum diisi
+        "500":
+          $ref: "#/components/responses/Internal"
+    put:
+      tags: [Mosque Profile]
+      summary: Save the mosque profile
+      operationId: updateMosqueProfile
+      description: |
+        `super_admin` and `takmir`. Replaces every field, so send all of them;
+        an empty `address` or `contact_phone` clears it. Also creates the
+        profile the first time.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MosqueProfile"
+      responses:
+        "200":
+          description: The saved profile.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/MosqueProfile"
+        "400":
+          description: |
+            Invalid input, e.g. `nama wajib di isi`, `alamat maksimal 500 karakter`,
+            `kontak pengurus harus nomor HP yang valid`, `lokasi masjid wajib di isi`
+            (latitude and longitude both 0), `koordinat lokasi tidak valid`,
+            `zona waktu harus WIB, WITA, atau WIT`.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: INVALID_INPUT
+                message: lokasi masjid wajib di isi
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/mosque-profile/logo:
+    get:
+      tags: [Mosque Profile]
+      summary: Get the mosque logo
+      operationId: getMosqueLogo
+      description: Any role. The logo comes back as a data URI, usable directly as an `<img>` `src`.
+      responses:
+        "200":
+          description: The logo.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    required: [url]
+                    properties:
+                      url:
+                        type: string
+                        description: "`data:<content type>;base64,<image>`"
+                        example: data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/MosqueLogoNotFound"
+        "500":
+          $ref: "#/components/responses/Internal"
+    put:
+      tags: [Mosque Profile]
+      summary: Upload the mosque logo
+      operationId: updateMosqueLogo
+      description: |
+        `super_admin` and `takmir`. Replaces the current logo. PNG, JPEG or
+        WebP up to 2 MB; the format is detected from the file's content, not
+        its name or declared type. SVG is not accepted.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The logo image.
+      responses:
+        "200":
+          description: Logo saved.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: logo masjid berhasil disimpan
+        "400":
+          description: |
+            Invalid upload, e.g. `file logo wajib diunggah`,
+            `ukuran logo maksimal 2 MB`, `format logo harus PNG, JPG, atau WebP`.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: INVALID_INPUT
+                message: format logo harus PNG, JPG, atau WebP
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+        "500":
+          $ref: "#/components/responses/Internal"
+    delete:
+      tags: [Mosque Profile]
+      summary: Delete the mosque logo
+      operationId: deleteMosqueLogo
+      description: "`super_admin` and `takmir`."
+      responses:
+        "200":
+          description: Logo deleted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: logo masjid berhasil dihapus
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/MosqueLogoNotFound"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    UserID:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          enum: [INVALID_INPUT, UNAUTHENTICATED, FORBIDDEN, NOT_FOUND, ALREADY_EXISTS, BUSINESS_RULE, INTERNAL]
+        message:
+          type: string
+          description: Indonesian message to show to the user.
+
+    Message:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+
+    UserRole:
+      type: string
+      enum: [super_admin, takmir, bendahara]
+
+    UserStatus:
+      type: string
+      enum: [active, disabled]
+      description: Disabled users cannot log in. Users are never deleted, only disabled.
+
+    User:
+      type: object
+      required: [id, name, phone, email, role, status, last_login_at, created_by, created_at, updated_at]
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 7
+        name:
+          type: string
+          example: Ahmad Fauzi
+        phone:
+          type: string
+          description: E.164
+          example: "+6281234567890"
+        email:
+          type: string
+          description: Empty string when not set.
+          example: ahmad@masjid.id
+        role:
+          $ref: "#/components/schemas/UserRole"
+        status:
+          $ref: "#/components/schemas/UserStatus"
+        last_login_at:
+          type: [string, "null"]
+          format: date-time
+          description: "`null` until the first login."
+        created_by:
+          type: integer
+          format: int64
+          description: ID of the user who created this one, `0` when nobody did.
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    UserData:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/User"
+
+    LoginRequest:
+      type: object
+      required: [identifier, password]
+      properties:
+        identifier:
+          type: string
+          description: Email (when it contains `@`) or phone number in E.164.
+        password:
+          type: string
+          minLength: 8
+          maxLength: 128
+
+    LoginResponse:
+      type: object
+      required: [token, expire_in]
+      properties:
+        token:
+          type: string
+          description: "Access token for the `Authorization: Bearer` header."
+        expire_in:
+          type: integer
+          format: int64
+          description: Seconds until the token expires.
+          example: 86400
+
+    ChangePasswordRequest:
+      type: object
+      required: [current_password, new_password]
+      properties:
+        current_password:
+          type: string
+        new_password:
+          type: string
+          minLength: 8
+          maxLength: 128
+          description: Must differ from `current_password`.
+
+    ResetPasswordRequest:
+      type: object
+      required: [new_password]
+      properties:
+        new_password:
+          type: string
+          minLength: 8
+          maxLength: 128
+
+    CreateUserRequest:
+      type: object
+      required: [name, phone, password, role]
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          example: Ahmad Fauzi
+        phone:
+          type: string
+          description: Normalized to E.164, see "Phone numbers" above.
+          example: 0812-3456-7890
+        email:
+          type: string
+          format: email
+          description: Optional. Stored lowercase.
+        password:
+          type: string
+          minLength: 8
+          maxLength: 128
+        role:
+          $ref: "#/components/schemas/UserRole"
+
+    UpdateUserRequest:
+      type: object
+      required: [name, phone, email, role, status]
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        phone:
+          type: string
+          description: Normalized to E.164, see "Phone numbers" above.
+        email:
+          type: string
+          description: Empty string clears it.
+        role:
+          $ref: "#/components/schemas/UserRole"
+        status:
+          $ref: "#/components/schemas/UserStatus"
+
+    MosqueTimezone:
+      type: string
+      enum: [Asia/Jakarta, Asia/Makassar, Asia/Jayapura]
+      description: "WIB (`Asia/Jakarta`), WITA (`Asia/Makassar`) or WIT (`Asia/Jayapura`)."
+
+    MosqueProfile:
+      type: object
+      required: [name, address, contact_phone, latitude, longitude, timezone]
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          example: Masjid Al-Ikhlas
+        address:
+          type: string
+          maxLength: 500
+          description: Optional, empty string when not set.
+          example: Jl. Merdeka No. 1, Bandung
+        contact_phone:
+          type: string
+          description: Optional, E.164 (normalized like user phones), empty string when not set.
+          example: "+6281234567890"
+        latitude:
+          type: number
+          format: double
+          minimum: -90
+          maximum: 90
+          example: -6.917464
+        longitude:
+          type: number
+          format: double
+          minimum: -180
+          maximum: 180
+          example: 107.619125
+        timezone:
+          $ref: "#/components/schemas/MosqueTimezone"
+
+  responses:
+    InvalidInput:
+      description: The request is malformed or a field is invalid; `message` says which.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: INVALID_INPUT
+            message: nomor HP tidak valid
+    InvalidUserID:
+      description: The `id` path parameter is not a positive integer.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: INVALID_INPUT
+            message: id user tidak valid
+    Unauthenticated:
+      description: |
+        No token (`silakan login terlebih dahulu`), or the token is invalid,
+        expired, logged out or replaced by a newer login
+        (`sesi tidak valid, silakan login ulang`).
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: UNAUTHENTICATED
+            message: sesi tidak valid, silakan login ulang
+    Forbidden:
+      description: The user's role is not allowed to call this endpoint.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: FORBIDDEN
+            message: anda tidak memiliki akses
+    UserNotFound:
+      description: No user with this ID.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: NOT_FOUND
+            message: user tidak ditemukan
+    UserAlreadyExists:
+      description: Another user already has this phone or email.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: ALREADY_EXISTS
+            message: nomor HP atau email sudah terdaftar
+    MosqueLogoNotFound:
+      description: No logo has been uploaded yet.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: NOT_FOUND
+            message: logo masjid belum diunggah
+    TooLarge:
+      description: The request body is over the size limit.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: INVALID_INPUT
+            message: ukuran request terlalu besar
+    Internal:
+      description: Unexpected server failure.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: INTERNAL
+            message: Internal Server Error
