@@ -29,6 +29,19 @@ type UserRepositoryItf interface {
 	UpdatePasswordHash(ctx context.Context, id int64, passwordHash string) error
 }
 
+// MosqueProfileRepositoryItf stores the mosque's profile and logo, one of each
+// since a deployment serves a single mosque. Updates insert or replace (upsert).
+type MosqueProfileRepositoryItf interface {
+	// Get returns domain.ErrMosqueProfileNotFound until the profile is first saved
+	Get(ctx context.Context) (domain.MosqueProfile, error)
+	Update(ctx context.Context, profile domain.MosqueProfile, updatedBy int64) error
+	// GetLogo returns domain.ErrMosqueLogoNotFound when no logo is uploaded
+	GetLogo(ctx context.Context) (domain.MosqueLogo, error)
+	UpdateLogo(ctx context.Context, logo domain.MosqueLogo, updatedBy int64) error
+	// DeleteLogo removes the logo; a missing logo is not an error
+	DeleteLogo(ctx context.Context) error
+}
+
 // TokenManagerItf signs and verifies access tokens for logged in users
 type TokenManagerItf interface {
 	Issue(userID int64, role string) (token.Issued, error)

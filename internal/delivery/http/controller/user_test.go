@@ -43,7 +43,7 @@ func TestCreateUser(t *testing.T) {
 		CreatedBy: loggedInAs.UserID,
 	}).Return(nil)
 
-	rec, err := serve(authenticated(t, NewController(users, nil).CreateUser), http.MethodPost, "/api/v1/users",
+	rec, err := serve(authenticated(t, NewController(users, nil, nil).CreateUser), http.MethodPost, "/api/v1/users",
 		`{"name":"Ahmad","phone":"081234567890","email":"ahmad@example.com","password":"bismillah123"}`, "Bearer valid-token")
 	if err != nil {
 		t.Fatalf("handler: %v", err)
@@ -59,7 +59,7 @@ func TestCreateUserPassesRole(t *testing.T) {
 		return req.Role == domain.UserRoleSuperAdmin
 	})).Return(nil)
 
-	if _, err := serve(authenticated(t, NewController(users, nil).CreateUser), http.MethodPost, "/api/v1/users",
+	if _, err := serve(authenticated(t, NewController(users, nil, nil).CreateUser), http.MethodPost, "/api/v1/users",
 		`{"name":"Ahmad","phone":"081234567890","password":"bismillah123","role":"super_admin"}`, "Bearer valid-token"); err != nil {
 		t.Fatalf("handler: %v", err)
 	}
@@ -72,7 +72,7 @@ func TestCreateUserRecordsCreatorFromSession(t *testing.T) {
 		return req.CreatedBy == loggedInAs.UserID
 	})).Return(nil)
 
-	if _, err := serve(authenticated(t, NewController(users, nil).CreateUser), http.MethodPost, "/api/v1/users",
+	if _, err := serve(authenticated(t, NewController(users, nil, nil).CreateUser), http.MethodPost, "/api/v1/users",
 		`{"name":"Ahmad","phone":"081234567890","password":"bismillah123","created_by":1,"CreatedBy":1}`, "Bearer valid-token"); err != nil {
 		t.Fatalf("handler: %v", err)
 	}
@@ -94,7 +94,7 @@ func TestCreateUserRejects(t *testing.T) {
 			// no EXPECT: the request must not reach the usecase
 			users := mock.NewMockUserUsecaseItf(gomock.NewController(t))
 
-			_, err := serve(authenticated(t, NewController(users, nil).CreateUser), http.MethodPost, "/api/v1/users", tt.body, tt.authorization)
+			_, err := serve(authenticated(t, NewController(users, nil, nil).CreateUser), http.MethodPost, "/api/v1/users", tt.body, tt.authorization)
 			assertCode(t, err, tt.wantCode)
 		})
 	}
@@ -106,7 +106,7 @@ func TestCreateUserUsecaseError(t *testing.T) {
 	users := mock.NewMockUserUsecaseItf(gomock.NewController(t))
 	users.EXPECT().Create(gomock.Any(), gomock.Any()).Return(want)
 
-	_, err := serve(authenticated(t, NewController(users, nil).CreateUser), http.MethodPost, "/api/v1/users",
+	_, err := serve(authenticated(t, NewController(users, nil, nil).CreateUser), http.MethodPost, "/api/v1/users",
 		`{"name":"Ahmad","phone":"081234567890","password":"bismillah123"}`, "Bearer valid-token")
 	if err != want {
 		t.Errorf("err = %v, want the usecase error returned as is", err)
@@ -117,7 +117,7 @@ func TestFindAllUsers(t *testing.T) {
 	users := mock.NewMockUserUsecaseItf(gomock.NewController(t))
 	users.EXPECT().FindAll(gomock.Any()).Return([]domain.User{ahmad}, nil)
 
-	rec, err := serve(authenticated(t, NewController(users, nil).FindAllUsers), http.MethodGet, "/api/v1/users", "", "Bearer valid-token")
+	rec, err := serve(authenticated(t, NewController(users, nil, nil).FindAllUsers), http.MethodGet, "/api/v1/users", "", "Bearer valid-token")
 	if err != nil {
 		t.Fatalf("handler: %v", err)
 	}
@@ -128,9 +128,10 @@ func TestFindAllUsers(t *testing.T) {
 
 func TestFindAllUsersEmpty(t *testing.T) {
 	users := mock.NewMockUserUsecaseItf(gomock.NewController(t))
-	users.EXPECT().FindAll(gomock.Any()).Return(nil, nil)
+	// the repository returns an empty slice, never nil, when there are no users
+	users.EXPECT().FindAll(gomock.Any()).Return([]domain.User{}, nil)
 
-	rec, err := serve(authenticated(t, NewController(users, nil).FindAllUsers), http.MethodGet, "/api/v1/users", "", "Bearer valid-token")
+	rec, err := serve(authenticated(t, NewController(users, nil, nil).FindAllUsers), http.MethodGet, "/api/v1/users", "", "Bearer valid-token")
 	if err != nil {
 		t.Fatalf("handler: %v", err)
 	}
@@ -144,7 +145,7 @@ func TestFindUserByID(t *testing.T) {
 	users := mock.NewMockUserUsecaseItf(gomock.NewController(t))
 	users.EXPECT().FindByID(gomock.Any(), int64(1)).Return(ahmad, nil)
 
-	rec, err := serve(authenticated(t, NewController(users, nil).FindUserByID), http.MethodGet, "/api/v1/users/1", "", "Bearer valid-token", "id", "1")
+	rec, err := serve(authenticated(t, NewController(users, nil, nil).FindUserByID), http.MethodGet, "/api/v1/users/1", "", "Bearer valid-token", "id", "1")
 	if err != nil {
 		t.Fatalf("handler: %v", err)
 	}
@@ -157,13 +158,51 @@ func TestFindUserByID(t *testing.T) {
 	}
 }
 
+func TestGetProfile(t *testing.T) {
+	users := mock.NewMockUserUsecaseItf(gomock.NewController(t))
+	// the session's user, whatever the request carries
+	users.EXPECT().FindByID(gomock.Any(), loggedInAs.UserID).Return(ahmad, nil)
+
+	rec, err := serve(authenticated(t, NewController(users, nil, nil).GetProfile), http.MethodGet, "/api/v1/auth/profile", "", "Bearer valid-token", "id", "1")
+	if err != nil {
+		t.Fatalf("handler: %v", err)
+	}
+	body := strings.TrimSpace(rec.Body.String())
+	if body != `{"data":`+ahmadJSON+`}` {
+		t.Errorf("body = %s", body)
+	}
+	if strings.Contains(body, "password") {
+		t.Error("response leaks the password hash")
+	}
+}
+
+func TestGetProfileUsecaseError(t *testing.T) {
+	want := apperror.New(apperror.CodeInternal, errors.New("db down"), "gagal mengakses data user")
+
+	users := mock.NewMockUserUsecaseItf(gomock.NewController(t))
+	users.EXPECT().FindByID(gomock.Any(), loggedInAs.UserID).Return(domain.User{}, want)
+
+	_, err := serve(authenticated(t, NewController(users, nil, nil).GetProfile), http.MethodGet, "/api/v1/auth/profile", "", "Bearer valid-token")
+	if err != want {
+		t.Errorf("err = %v, want the usecase error returned as is", err)
+	}
+}
+
+func TestGetProfileNotLoggedIn(t *testing.T) {
+	// no EXPECT: an anonymous request must not reach the usecase
+	users := mock.NewMockUserUsecaseItf(gomock.NewController(t))
+
+	_, err := serve(authenticated(t, NewController(users, nil, nil).GetProfile), http.MethodGet, "/api/v1/auth/profile", "", "")
+	assertCode(t, err, apperror.CodeUnauthenticated)
+}
+
 func TestFindUserByIDInvalidID(t *testing.T) {
 	for _, id := range []string{"abc", "0", "-1", "1.5", ""} {
 		t.Run(id, func(t *testing.T) {
 			// no EXPECT: an invalid id must not reach the usecase
 			users := mock.NewMockUserUsecaseItf(gomock.NewController(t))
 
-			_, err := serve(authenticated(t, NewController(users, nil).FindUserByID), http.MethodGet, "/api/v1/users/"+id, "", "Bearer valid-token", "id", id)
+			_, err := serve(authenticated(t, NewController(users, nil, nil).FindUserByID), http.MethodGet, "/api/v1/users/"+id, "", "Bearer valid-token", "id", id)
 			assertCode(t, err, apperror.CodeInvalidInput)
 		})
 	}
@@ -175,7 +214,7 @@ func TestFindUserByIDNotFound(t *testing.T) {
 	users := mock.NewMockUserUsecaseItf(gomock.NewController(t))
 	users.EXPECT().FindByID(gomock.Any(), int64(99)).Return(domain.User{}, want)
 
-	_, err := serve(authenticated(t, NewController(users, nil).FindUserByID), http.MethodGet, "/api/v1/users/99", "", "Bearer valid-token", "id", "99")
+	_, err := serve(authenticated(t, NewController(users, nil, nil).FindUserByID), http.MethodGet, "/api/v1/users/99", "", "Bearer valid-token", "id", "99")
 	if err != want {
 		t.Errorf("err = %v, want the usecase error returned as is", err)
 	}
@@ -196,7 +235,7 @@ func TestUpdateUser(t *testing.T) {
 		Status:    domain.UserStatusActive,
 	}).Return(updated, nil)
 
-	rec, err := serve(authenticated(t, NewController(users, nil).UpdateUser), http.MethodPut, "/api/v1/users/1",
+	rec, err := serve(authenticated(t, NewController(users, nil, nil).UpdateUser), http.MethodPut, "/api/v1/users/1",
 		`{"name":"Ahmad Fauzi","phone":"+6281234567890","email":"ahmad@example.com","role":"takmir","status":"active"}`, "Bearer valid-token", "id", "1")
 	if err != nil {
 		t.Fatalf("handler: %v", err)
@@ -213,7 +252,7 @@ func TestUpdateUserIDFromPath(t *testing.T) {
 		return req.ID == 1 && req.UpdatedBy == loggedInAs.UserID
 	})).Return(ahmad, nil)
 
-	if _, err := serve(authenticated(t, NewController(users, nil).UpdateUser), http.MethodPut, "/api/v1/users/1",
+	if _, err := serve(authenticated(t, NewController(users, nil, nil).UpdateUser), http.MethodPut, "/api/v1/users/1",
 		`{"id":2,"ID":2,"UpdatedBy":1,"name":"Ahmad","phone":"+6281234567890","role":"takmir","status":"active"}`, "Bearer valid-token", "id", "1"); err != nil {
 		t.Fatalf("handler: %v", err)
 	}
@@ -235,7 +274,7 @@ func TestUpdateUserRejects(t *testing.T) {
 			// no EXPECT: the request must not reach the usecase
 			users := mock.NewMockUserUsecaseItf(gomock.NewController(t))
 
-			_, err := serve(authenticated(t, NewController(users, nil).UpdateUser), http.MethodPut, "/api/v1/users/"+tt.id, tt.body, "Bearer valid-token", "id", tt.id)
+			_, err := serve(authenticated(t, NewController(users, nil, nil).UpdateUser), http.MethodPut, "/api/v1/users/"+tt.id, tt.body, "Bearer valid-token", "id", tt.id)
 			assertCode(t, err, tt.wantCode)
 		})
 	}
@@ -247,7 +286,7 @@ func TestUpdateUserUsecaseError(t *testing.T) {
 	users := mock.NewMockUserUsecaseItf(gomock.NewController(t))
 	users.EXPECT().Update(gomock.Any(), gomock.Any()).Return(domain.User{}, want)
 
-	_, err := serve(authenticated(t, NewController(users, nil).UpdateUser), http.MethodPut, "/api/v1/users/1",
+	_, err := serve(authenticated(t, NewController(users, nil, nil).UpdateUser), http.MethodPut, "/api/v1/users/1",
 		`{"name":"Ahmad","phone":"+6281234567890","role":"takmir","status":"active"}`, "Bearer valid-token", "id", "1")
 	if err != want {
 		t.Errorf("err = %v, want the usecase error returned as is", err)
@@ -262,7 +301,7 @@ func TestChangePassword(t *testing.T) {
 		NewPassword:     "alhamdulillah456",
 	}).Return(nil)
 
-	rec, err := serve(authenticated(t, NewController(users, nil).ChangePassword), http.MethodPut, "/api/v1/auth/password",
+	rec, err := serve(authenticated(t, NewController(users, nil, nil).ChangePassword), http.MethodPut, "/api/v1/auth/password",
 		`{"current_password":"bismillah123","new_password":"alhamdulillah456"}`, "Bearer valid-token")
 	if err != nil {
 		t.Fatalf("handler: %v", err)
@@ -279,7 +318,7 @@ func TestChangePasswordOnlyOwnAccount(t *testing.T) {
 		return req.UserID == loggedInAs.UserID
 	})).Return(nil)
 
-	if _, err := serve(authenticated(t, NewController(users, nil).ChangePassword), http.MethodPut, "/api/v1/auth/password",
+	if _, err := serve(authenticated(t, NewController(users, nil, nil).ChangePassword), http.MethodPut, "/api/v1/auth/password",
 		`{"user_id":1,"UserID":1,"current_password":"bismillah123","new_password":"alhamdulillah456"}`, "Bearer valid-token"); err != nil {
 		t.Fatalf("handler: %v", err)
 	}
@@ -301,7 +340,7 @@ func TestChangePasswordRejects(t *testing.T) {
 			// no EXPECT: the request must not reach the usecase
 			users := mock.NewMockUserUsecaseItf(gomock.NewController(t))
 
-			_, err := serve(authenticated(t, NewController(users, nil).ChangePassword), http.MethodPut, "/api/v1/auth/password", tt.body, tt.authorization)
+			_, err := serve(authenticated(t, NewController(users, nil, nil).ChangePassword), http.MethodPut, "/api/v1/auth/password", tt.body, tt.authorization)
 			assertCode(t, err, tt.wantCode)
 		})
 	}
@@ -313,7 +352,7 @@ func TestChangePasswordUsecaseError(t *testing.T) {
 	users := mock.NewMockUserUsecaseItf(gomock.NewController(t))
 	users.EXPECT().ChangePassword(gomock.Any(), gomock.Any()).Return(want)
 
-	_, err := serve(authenticated(t, NewController(users, nil).ChangePassword), http.MethodPut, "/api/v1/auth/password",
+	_, err := serve(authenticated(t, NewController(users, nil, nil).ChangePassword), http.MethodPut, "/api/v1/auth/password",
 		`{"current_password":"wrong","new_password":"alhamdulillah456"}`, "Bearer valid-token")
 	if err != want {
 		t.Errorf("err = %v, want the usecase error returned as is", err)
@@ -324,7 +363,7 @@ func TestResetPassword(t *testing.T) {
 	users := mock.NewMockUserUsecaseItf(gomock.NewController(t))
 	users.EXPECT().ResetPassword(gomock.Any(), domain.ResetPasswordRequest{UserID: 3, NewPassword: "alhamdulillah456"}).Return(nil)
 
-	rec, err := serve(authenticated(t, NewController(users, nil).ResetPassword), http.MethodPut, "/api/v1/users/3/password",
+	rec, err := serve(authenticated(t, NewController(users, nil, nil).ResetPassword), http.MethodPut, "/api/v1/users/3/password",
 		`{"new_password":"alhamdulillah456","user_id":9}`, "Bearer valid-token", "id", "3")
 	if err != nil {
 		t.Fatalf("handler: %v", err)
@@ -350,7 +389,7 @@ func TestResetPasswordRejects(t *testing.T) {
 			// no EXPECT: the request must not reach the usecase
 			users := mock.NewMockUserUsecaseItf(gomock.NewController(t))
 
-			_, err := serve(authenticated(t, NewController(users, nil).ResetPassword), http.MethodPut, "/api/v1/users/"+tt.id+"/password", tt.body, "Bearer valid-token", "id", tt.id)
+			_, err := serve(authenticated(t, NewController(users, nil, nil).ResetPassword), http.MethodPut, "/api/v1/users/"+tt.id+"/password", tt.body, "Bearer valid-token", "id", tt.id)
 			assertCode(t, err, tt.wantCode)
 		})
 	}

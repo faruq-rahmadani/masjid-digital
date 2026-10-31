@@ -20,6 +20,12 @@ var httpStatuses = map[apperror.Code]int{
 	apperror.CodeInternal:        http.StatusInternalServerError,
 }
 
+// echoMessages replaces the English text of Echo's own errors that users can
+// trigger by themselves
+var echoMessages = map[int]string{
+	http.StatusRequestEntityTooLarge: "ukuran request terlalu besar",
+}
+
 type errorResponse struct {
 	Code    apperror.Code `json:"code"`
 	Message string        `json:"message"`
@@ -88,7 +94,9 @@ func toAppError(err error) (int, *apperror.AppError) {
 
 	if httpErr, ok := errors.AsType[*echo.HTTPError](err); ok {
 		message := http.StatusText(httpErr.Code)
-		if text, ok := httpErr.Message.(string); ok && httpErr.Code < http.StatusInternalServerError {
+		if text, ok := echoMessages[httpErr.Code]; ok {
+			message = text
+		} else if text, ok := httpErr.Message.(string); ok && httpErr.Code < http.StatusInternalServerError {
 			message = text
 		}
 		return httpErr.Code, apperror.New(codeFromStatus(httpErr.Code), err, message)

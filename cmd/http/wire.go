@@ -10,9 +10,11 @@ import (
 	"github.com/faruq-rahmadani/masjid-digital/internal/delivery/http/middleware"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/cache/sessions"
 	repodb "github.com/faruq-rahmadani/masjid-digital/internal/repository/database"
+	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/mosqueprofiles"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/users"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/authentication"
+	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/mosqueprofile"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/user"
 	"github.com/faruq-rahmadani/masjid-digital/migrations"
 	"github.com/faruq-rahmadani/masjid-digital/pkg/cache"
@@ -22,13 +24,15 @@ import (
 )
 
 type repositories struct {
-	users    usecase.UserRepositoryItf
-	sessions usecase.SessionRepositoryItf
+	users          usecase.UserRepositoryItf
+	sessions       usecase.SessionRepositoryItf
+	mosqueProfiles usecase.MosqueProfileRepositoryItf
 }
 
 type usecases struct {
-	user controller.UserUsecaseItf
-	auth *authentication.AuthenticationUseCase // used by both the controller and the auth middleware
+	user          controller.UserUsecaseItf
+	auth          *authentication.AuthenticationUseCase // used by both the controller and the auth middleware
+	mosqueProfile controller.MosqueProfileUsecaseItf
 }
 
 // handlers is what the HTTP server serves
@@ -69,7 +73,7 @@ func newHandlers(ctx context.Context, cfg *config.Schema) (h handlers, cleanup f
 	}
 
 	return handlers{
-		controller: controller.NewController(ucs.user, ucs.auth),
+		controller: controller.NewController(ucs.user, ucs.auth, ucs.mosqueProfile),
 		auth:       middleware.NewAuth(ucs.auth),
 	}, cleanup, nil
 }
@@ -78,8 +82,9 @@ func newRepositories(db *database.DB, c cache.Cache) repositories {
 	dbClient := repodb.DatabaseClient{Querier: db}
 
 	return repositories{
-		users:    users.NewUserDBRepository(dbClient),
-		sessions: sessions.NewSessionCacheRepository(c),
+		users:          users.NewUserDBRepository(dbClient),
+		sessions:       sessions.NewSessionCacheRepository(c),
+		mosqueProfiles: mosqueprofiles.NewMosqueProfileDBRepository(dbClient),
 	}
 }
 
@@ -92,8 +97,9 @@ func newUsecases(cfg *config.Schema, repos repositories) (usecases, error) {
 	}
 
 	return usecases{
-		user: newUserUsecase(repos, passwordHasher),
-		auth: authentication.New(repos.users, passwordHasher, tokenIssuer, repos.sessions),
+		user:          newUserUsecase(repos, passwordHasher),
+		auth:          authentication.New(repos.users, passwordHasher, tokenIssuer, repos.sessions),
+		mosqueProfile: mosqueprofile.NewMosqueProfileUsecase(repos.mosqueProfiles),
 	}, nil
 }
 

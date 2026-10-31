@@ -37,17 +37,17 @@ var (
 
 // User is a person who logs in to the admin panel with their phone number
 type User struct {
-	ID           int64
-	Name         string
-	Phone        string // E.164, e.g. +6281234567890
-	Email        string // optional, empty when not set
-	PasswordHash string
-	Role         UserRole
-	Status       UserStatus
-	LastLoginAt  *time.Time
-	CreatedBy    int64 // ID of the user who created this one, 0 when nobody did
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
+	ID           int64      `json:"id"`
+	Name         string     `json:"name"`
+	Phone        string     `json:"phone"` // E.164, e.g. +6281234567890
+	Email        string     `json:"email"` // optional, empty when not set
+	PasswordHash string     `json:"-"`
+	Role         UserRole   `json:"role"`
+	Status       UserStatus `json:"status"`
+	LastLoginAt  *time.Time `json:"last_login_at"` // null until the first login
+	CreatedBy    int64      `json:"created_by"`    // ID of the user who created this one, 0 when nobody did
+	CreatedAt    time.Time  `json:"created_at"`
+	UpdatedAt    time.Time  `json:"updated_at"`
 }
 
 func (u *User) IsActive() bool {

@@ -160,6 +160,102 @@ func (mr *MockUserRepositoryItfMockRecorder) UpdatePasswordHash(ctx, id, passwor
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePasswordHash", reflect.TypeOf((*MockUserRepositoryItf)(nil).UpdatePasswordHash), ctx, id, passwordHash)
 }
 
+// MockMosqueProfileRepositoryItf is a mock of MosqueProfileRepositoryItf interface.
+type MockMosqueProfileRepositoryItf struct {
+	ctrl     *gomock.Controller
+	recorder *MockMosqueProfileRepositoryItfMockRecorder
+	isgomock struct{}
+}
+
+// MockMosqueProfileRepositoryItfMockRecorder is the mock recorder for MockMosqueProfileRepositoryItf.
+type MockMosqueProfileRepositoryItfMockRecorder struct {
+	mock *MockMosqueProfileRepositoryItf
+}
+
+// NewMockMosqueProfileRepositoryItf creates a new mock instance.
+func NewMockMosqueProfileRepositoryItf(ctrl *gomock.Controller) *MockMosqueProfileRepositoryItf {
+	mock := &MockMosqueProfileRepositoryItf{ctrl: ctrl}
+	mock.recorder = &MockMosqueProfileRepositoryItfMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMosqueProfileRepositoryItf) EXPECT() *MockMosqueProfileRepositoryItfMockRecorder {
+	return m.recorder
+}
+
+// DeleteLogo mocks base method.
+func (m *MockMosqueProfileRepositoryItf) DeleteLogo(ctx context.Context) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteLogo", ctx)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteLogo indicates an expected call of DeleteLogo.
+func (mr *MockMosqueProfileRepositoryItfMockRecorder) DeleteLogo(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteLogo", reflect.TypeOf((*MockMosqueProfileRepositoryItf)(nil).DeleteLogo), ctx)
+}
+
+// Get mocks base method.
+func (m *MockMosqueProfileRepositoryItf) Get(ctx context.Context) (domain.MosqueProfile, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", ctx)
+	ret0, _ := ret[0].(domain.MosqueProfile)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockMosqueProfileRepositoryItfMockRecorder) Get(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockMosqueProfileRepositoryItf)(nil).Get), ctx)
+}
+
+// GetLogo mocks base method.
+func (m *MockMosqueProfileRepositoryItf) GetLogo(ctx context.Context) (domain.MosqueLogo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLogo", ctx)
+	ret0, _ := ret[0].(domain.MosqueLogo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLogo indicates an expected call of GetLogo.
+func (mr *MockMosqueProfileRepositoryItfMockRecorder) GetLogo(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLogo", reflect.TypeOf((*MockMosqueProfileRepositoryItf)(nil).GetLogo), ctx)
+}
+
+// Update mocks base method.
+func (m *MockMosqueProfileRepositoryItf) Update(ctx context.Context, profile domain.MosqueProfile, updatedBy int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, profile, updatedBy)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockMosqueProfileRepositoryItfMockRecorder) Update(ctx, profile, updatedBy any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockMosqueProfileRepositoryItf)(nil).Update), ctx, profile, updatedBy)
+}
+
+// UpdateLogo mocks base method.
+func (m *MockMosqueProfileRepositoryItf) UpdateLogo(ctx context.Context, logo domain.MosqueLogo, updatedBy int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateLogo", ctx, logo, updatedBy)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateLogo indicates an expected call of UpdateLogo.
+func (mr *MockMosqueProfileRepositoryItfMockRecorder) UpdateLogo(ctx, logo, updatedBy any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateLogo", reflect.TypeOf((*MockMosqueProfileRepositoryItf)(nil).UpdateLogo), ctx, logo, updatedBy)
+}
+
 // MockTokenManagerItf is a mock of TokenManagerItf interface.
 type MockTokenManagerItf struct {
 	ctrl     *gomock.Controller
