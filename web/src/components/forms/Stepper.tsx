@@ -1,5 +1,5 @@
 import { Minus, Plus } from 'lucide-react'
-import { cn } from '@/lib/cn'
+import { cn } from '@/utils/cn'
 
 const sizes = {
   sm: { button: 'size-8 rounded-sm', value: 'min-w-6 text-base' }, // prayer-time correction table
@@ -45,7 +45,7 @@ export function Stepper({
         disabled={value <= min}
         onClick={() => set(value - step)}
         className={cn(
-          'inline-flex items-center justify-center border border-line bg-card text-ink disabled:opacity-40',
+          'border-line bg-card text-ink inline-flex items-center justify-center border disabled:opacity-40',
           s.button,
         )}
       >
@@ -60,7 +60,7 @@ export function Stepper({
         disabled={value >= max}
         onClick={() => set(value + step)}
         className={cn(
-          'inline-flex items-center justify-center border border-line bg-card text-ink disabled:opacity-40',
+          'border-line bg-card text-ink inline-flex items-center justify-center border disabled:opacity-40',
           s.button,
         )}
       >

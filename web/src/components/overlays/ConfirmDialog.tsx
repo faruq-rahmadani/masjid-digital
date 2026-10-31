@@ -1,7 +1,7 @@
-import { useId, useState, type ReactNode } from 'react'
+import { type ReactNode, useId, useState } from 'react'
 import { Button } from '@/components/actions/Button'
 import { Textarea } from '@/components/forms/Textarea'
-import { Sheet } from './Sheet'
+import { Sheet } from '@/components/overlays/Sheet'
 
 type ConfirmDialogProps = {
   open: boolean
@@ -59,10 +59,10 @@ export function ConfirmDialog({
         </div>
       }
     >
-      {description && <div className="text-base text-ink-muted">{description}</div>}
+      {description && <div className="text-ink-muted text-base">{description}</div>}
       {requireReason && (
         <div className="mt-4 flex flex-col gap-1.5">
-          <label htmlFor={reasonId} className="text-xs font-semibold text-ink-soft">
+          <label htmlFor={reasonId} className="text-ink-soft text-xs font-semibold">
             Alasan (wajib)
           </label>
           <Textarea

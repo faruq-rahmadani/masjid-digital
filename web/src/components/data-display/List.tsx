@@ -1,8 +1,8 @@
 import type { ComponentProps, ReactNode } from 'react'
-import { cn } from '@/lib/cn'
+import { cn } from '@/utils/cn'
 
 export function List({ className, ...props }: ComponentProps<'ul'>) {
-  return <ul className={cn('divide-y divide-line-soft', className)} {...props} />
+  return <ul className={cn('divide-line-soft divide-y', className)} {...props} />
 }
 
 type ListRowProps = Omit<ComponentProps<'li'>, 'title'> & {
@@ -26,7 +26,7 @@ export function ListRow({
       {leading}
       <div className="min-w-0 flex-1">
         <div className="text-base font-semibold">{title}</div>
-        {description && <div className="text-xs text-ink-muted">{description}</div>}
+        {description && <div className="text-ink-muted truncate text-xs">{description}</div>}
       </div>
       {trailing}
     </li>

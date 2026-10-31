@@ -1,5 +1,5 @@
 import type { ComponentProps, ReactNode } from 'react'
-import { cn } from '@/lib/cn'
+import { cn } from '@/utils/cn'
 
 type RadioCardProps = Omit<ComponentProps<'input'>, 'type'> & {
   title: ReactNode
@@ -11,16 +11,16 @@ export function RadioCard({ title, description, className, ...props }: RadioCard
   return (
     <label
       className={cn(
-        'flex cursor-pointer items-center gap-2.5 rounded-lg border border-line bg-card p-3 text-base',
-        'has-checked:border-brand has-checked:outline-1 has-checked:-outline-offset-2 has-checked:outline-brand',
-        'has-focus-visible:outline-3 has-focus-visible:outline-gold',
+        'border-line bg-card flex cursor-pointer items-center gap-2.5 rounded-lg border p-3 text-base',
+        'has-checked:border-brand has-checked:outline-brand has-checked:outline-1 has-checked:-outline-offset-2',
+        'has-focus-visible:outline-gold has-focus-visible:outline-3',
         className,
       )}
     >
-      <input type="radio" className="size-4.5 shrink-0 accent-brand" {...props} />
+      <input type="radio" className="accent-brand size-4.5 shrink-0" {...props} />
       <span className="min-w-0">
         <span className="block font-semibold">{title}</span>
-        {description && <span className="block text-xs text-ink-muted">{description}</span>}
+        {description && <span className="text-ink-muted block text-xs">{description}</span>}
       </span>
     </label>
   )

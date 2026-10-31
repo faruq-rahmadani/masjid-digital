@@ -1,4 +1,4 @@
-import { cn } from '@/lib/cn'
+import { cn } from '@/utils/cn'
 
 // Variants map 1:1 to buttons in docs/design/mockups; see design-system.md#button.
 const variants = {

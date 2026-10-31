@@ -1,5 +1,5 @@
-@import 'tailwindcss';
-@import '@fontsource-variable/plus-jakarta-sans';
+@import "tailwindcss";
+@import "@fontsource-variable/plus-jakarta-sans";
 
 /*
  * Design tokens, taken from the mockup (docs/design/design-system.md).
@@ -55,7 +55,7 @@
   --color-expense-line: #e8c6b8;
   --color-expense-ink: #6e2a15;
 
-  --font-sans: 'Plus Jakarta Sans Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-sans: "Plus Jakarta Sans Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
 
   /* Type scale (px from the mockup). base = 14px body. */
   --text-2xs: 0.6875rem; /* 11 tile labels, column headers, badges */
@@ -142,7 +142,7 @@
 
   a,
   button,
-  [role='button'] {
+  [role="button"] {
     touch-action: manipulation;
   }
 
@@ -162,12 +162,17 @@
   }
 }
 
-/* Safe-area helpers for notched devices (requires viewport-fit=cover). */
-@utility pt-safe {
-  padding-top: env(safe-area-inset-top);
+/*
+ * Safe-area padding for notched devices (requires viewport-fit=cover).
+ * pt-safe-5 = padding-top of spacing 5 (20px), or the notch inset when that is larger. Use these
+ * instead of pairing pt-safe with py-*: two classes setting padding-top fight, and the inset (0 on
+ * most screens) can win and glue content to the edge.
+ */
+@utility pt-safe-* {
+  padding-top: max(--spacing(--value(integer)), env(safe-area-inset-top));
 }
-@utility pb-safe {
-  padding-bottom: env(safe-area-inset-bottom);
+@utility pb-safe-* {
+  padding-bottom: max(--spacing(--value(integer)), env(safe-area-inset-bottom));
 }
 @utility px-safe {
   padding-left: env(safe-area-inset-left);

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { ActionMenu } from './ActionMenu'
+import { ActionMenu } from '@/components/overlays/ActionMenu'
 
 describe('ActionMenu', () => {
   it('opens the row actions in a sheet and closes after choosing one', async () => {

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { cn } from '@/lib/cn'
+import { cn } from '@/utils/cn'
 
 type SectionHeaderProps = {
   title: ReactNode
@@ -21,7 +21,7 @@ export function SectionHeader({
     <div className={cn('flex items-center justify-between gap-3', className)}>
       <div className="min-w-0">
         <Heading className="text-md font-bold">{title}</Heading>
-        {description && <p className="text-xs text-ink-muted">{description}</p>}
+        {description && <p className="text-ink-muted text-xs">{description}</p>}
       </div>
       {action && <div className="shrink-0 text-xs font-semibold">{action}</div>}
     </div>

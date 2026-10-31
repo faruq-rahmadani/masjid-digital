@@ -1,8 +1,8 @@
 import { EllipsisVertical } from 'lucide-react'
 import { useState } from 'react'
-import { cn } from '@/lib/cn'
 import { IconButton } from '@/components/actions/IconButton'
-import { Sheet } from './Sheet'
+import { Sheet } from '@/components/overlays/Sheet'
+import { cn } from '@/utils/cn'
 
 export type Action = {
   label: string
@@ -32,7 +32,7 @@ export function ActionMenu({ label, actions }: ActionMenuProps) {
         onClick={() => setOpen(true)}
       />
       <Sheet open={open} onClose={() => setOpen(false)} title={label}>
-        <ul className="divide-y divide-line-soft rounded-xl bg-card px-4">
+        <ul className="divide-line-soft bg-card divide-y rounded-xl px-4">
           {actions.map((action) => (
             <li key={action.label}>
               <button

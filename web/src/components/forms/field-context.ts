@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react'
 
-export type FieldContextValue = {
+type FieldContextValue = {
   id: string
   describedBy: string | undefined
   invalid: boolean

@@ -1,5 +1,5 @@
 import type { ComponentProps } from 'react'
-import { cn } from '@/lib/cn'
+import { cn } from '@/utils/cn'
 
 const tones = {
   default: 'rounded-xl bg-card text-ink',

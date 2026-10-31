@@ -1,5 +1,5 @@
 import { createContext, useContext, useMemo } from 'react'
-import type { FeedbackTone } from './tone-icons'
+import type { FeedbackTone } from '@/components/feedback/tone-icons'
 
 export type ToastInput = {
   message: string

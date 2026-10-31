@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { Field } from './Field'
-import { Input } from './Input'
-import { Select } from './Select'
+import { Field } from '@/components/forms/Field'
+import { Input } from '@/components/forms/Input'
+import { Select } from '@/components/forms/Select'
 
 describe('Field', () => {
   it('labels its control and links the hint', () => {

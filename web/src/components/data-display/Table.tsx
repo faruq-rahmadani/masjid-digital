@@ -1,5 +1,5 @@
 import type { ComponentProps } from 'react'
-import { cn } from '@/lib/cn'
+import { cn } from '@/utils/cn'
 
 /*
  * Compact data table, styled after the Waktu sholat 7-day preview: small caps header, rows split
@@ -47,9 +47,9 @@ export function Th({ className, scope = 'col', ...props }: ComponentProps<'th'>)
     <th
       scope={scope}
       className={cn(
-        'py-2 pr-2 text-2xs font-bold tracking-wide whitespace-nowrap text-ink-muted uppercase last:pr-0',
+        'text-2xs text-ink-muted py-2 pr-2 font-bold tracking-wide whitespace-nowrap uppercase last:pr-0',
         // A row header (scope="row") reads as the row's label, not a column title.
-        scope === 'row' && 'text-[length:inherit] font-bold tracking-normal text-ink normal-case',
+        scope === 'row' && 'text-ink font-bold tracking-normal text-[length:inherit] normal-case',
         className,
       )}
       {...props}

@@ -1,7 +1,7 @@
-import { useState, type ComponentProps } from 'react'
-import { cn } from '@/lib/cn'
-import { controlBase } from './control-styles'
-import { useFieldControl } from './field-context'
+import { type ComponentProps, useState } from 'react'
+import { controlBase } from '@/components/forms/control-styles'
+import { useFieldControl } from '@/components/forms/field-context'
+import { cn } from '@/utils/cn'
 
 type TextareaProps = ComponentProps<'textarea'> & {
   /** Show "57 / 200" under the box. Requires `maxLength`. */
@@ -37,7 +37,7 @@ export function Textarea({
   return (
     <div className="flex flex-col gap-1">
       {control}
-      <span aria-live="polite" className="self-end text-xs text-ink-muted tabular-nums">
+      <span aria-live="polite" className="text-ink-muted self-end text-xs tabular-nums">
         {count} / {maxLength}
       </span>
     </div>

@@ -7,10 +7,10 @@ export function RouteError() {
   const detail = isRouteErrorResponse(error) ? `${error.status} ${error.statusText}` : undefined
 
   return (
-    <main role="alert" className="mx-auto flex max-w-app flex-col gap-2 px-5 py-12 pt-safe">
+    <main role="alert" className="max-w-app pt-safe-12 mx-auto flex flex-col gap-2 px-5 pb-12">
       <h1 className="text-xl font-extrabold">Halaman gagal dimuat</h1>
       <p className="text-ink-muted">Periksa koneksi internet lalu muat ulang.</p>
-      {detail && <p className="text-xs text-ink-muted">{detail}</p>}
+      {detail && <p className="text-ink-muted text-xs">{detail}</p>}
       <Button className="mt-4 self-start" onClick={() => window.location.reload()}>
         Muat ulang
       </Button>

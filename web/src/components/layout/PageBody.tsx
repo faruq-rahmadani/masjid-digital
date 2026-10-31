@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { cn } from '@/lib/cn'
+import { cn } from '@/utils/cn'
 
 // Standard content column under a PageHeader: 20px gutters, 14px between cards.
 export function PageBody({ className, children }: { className?: string; children: ReactNode }) {

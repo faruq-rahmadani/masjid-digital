@@ -6,7 +6,7 @@ import type { ReactNode } from 'react'
  */
 export function ActionBar({ children }: { children: ReactNode }) {
   return (
-    <div className="sticky bottom-0 z-10 bg-canvas/95 px-5 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] backdrop-blur-sm">
+    <div className="bg-canvas/95 pb-safe-6 sticky bottom-0 z-10 px-5 pt-4 backdrop-blur-sm">
       {children}
     </div>
   )

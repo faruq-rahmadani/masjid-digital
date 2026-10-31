@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react'
-import { cn } from '@/lib/cn'
-import { useFieldControl } from './field-context'
+import { useFieldControl } from '@/components/forms/field-context'
+import { cn } from '@/utils/cn'
 
 type SliderProps = Omit<ComponentProps<'input'>, 'type'> & {
   /** Text at each end, e.g. "Pelan" / "Keras". */
@@ -12,13 +12,13 @@ type SliderProps = Omit<ComponentProps<'input'>, 'type'> & {
 export function Slider({ minLabel, maxLabel, className, ...props }: SliderProps) {
   return (
     <div className={cn('flex items-center gap-3', className)}>
-      {minLabel && <span className="text-xs text-ink-muted">{minLabel}</span>}
+      {minLabel && <span className="text-ink-muted text-xs">{minLabel}</span>}
       <input
         type="range"
-        className="h-touch min-w-0 flex-1 cursor-pointer accent-brand"
+        className="h-touch accent-brand min-w-0 flex-1 cursor-pointer"
         {...useFieldControl(props)}
       />
-      {maxLabel && <span className="text-xs text-ink-muted">{maxLabel}</span>}
+      {maxLabel && <span className="text-ink-muted text-xs">{maxLabel}</span>}
     </div>
   )
 }

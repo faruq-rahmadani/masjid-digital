@@ -1,5 +1,5 @@
 import type { ComponentProps, ReactNode } from 'react'
-import { cn } from '@/lib/cn'
+import { cn } from '@/utils/cn'
 
 const variants = {
   card: 'size-touch rounded-full bg-card text-ink', // header back / settings

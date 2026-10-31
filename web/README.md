@@ -1,61 +1,145 @@
 # web
 
-Mobile-first React client for masjid-digital: the pengurus admin panel now, the TV display
-next. Product and design specs live in [../docs](../docs/README.md); read them before building a
-screen.
+Mobile-first React client for masjid-digital: the pengurus admin panel now, the TV display next.
+Product and design specs live in [../docs](../docs/README.md); read them before building a screen.
 
-**Stack:** Vite · React 19 · TypeScript (strict) · React Router (data router, lazy routes) ·
-TanStack Query · Tailwind CSS v4 · lucide-react icons · Plus Jakarta Sans (self-hosted) · Vitest + Testing Library · oxlint · Prettier
+**Stack:** Vite · React 19 · TypeScript (strict) · React Router (lazy routes) · TanStack Query ·
+axios · Zustand · react-hook-form + zod · Tailwind CSS v4 · lucide-react · Biome · Vitest +
+Testing Library
 
 ## Getting started
 
 ```sh
 nvm use            # Node 24
-cp .env.example .env.local
 npm install
-npm run dev        # http://localhost:5173, /api is proxied to the Go server
+npm run dev        # http://localhost:5173, API answered by mocks (see below)
 ```
 
-| Script   | What it does                                 |
-| -------- | -------------------------------------------- |
-| `dev`    | Vite dev server with HMR                     |
-| `build`  | Type-check, then production build to `dist/` |
-| `test`   | Vitest in watch mode (`test:run` for CI)     |
-| `lint`   | oxlint                                       |
-| `format` | Prettier (sorts Tailwind classes too)        |
-| `check`  | typecheck + lint + format check + tests      |
+| Script   | What it does                                      |
+| -------- | ------------------------------------------------- |
+| `dev`    | Vite dev server; `/kit` is the live design system |
+| `build`  | Type-check, then production build to `dist/`      |
+| `test`   | Vitest in watch mode (`test:run` once)            |
+| `lint`   | Biome: lint + format + import order check         |
+| `format` | Biome: apply safe fixes and formatting            |
+| `check`  | typecheck + lint + tests (run before pushing)     |
 
 ## Structure
 
 ```
-src/
-  app/            # composition root: providers, route tree, shell layout, nav
-  pages/          # app-level pages not owned by a feature (home, 404, route error)
-  features/       # domain areas; see features/README.md
-  components/     # the design system; import from '@/components' (see components/README.md)
-    actions/  forms/  data-display/  feedback/  overlays/  navigation/  layout/
-  lib/            # framework-agnostic helpers: api client, query client, cn(), Rupiah formatting
-  config/         # typed env access
-  styles/         # Tailwind entry + design tokens
-  test/           # test setup and render helpers
+web/
+├── index.html, vite.config.ts, tsconfig*.json   # Vite + TS
+├── biome.json                                   # lint + format
+├── .env, .env.development, .env.production      # public VITE_* defaults (*.local = your overrides)
+├── public/                                      # static files
+└── src/
+    ├── main.tsx, App.tsx      # entry; providers + router
+    ├── route.ts               # ROUTES: every app path, use instead of string literals
+    ├── routes/
+    │   ├── index.tsx          # route table (lazy pages, guards)
+    │   ├── menu.ts            # Beranda "Kelola" menu: label, icon, path, permission
+    │   ├── guards.tsx         # RequireAuth, RequireAccess
+    │   └── types.ts
+    ├── layouts/               # AppShell (390px column, session lifecycle)
+    ├── pages/
+    │   ├── LoginPage/  Kit/   # public / dev-only
+    │   ├── NotFoundPage, ComingSoonPage, RouteError
+    │   └── Admin/             # internal users; access per role via the ACL, not the folder
+    │       ├── Home/          # hub every role lands on
+    │       └── Users/         # UsersPage + its sheets, row, schema, utils, tests
+    ├── components/            # design system, import from '@/components' (see its README)
+    ├── hooks/                 # TanStack Query hooks per resource (useUsers) and shared hooks
+    ├── api/client.ts          # API client: apiGet / apiPost / apiPut (axios + interceptors)
+    ├── services/              # <resource>Service.ts: one exported function per endpoint
+    ├── stores/                # Zustand: sessionStore (login session only)
+    ├── types/                 # API request/response types, global.d.ts
+    ├── utils/
+    │   ├── auth/              # permissions (ACL), roles, token storage
+    │   ├── format/            # money, phone, text
+    │   └── cn.ts, env.ts
+    ├── styles/                # Tailwind entry + design tokens
+    └── test/                  # Vitest setup and render helpers
 ```
 
-Dependency direction: `app → pages/features → components → lib/config`. Never the reverse.
+### Where things go
+
+- **A new screen:** a folder `pages/Admin/<Name>/` for internal users (public screens such as the
+  TV display go beside `Admin/`). Add it to `routes/index.tsx` as a lazy route, its path to
+  `route.ts`, and (if it is a menu item) set `ready: true` in `routes/menu.ts`. Inside the folder,
+  group what only that page uses, and import it relatively (`./drawers/...`):
+
+  ```
+  pages/Admin/Users/
+  ├── UsersPage.tsx (+ .test.tsx)   # the screen
+  ├── components/                   # pieces of this page (UserRow)
+  ├── drawers/                      # bottom sheets built on <Sheet> (AddUserDrawer)
+  ├── modals/                       # confirmations built on <ConfirmDialog> (DeactivateUserModal)
+  ├── schema.ts                     # zod schemas for its forms
+  └── utils.ts (+ .test.ts)         # sorting, filtering, rules
+  ```
+
+  Create a subfolder only when it has a file. Anything a second page needs moves to
+  `src/components/` (generic) or `src/hooks/` (data).
+- **A new API resource:** types in `types/<resource>.ts`, calls in
+  `services/<resource>Service.ts` using `apiGet` / `apiPost` / `apiPut` from `@/api/client`
+  (paths from `internal/delivery/http/router.go`), query hooks in
+  `hooks/use<Resource>.ts`. Mock it inside the function while the endpoint isn't ready (below).
+- **State:** server data lives in TanStack Query. Zustand is only for client state that many
+  screens share (today: the session). Filters and form state stay local to the page.
+- **Permissions (ACL):** `utils/auth/permissions.ts` is the PRD roles table. Every `Admin/` route sits
+  behind `RequireAccess module="..."`, and menus show only what `canOpen(role, module)` allows
+  (hidden, not disabled). Changing who sees what is a change to that table, not to folders.
+- Tests sit next to the code they cover (`*.test.ts(x)`).
 
 ## Mobile-first conventions
 
-- Write base classes for the smallest screen; add `sm:`/`md:`/`lg:` only to enhance.
-- Use `min-h-dvh`, not `h-screen`: `100vh` is wrong on mobile browsers with dynamic toolbars.
-- Respect notches with `pt-safe` / `pb-safe` / `px-safe` (the viewport uses `viewport-fit=cover`).
-- Interactive elements are at least `min-h-touch` (44px).
-- Form controls stay at least 16px so iOS doesn't zoom on focus.
-- Colors, type sizes and radii come from tokens in `src/styles/index.css`; Tailwind's default
-  palette is removed. See [design-system.md](../docs/design/design-system.md).
-- One 390px column (`max-w-app`), centered on wider screens. Beranda is the hub; other screens
-  use `PageHeader` with a back button. No tab bar.
-- UI copy is Bahasa Indonesia.
+- Base classes for the smallest screen; `sm:`/`md:` only to enhance.
+- `min-h-dvh`, not `h-screen`. Safe areas via `pt-safe-<n>` / `pb-safe-<n>` (spacing n, or the
+  notch inset if larger) and `px-safe`. Never pair them with `py-*`/`pt-*`; one class per side.
+- Interactive elements at least `min-h-touch` (44px). Form controls at least 16px on iOS.
+- Colors, type and radii only from tokens in `src/styles/index.css`
+  ([design-system.md](../docs/design/design-system.md)).
+- One 390px column (`max-w-app`); Beranda is the hub, other screens have a back button.
+- Only UI copy is Bahasa Indonesia; file names, identifiers and URL paths are English.
 
 ## API
 
-All requests go through `@/lib/api-client`, which prefixes `VITE_API_BASE_URL` (default `/api`)
-and throws `ApiError` on non-2xx. Backend routes are expected under `/api`.
+Every request goes through `src/api/client.ts`:
+
+```ts
+import { apiGet, apiPost, apiPut, type DataResponse } from '@/api/client'
+
+const users = (await apiGet<DataResponse<User[]>>('/v1/users')).data
+await apiPost<MessageResponse>('/v1/users', body)
+```
+
+- Each helper resolves to the response body (no axios wrapper); type it as the API returns it.
+- Paths are relative to `VITE_API_BASE_URL` (default `/api`).
+- Interceptors send the session token and turn every failure into an `ApiError` with the API's
+  `code` and its user-facing `message`; a 401 on a logged-in request ends the session.
+- The axios instance is private, so all requests share this behavior. Screens call services or
+  query hooks, not the client directly.
+
+## Mock API
+
+Each service exports one async function per endpoint. While an endpoint isn't wired, its real
+lines are commented out and the function returns mock data instead:
+
+```ts
+export async function listUsers(): Promise<User[]> {
+  // const resp = await apiGet<DataResponse<User[]>>('/v1/users')
+  // return resp.data
+  return MOCK_USERS
+}
+```
+
+- **Go live:** uncomment the real lines and delete the mock line. Delete the `--- Mock ---` section
+  at the bottom of the file once nothing uses it.
+- Mock data (`MOCK_USERS`, accounts and `MOCK_PASSWORD` in `authService.ts`) lives in memory and
+  resets on reload.
+- Biome warns (but does not delete) unused `apiGet` / `apiPost` imports while a file is fully
+  mocked. TypeScript's own unused checks are off for this reason; Biome covers them.
+- Tests never use these mocks: `src/test/setup.ts` swaps every service for the strict fakes in
+  `src/test/fakeApi.ts`, so tests pass whether a service is mocked or live. Add a fake there for
+  each new service.
+- Mocks ship in the bundle: make sure every function is live before a production release.

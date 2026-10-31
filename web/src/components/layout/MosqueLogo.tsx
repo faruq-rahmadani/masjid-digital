@@ -6,7 +6,6 @@ export function MosqueLogo({ size = 72, className }: { size?: number; className?
       height={size}
       viewBox="0 0 72 72"
       fill="none"
-      // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- inline SVG needs role="img" to be announced
       role="img"
       aria-label="Logo masjid"
       className={className}

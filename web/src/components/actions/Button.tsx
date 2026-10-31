@@ -1,7 +1,7 @@
 import { LoaderCircle } from 'lucide-react'
 import type { ComponentProps } from 'react'
-import { cn } from '@/lib/cn'
-import { buttonStyles, type ButtonStyleProps } from './button-styles'
+import { type ButtonStyleProps, buttonStyles } from '@/components/actions/button-styles'
+import { cn } from '@/utils/cn'
 
 type ButtonProps = ComponentProps<'button'> &
   ButtonStyleProps & {

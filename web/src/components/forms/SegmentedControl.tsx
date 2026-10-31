@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { cn } from '@/lib/cn'
+import { cn } from '@/utils/cn'
 
 // <fieldset> gives the group role natively; reset its default border and padding.
 const fieldsetReset = 'm-0 min-w-0 border-0 p-0'
@@ -15,7 +15,7 @@ const groupStyles = {
 const itemStyles = {
   track: 'h-11 rounded-md text-md font-semibold text-ink-soft',
   split: 'h-10 rounded-md border border-line bg-card text-sm font-semibold text-ink',
-  pill: 'h-9 rounded-full border border-line bg-card px-3.5 text-sm font-semibold text-ink',
+  pill: 'h-9 shrink-0 whitespace-nowrap rounded-full border border-line bg-card px-3.5 text-sm font-semibold text-ink',
 } as const
 
 const activeStyles = {

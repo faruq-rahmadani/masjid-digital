@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { Table, TBody, Td, Th, THead, Tr } from './Table'
+import { Table, TBody, Td, THead, Th, Tr } from '@/components/data-display/Table'
 
 describe('Table', () => {
   it('renders a real table with column and row headers', () => {

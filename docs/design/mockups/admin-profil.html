@@ -1,0 +1,64 @@
+<!doctype html><html lang="id"><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#0F3D33}a:hover{color:#1C6B3A}
+button,input,select,textarea{font-family:inherit}
+</style>
+<style>html,body{margin:0;overflow:hidden;background:transparent}button,input{pointer-events:none}</style></head><body>
+
+<div style="width: 390px; height: 980px; box-sizing: border-box; background: #F4F1E8; display: flex; flex-direction: column; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: #0F3D33;">
+<div style="padding: 20px; display: flex; align-items: center; gap: 12px;">
+<button type="button" aria-label="Kembali" style="width: 44px; height: 44px; border-radius: 22px; border: 0; background: #FFFFFF; color: #0F3D33; display: flex; align-items: center; justify-content: center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg></button>
+<div style="font-size: 20px; font-weight: 800;">Profil Masjid</div>
+</div>
+
+<div style="padding: 0 20px; display: flex; flex-direction: column; gap: 14px; flex: 1;">
+<div style="background: #FFFFFF; border-radius: 14px; padding: 16px; display: flex; align-items: center; gap: 16px;">
+<div style="width: 72px; height: 72px; border-radius: 16px; background: #0F3D33; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+<svg width="44" height="44" viewBox="0 0 72 72" fill="none" aria-hidden="true"><path d="M20 50h32M24 50V38c0-8 5-14 12-17 7 3 12 9 12 17v12" stroke="#C9A227" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M36 21v-7" stroke="#C9A227" stroke-width="3" stroke-linecap="round"></path></svg>
+</div>
+<div style="flex: 1;">
+<div style="font-size: 14px; font-weight: 700;">Logo masjid</div>
+<div style="font-size: 12px; color: #5B6B64; margin-top: 2px;">PNG/JPG/SVG, maks 2 MB, dipotong persegi</div>
+<button type="button" style="margin-top: 8px; height: 36px; padding: 0 14px; border: 1px solid #D9D2BE; border-radius: 10px; background: #FFFFFF; color: #0F3D33; font-size: 13px; font-weight: 600;">Ganti logo</button>
+</div>
+</div>
+
+<div style="background: #FFFFFF; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 600; color: #4F6158;">Nama masjid
+<input type="text" value="Masjid [NAMA MASJID]" style="height: 44px; border: 1px solid #D9D2BE; border-radius: 10px; padding: 0 12px; font-size: 14px; color: #0F3D33; background: #FFFFFF;">
+</label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 600; color: #4F6158;">Alamat
+<textarea rows="2" style="border: 1px solid #D9D2BE; border-radius: 10px; padding: 10px 12px; font-size: 14px; color: #0F3D33; background: #FFFFFF; resize: none;">[Jalan, RT/RW, Kelurahan, Kecamatan, Kota]</textarea>
+</label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 600; color: #4F6158;">Kontak pengurus
+<input type="text" value="0812-xxxx-xxxx" style="height: 44px; border: 1px solid #D9D2BE; border-radius: 10px; padding: 0 12px; font-size: 14px; color: #0F3D33; background: #FFFFFF;">
+</label>
+</div>
+
+<div style="background: #FFFFFF; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+<div style="font-size: 14px; font-weight: 700;">Lokasi</div>
+<label style="display: flex; align-items: center; gap: 8px; height: 44px; border: 1px solid #D9D2BE; border-radius: 10px; padding: 0 12px; font-size: 14px; color: #5B6B64;">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+<input type="text" placeholder="Cari alamat atau nama tempat" aria-label="Cari lokasi" style="border: 0; outline: none; font-size: 14px; flex: 1; color: #0F3D33; background: transparent;">
+</label>
+<div style="height: 150px; border-radius: 12px; background: #DDE5E0; position: relative; display: flex; align-items: center; justify-content: center;" role="img" aria-label="Peta lokasi masjid">
+<div style="position: absolute; left: 0; right: 0; top: 70px; height: 10px; background: #F4F1E8;"></div>
+<div style="position: absolute; top: 0; bottom: 0; left: 120px; width: 10px; background: #F4F1E8;"></div>
+<div style="position: absolute; top: 0; bottom: 0; left: 260px; width: 8px; background: #F4F1E8;"></div>
+<svg width="36" height="36" viewBox="0 0 24 24" fill="#0F3D33" style="position: relative;" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"></path></svg>
+</div>
+<div style="font-size: 12px; color: #5B6B64;">Geser pin untuk menyesuaikan titik masjid.</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;">
+<div style="background: #F4F1E8; border-radius: 10px; padding: 10px 12px;"><div style="font-size: 11px; font-weight: 600; color: #5B6B64;">Koordinat</div><div style="font-size: 13px; font-weight: 700; margin-top: 2px;">-6.2088, 106.8456</div></div>
+<div style="background: #F4F1E8; border-radius: 10px; padding: 10px 12px;"><div style="font-size: 11px; font-weight: 600; color: #5B6B64;">Zona waktu</div><div style="font-size: 13px; font-weight: 700; margin-top: 2px;">WIB (UTC+7)</div></div>
+</div>
+</div>
+</div>
+
+<div style="padding: 16px 20px 24px;">
+<button type="button" style="width: 100%; height: 52px; border: 0; border-radius: 14px; background: #0F3D33; color: #F4F1E8; font-size: 16px; font-weight: 700;">Simpan dan kirim ke layar</button>
+</div>
+</div>
+</body></html>

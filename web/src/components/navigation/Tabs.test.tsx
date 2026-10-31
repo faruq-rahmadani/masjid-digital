@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { describe, expect, it } from 'vitest'
-import { Tabs } from './Tabs'
+import { Tabs } from '@/components/navigation/Tabs'
 
 function Harness() {
   const [value, setValue] = useState<'in' | 'out'>('in')

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { ConfirmDialog } from './ConfirmDialog'
+import { ConfirmDialog } from '@/components/overlays/ConfirmDialog'
 
 describe('ConfirmDialog', () => {
   it('requires a reason before a destructive confirm (PRD: edits need a reason)', async () => {

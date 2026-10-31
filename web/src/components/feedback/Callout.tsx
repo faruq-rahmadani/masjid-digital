@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { cn } from '@/lib/cn'
+import { cn } from '@/utils/cn'
 
 const tones = {
   notice: 'bg-notice text-notice-ink', // saldo preview, tutup buku
