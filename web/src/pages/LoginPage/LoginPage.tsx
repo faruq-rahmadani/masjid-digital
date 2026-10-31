@@ -4,7 +4,6 @@ import { useForm } from 'react-hook-form'
 import { Navigate, useNavigate, useSearchParams } from 'react-router'
 import { z } from 'zod'
 import { Button, Callout, Checkbox, Field, Input, MosqueLogo, Sheet, Stack } from '@/components'
-import { useMosqueProfile } from '@/hooks/useMosqueProfile'
 import { useAuth } from '@/stores/sessionStore'
 
 const schema = z.object({
@@ -21,7 +20,6 @@ function safeNext(next: string | null) {
 // Login (E2-06). OTP WhatsApp from the mockup is P1 (E14-01) and left out for now.
 export function LoginPage() {
   const { session, login } = useAuth()
-  const mosque = useMosqueProfile()
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const [forgotOpen, setForgotOpen] = useState(false)
@@ -50,7 +48,8 @@ export function LoginPage() {
       <div className="pt-safe-10 text-on-brand flex flex-1 flex-col items-center justify-center gap-3.5 px-6 pb-10 text-center">
         <MosqueLogo />
         <h1 className="text-2xl font-extrabold">Panel Pengurus</h1>
-        <p className="text-on-brand-muted text-base">{mosque.name}</p>
+        {/* GET /mosque-profile needs a login, so the mosque name can't be shown here yet. */}
+        <p className="text-on-brand-muted text-base">Masjid Digital</p>
       </div>
 
       <form

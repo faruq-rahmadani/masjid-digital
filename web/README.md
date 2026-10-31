@@ -12,8 +12,13 @@ Testing Library
 ```sh
 nvm use            # Node 24
 npm install
-npm run dev        # http://localhost:5173, API answered by mocks (see below)
+npm run dev        # http://localhost:5173
 ```
+
+Environment variables are documented with sample values in `.env.example`. Defaults live in the
+committed `.env`, `.env.development` and `.env.production`; put your own overrides in
+`.env.development.local` (git-ignored), e.g. `VITE_API_PROXY_TARGET=http://localhost:8000` when
+your Go API runs on 8000. All `VITE_*` values reach the browser, so never put secrets in them.
 
 | Script   | What it does                                      |
 | -------- | ------------------------------------------------- |
@@ -122,24 +127,39 @@ await apiPost<MessageResponse>('/v1/users', body)
 
 ## Mock API
 
-Each service exports one async function per endpoint. While an endpoint isn't wired, its real
-lines are commented out and the function returns mock data instead:
+Pages never hold data: anything a screen shows comes from a service, even before its endpoint
+exists. Until then the service function returns mock data, and swapping in the real call later
+doesn't touch the page.
+
+| Service                | Status                                   |
+| ---------------------- | ---------------------------------------- |
+| `authService`          | Live                                     |
+| `userService`          | Live                                     |
+| `mosqueProfileService` | Live                                     |
+| `prayerTimeService`    | Mock (computed on device per PRD, E4-01) |
+| `screenService`        | Mock (`GET /screens`, E9-02)             |
+| `activityService`      | Mock (activity log, E2-05)               |
+
+Mock in the shape the API will return (timestamps, ids), not display text; pages format it.
+Pattern:
 
 ```ts
-export async function listUsers(): Promise<User[]> {
-  // const resp = await apiGet<DataResponse<User[]>>('/v1/users')
+export async function listSlides(): Promise<Slide[]> {
+  // const resp = await apiGet<DataResponse<Slide[]>>('/v1/slides')
   // return resp.data
-  return MOCK_USERS
+  return MOCK_SLIDES // in a `--- Mock ---` section at the bottom of the file
 }
 ```
 
-- **Go live:** uncomment the real lines and delete the mock line. Delete the `--- Mock ---` section
-  at the bottom of the file once nothing uses it.
-- Mock data (`MOCK_USERS`, accounts and `MOCK_PASSWORD` in `authService.ts`) lives in memory and
-  resets on reload.
-- Biome warns (but does not delete) unused `apiGet` / `apiPost` imports while a file is fully
-  mocked. TypeScript's own unused checks are off for this reason; Biome covers them.
-- Tests never use these mocks: `src/test/setup.ts` swaps every service for the strict fakes in
-  `src/test/fakeApi.ts`, so tests pass whether a service is mocked or live. Add a fake there for
-  each new service.
-- Mocks ship in the bundle: make sure every function is live before a production release.
+- Biome only warns (and keeps) the unused `apiGet` / `apiPost` imports while a file is mocked;
+  TypeScript's own unused checks are off for this reason.
+- Tests never use these mocks: `src/test/setup.ts` swaps every service for the fakes in
+  `src/test/fakeApi.ts`. Add a fake there for each new service.
+- Mocks ship in the bundle: make sure nothing is mocked before a production release.
+
+## Running against the Go API
+
+1. From the repo root: `go run ./cmd/http` (reads `config.yaml`; check `curl localhost:<port>/health`).
+2. If the API doesn't listen on 3000, set `VITE_API_PROXY_TARGET=http://localhost:<port>` in
+   `web/.env.development.local` and restart `npm run dev`.
+3. Log in with an account from that database. Contracts: `docs/openapi.yaml`.

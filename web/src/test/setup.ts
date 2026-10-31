@@ -21,6 +21,16 @@ HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement) {
 // (vi.mock is hoisted above imports, so the factories load the fakes themselves.)
 vi.mock('@/services/authService', async () => (await import('./fakeApi')).fakeAuthService)
 vi.mock('@/services/userService', async () => (await import('./fakeApi')).fakeUserService)
+vi.mock(
+  '@/services/mosqueProfileService',
+  async () => (await import('./fakeApi')).fakeMosqueProfileService,
+)
+vi.mock(
+  '@/services/prayerTimeService',
+  async () => (await import('./fakeApi')).fakePrayerTimeService,
+)
+vi.mock('@/services/screenService', async () => (await import('./fakeApi')).fakeScreenService)
+vi.mock('@/services/activityService', async () => (await import('./fakeApi')).fakeActivityService)
 
 afterEach(() => {
   cleanup()

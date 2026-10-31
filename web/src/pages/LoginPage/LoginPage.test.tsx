@@ -42,7 +42,7 @@ describe('LoginPage', () => {
 
     await logIn('0812-3456-1001', FAKE_PASSWORD)
 
-    expect(await screen.findByText(/Assalamu'alaikum · Takmir/)).toBeInTheDocument()
+    expect(await screen.findByText(/Assalamu'alaikum, Hasan Basri · Takmir/)).toBeInTheDocument()
   })
 
   it('returns to the page that asked for login', async () => {
