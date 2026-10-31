@@ -31,23 +31,44 @@ func main() {
 		cfg.App.Logger.Level,
 	)
 
-	// Create and start server
-	server := httpdelivery.NewHttpServer(cfg)
-	go server.ListenAndServe()
+	// Wire database, cache, repositories, usecases, controller and middleware
+	h, cleanup, err := newHandlers(context.Background(), cfg)
+	if err != nil {
+		log.Fatalf("error wiring dependencies: %v", err)
+	}
 
-	// Handle graceful shutdown
-	handleGracefulShutdown(cfg, server)
+	// Create and start server
+	server := httpdelivery.NewHttpServer(cfg, h.controller, h.auth)
+	serverErr := make(chan error, 1)
+	go func() {
+		serverErr <- server.ListenAndServe()
+	}()
+
+	// Run until a shutdown signal arrives or the server fails
+	err = waitForShutdown(cfg, server, serverErr)
+	cleanup()
+	if err != nil {
+		log.Fatalf("error running HTTP server: %v", err)
+	}
 }
 
-func handleGracefulShutdown(cfg *config.Schema, server httpdelivery.ServerItf) {
-	// Wait for interrupt signal
+// waitForShutdown blocks until SIGINT/SIGTERM, then stops the server gracefully.
+// It returns early with the server's error when the server stops on its own.
+func waitForShutdown(cfg *config.Schema, server httpdelivery.ServerItf, serverErr <-chan error) error {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
-	<-quit
+
+	select {
+	case err := <-serverErr:
+		return err
+	case <-quit:
+	}
 
 	// Create shutdown context with timeout
 	ctx, cancel := context.WithTimeout(context.Background(), cfg.App.HTTPServer.GracefulTimeout)
 	defer cancel()
 
 	server.Stop(ctx)
+
+	return nil
 }

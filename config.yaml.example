@@ -16,4 +16,27 @@ app:
     level: debug
     debug: true
 
+  # driver: sqlite | postgres
+  #   sqlite:   dsn: masjid.db (WAL, foreign keys and busy timeout are set automatically)
+  #   postgres: dsn: postgres://user:pass@localhost:5432/masjid_digital?sslmode=disable
+  database:
+    driver: sqlite
+    dsn: masjid.db
+    migrate_dsn: "" # optional: separate user allowed to change the schema, e.g. postgres://migrator:pass@...; empty uses dsn
+    max_open_conns: 0 # 0 = driver default
+    max_idle_conns: 0
+    conn_max_lifetime: 0s
+    auto_migrate: true # apply pending migrations on startup; disable to run `go run ./cmd/migrate up` yourself
+
+  auth:
+    jwt_secret: "" # required, at least 32 bytes; generate one with: openssl rand -base64 32
+    token_ttl: 24h
+
+  # driver: memory | redis
+  #   memory: no extra service; keys are lost on restart and not shared between instances
+  #   redis:  dsn: redis://:password@localhost:6379/0 (also Valkey, Dragonfly, KeyDB)
+  cache:
+    driver: memory
+    dsn: ""
+
 client: {}
