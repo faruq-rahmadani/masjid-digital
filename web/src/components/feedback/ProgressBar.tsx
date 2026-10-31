@@ -1,4 +1,4 @@
-import { cn } from '@/lib/cn'
+import { cn } from '@/utils/cn'
 
 type ProgressBarProps = {
   value: number
@@ -29,8 +29,8 @@ export function ProgressBar({
       max={max}
       aria-label={label}
       className={cn(
-        'h-2 w-full appearance-none overflow-hidden rounded-full bg-line-soft',
-        '[&::-moz-progress-bar]:rounded-full [&::-webkit-progress-bar]:bg-line-soft [&::-webkit-progress-value]:rounded-full',
+        'bg-line-soft h-2 w-full appearance-none overflow-hidden rounded-full',
+        '[&::-webkit-progress-bar]:bg-line-soft [&::-moz-progress-bar]:rounded-full [&::-webkit-progress-value]:rounded-full',
         fills[tone],
         className,
       )}

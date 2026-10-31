@@ -1,5 +1,5 @@
 import type { ComponentProps, ReactNode } from 'react'
-import { cn } from '@/lib/cn'
+import { cn } from '@/utils/cn'
 
 type CheckboxProps = Omit<ComponentProps<'input'>, 'type' | 'size'> & {
   label: ReactNode
@@ -11,13 +11,13 @@ export function Checkbox({ label, size = 'md', className, ...props }: CheckboxPr
   return (
     <label
       className={cn(
-        'inline-flex min-h-touch cursor-pointer items-center gap-2 text-sm font-semibold text-ink',
+        'min-h-touch text-ink inline-flex cursor-pointer items-center gap-2 text-sm font-semibold',
         className,
       )}
     >
       <input
         type="checkbox"
-        className={cn('shrink-0 accent-brand', size === 'md' ? 'size-5' : 'size-5.5')}
+        className={cn('accent-brand shrink-0', size === 'md' ? 'size-5' : 'size-5.5')}
         {...props}
       />
       {label}

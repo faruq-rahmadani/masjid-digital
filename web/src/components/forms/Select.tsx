@@ -1,8 +1,8 @@
 import { ChevronDown } from 'lucide-react'
 import type { ComponentProps } from 'react'
-import { cn } from '@/lib/cn'
-import { controlBase, controlSizes, type ControlSize } from './control-styles'
-import { useFieldControl } from './field-context'
+import { type ControlSize, controlBase, controlSizes } from '@/components/forms/control-styles'
+import { useFieldControl } from '@/components/forms/field-context'
+import { cn } from '@/utils/cn'
 
 type SelectProps = Omit<ComponentProps<'select'>, 'size'> & { size?: ControlSize | 'pill' }
 
@@ -22,7 +22,7 @@ export function Select({ size = 'md', className, children, ...props }: SelectPro
       </select>
       <ChevronDown
         aria-hidden
-        className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-ink-muted"
+        className="text-ink-muted pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2"
       />
     </div>
   )

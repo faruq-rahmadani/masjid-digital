@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react'
 import { Link } from 'react-router'
-import { cn } from '@/lib/cn'
+import { cn } from '@/utils/cn'
 
 type TextLinkProps = ComponentProps<typeof Link> & { size?: 'xs' | 'sm' }
 
@@ -9,7 +9,7 @@ export function TextLink({ size = 'xs', className, ...props }: TextLinkProps) {
   return (
     <Link
       className={cn(
-        'font-semibold text-ink underline decoration-line underline-offset-2 hover:decoration-ink',
+        'text-ink decoration-line hover:decoration-ink font-semibold underline underline-offset-2',
         size === 'xs' ? 'text-xs' : 'text-sm',
         className,
       )}

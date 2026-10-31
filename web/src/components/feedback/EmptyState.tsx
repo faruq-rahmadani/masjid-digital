@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { cn } from '@/lib/cn'
+import { cn } from '@/utils/cn'
 
 type EmptyStateProps = {
   title: ReactNode
@@ -12,12 +12,12 @@ export function EmptyState({ title, description, action, className }: EmptyState
   return (
     <div
       className={cn(
-        'flex flex-col items-center gap-1 rounded-xl border border-dashed border-line px-6 py-8 text-center',
+        'border-line flex flex-col items-center gap-1 rounded-xl border border-dashed px-6 py-8 text-center',
         className,
       )}
     >
       <p className="text-base font-bold">{title}</p>
-      {description && <p className="text-xs text-pretty text-ink-muted">{description}</p>}
+      {description && <p className="text-ink-muted text-xs text-pretty">{description}</p>}
       {action && <div className="mt-3">{action}</div>}
     </div>
   )

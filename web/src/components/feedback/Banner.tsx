@@ -1,7 +1,7 @@
 import { X } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { cn } from '@/lib/cn'
-import { toneIcons, type FeedbackTone } from './tone-icons'
+import { type FeedbackTone, toneIcons } from '@/components/feedback/tone-icons'
+import { cn } from '@/utils/cn'
 
 const tones: Record<FeedbackTone, { box: string; icon: string }> = {
   info: { box: 'bg-track text-ink', icon: 'text-ink-soft' }, // mode lihat saja

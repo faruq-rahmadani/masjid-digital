@@ -1,8 +1,9 @@
-import { initials } from '@/lib/format'
-import { cn } from '@/lib/cn'
+import { cn } from '@/utils/cn'
+import { initials } from '@/utils/format/text'
 
 const tones = {
-  brand: 'bg-brand-2 text-on-brand',
+  brand: 'bg-brand text-on-brand', // super admin on white
+  'brand-2': 'bg-brand-2 text-on-brand', // on the green hero
   success: 'bg-income-soft text-income',
   gold: 'bg-gold-soft text-gold-ink',
   neutral: 'bg-line-soft text-ink-muted',
@@ -22,7 +23,7 @@ export function Avatar({ name, tone = 'brand', size = 'md', className }: AvatarP
       aria-hidden
       className={cn(
         'inline-flex shrink-0 items-center justify-center rounded-full font-bold',
-        size === 'md' ? 'size-10 text-md' : 'size-touch text-base',
+        size === 'md' ? 'text-md size-10' : 'size-touch text-base',
         tones[tone],
         className,
       )}

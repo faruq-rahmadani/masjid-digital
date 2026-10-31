@@ -1,9 +1,9 @@
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { useToast } from './toast-context'
-import type { ToastInput } from './toast-context'
-import { ToastProvider } from './ToastProvider'
+import { ToastProvider } from '@/components/feedback/ToastProvider'
+import type { ToastInput } from '@/components/feedback/toast-context'
+import { useToast } from '@/components/feedback/toast-context'
 
 function Trigger({ input }: { input: ToastInput }) {
   const toast = useToast()

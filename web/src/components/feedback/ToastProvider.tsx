@@ -1,8 +1,8 @@
 import { X } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { cn } from '@/lib/cn'
-import { ToastContext, type ToastInput } from './toast-context'
-import { toneIcons, type FeedbackTone } from './tone-icons'
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ToastContext, type ToastInput } from '@/components/feedback/toast-context'
+import { type FeedbackTone, toneIcons } from '@/components/feedback/tone-icons'
+import { cn } from '@/utils/cn'
 
 type Toast = ToastInput & { id: number; tone: FeedbackTone }
 
@@ -78,12 +78,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {/* Always mounted so screen readers register the live region before the first toast. */}
       <output
         aria-live="polite"
-        className="pointer-events-none fixed inset-x-0 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-50 mx-auto flex max-w-app flex-col gap-2 px-5"
+        className="max-w-app pointer-events-none fixed inset-x-0 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-50 mx-auto flex flex-col gap-2 px-5"
       >
         {toasts.map((toast) => {
           const Icon = toneIcons[toast.tone]
           const surface = surfaces[toast.tone]
           return (
+            // biome-ignore lint/a11y/noStaticElementInteractions: hover and focus only pause the timer (WCAG 2.2.1); the toast's buttons are the controls
             <div
               key={toast.id}
               role={toast.tone === 'danger' ? 'alert' : undefined}
@@ -92,7 +93,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               onFocus={() => pause(toast.id)}
               onBlur={() => schedule(toast)}
               className={cn(
-                'pointer-events-auto flex animate-toast-in items-start gap-3 rounded-xl py-3 pr-2 pl-4 shadow-toast',
+                'animate-toast-in shadow-toast pointer-events-auto flex items-start gap-3 rounded-xl py-3 pr-2 pl-4',
                 surface.box,
               )}
             >

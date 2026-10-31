@@ -1,7 +1,7 @@
 import type { ComponentProps } from 'react'
-import { cn } from '@/lib/cn'
-import { controlBase, controlSizes, type ControlSize } from './control-styles'
-import { useFieldControl } from './field-context'
+import { type ControlSize, controlBase, controlSizes } from '@/components/forms/control-styles'
+import { useFieldControl } from '@/components/forms/field-context'
+import { cn } from '@/utils/cn'
 
 type InputProps = Omit<ComponentProps<'input'>, 'size'> & { size?: ControlSize }
 

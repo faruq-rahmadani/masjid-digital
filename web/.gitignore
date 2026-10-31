@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Mode env files hold public VITE_* defaults and are committed (the repo root ignores .env*).
+# Local overrides (*.local) stay ignored.
+!.env
+!.env.development
+!.env.production

@@ -1,4 +1,4 @@
-import { cn } from '@/lib/cn'
+import { cn } from '@/utils/cn'
 
 const tones = {
   success: 'bg-income',
@@ -14,7 +14,7 @@ type StatusDotProps = {
   className?: string
 }
 
-// 10px dot for compact status (Beranda TV card). Never the only signal: pair it with text.
+// 10px dot for compact status (Home TV card). Never the only signal: pair it with text.
 export function StatusDot({ tone, label, className }: StatusDotProps) {
   return (
     <span className={cn('inline-flex shrink-0', className)}>

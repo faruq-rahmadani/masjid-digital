@@ -1,6 +1,6 @@
 import { useId, useState } from 'react'
-import { cn } from '@/lib/cn'
-import { formatNumber, type CashFlow } from '@/lib/format'
+import { cn } from '@/utils/cn'
+import { type CashFlow, formatNumber } from '@/utils/format/money'
 
 type MoneyInputProps = {
   label?: string
@@ -31,8 +31,8 @@ export function MoneyInput({
   const [focused, setFocused] = useState(false)
 
   return (
-    <div className={cn('rounded-xl bg-card px-4 py-4.5 text-center', className)}>
-      <label htmlFor={id} className="text-xs font-semibold text-ink-soft">
+    <div className={cn('bg-card rounded-xl px-4 py-4.5 text-center', className)}>
+      <label htmlFor={id} className="text-ink-soft text-xs font-semibold">
         {label}
       </label>
       <div
@@ -64,8 +64,8 @@ export function MoneyInput({
             width: `${Math.max(1, (value === null ? 1 : formatNumber(value).length) + 0.5)}ch`,
           }}
           className={cn(
-            'min-w-0 bg-transparent text-left outline-none placeholder:text-line',
-            focused && 'underline decoration-gold decoration-2 underline-offset-8',
+            'placeholder:text-line min-w-0 bg-transparent text-left outline-none',
+            focused && 'decoration-gold underline decoration-2 underline-offset-8',
           )}
         />
       </div>

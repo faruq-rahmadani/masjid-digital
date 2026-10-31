@@ -1,6 +1,6 @@
 import { Plus, Upload } from 'lucide-react'
 import type { ComponentProps, ReactNode } from 'react'
-import { cn } from '@/lib/cn'
+import { cn } from '@/utils/cn'
 
 type UploadTileProps = Omit<ComponentProps<'input'>, 'type' | 'onChange'> & {
   onFiles: (files: File[]) => void
@@ -22,10 +22,10 @@ export function UploadTile({
   return (
     <label
       className={cn(
-        'flex cursor-pointer flex-col items-center justify-center border-2 border-dashed border-dash bg-card text-ink',
-        'focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-gold',
+        'border-dash bg-card text-ink flex cursor-pointer flex-col items-center justify-center border-2 border-dashed',
+        'focus-within:outline-gold focus-within:outline-3 focus-within:outline-offset-2',
         variant === 'tile'
-          ? 'size-18 rounded-md text-ink-soft'
+          ? 'text-ink-soft size-18 rounded-md'
           : 'gap-1.5 rounded-xl p-4.5 text-center',
         className,
       )}
@@ -48,7 +48,7 @@ export function UploadTile({
         <>
           <Upload aria-hidden className="size-6" />
           <span className="text-base font-bold">{label}</span>
-          {hint && <span className="text-xs text-ink-muted">{hint}</span>}
+          {hint && <span className="text-ink-muted text-xs">{hint}</span>}
         </>
       )}
     </label>

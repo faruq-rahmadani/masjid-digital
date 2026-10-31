@@ -1,5 +1,5 @@
-import { useId, useRef, type KeyboardEvent, type ReactNode } from 'react'
-import { cn } from '@/lib/cn'
+import { type KeyboardEvent, type ReactNode, useId, useRef } from 'react'
+import { cn } from '@/utils/cn'
 
 export type TabItem<T extends string> = { value: T; label: ReactNode; content: ReactNode }
 
@@ -53,7 +53,7 @@ export function Tabs<T extends string>({ label, items, value, onChange, classNam
       <div
         role="tablist"
         aria-label={label}
-        className="grid auto-cols-fr grid-flow-col gap-1.5 rounded-xl bg-track p-1"
+        className="bg-track grid auto-cols-fr grid-flow-col gap-1.5 rounded-xl p-1"
       >
         {items.map((item, index) => {
           const selected = index === activeIndex
@@ -72,8 +72,8 @@ export function Tabs<T extends string>({ label, items, value, onChange, classNam
               onClick={() => onChange(item.value)}
               onKeyDown={onKeyDown}
               className={cn(
-                'h-11 rounded-md text-md font-semibold transition-colors',
-                selected ? 'bg-brand font-bold text-on-brand' : 'text-ink-soft',
+                'text-md h-11 rounded-md font-semibold transition-colors',
+                selected ? 'bg-brand text-on-brand font-bold' : 'text-ink-soft',
               )}
             >
               {item.label}

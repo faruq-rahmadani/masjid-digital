@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { Banner } from './Banner'
+import { Banner } from '@/components/feedback/Banner'
 
 describe('Banner', () => {
   it('renders title and body, with no close button unless dismissible', () => {

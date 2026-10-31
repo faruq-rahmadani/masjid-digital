@@ -1,5 +1,5 @@
-import { cn } from '@/lib/cn'
-import { formatRupiah, formatSignedAmount, type CashFlow } from '@/lib/format'
+import { cn } from '@/utils/cn'
+import { type CashFlow, formatRupiah, formatSignedAmount } from '@/utils/format/money'
 
 type MoneyProps = {
   /** Integer Rupiah. */

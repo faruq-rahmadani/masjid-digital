@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
-import { cn } from '@/lib/cn'
+import { cn } from '@/utils/cn'
 
 const tones = {
+  brand: 'bg-brand text-on-brand', // Super admin
   success: 'bg-income-soft text-income', // Online, Takmir
   danger: 'bg-expense-soft text-expense', // Offline
   gold: 'bg-gold-soft text-gold-ink', // BARU, PENTING, Bendahara

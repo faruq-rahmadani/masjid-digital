@@ -1,7 +1,7 @@
 import { Check } from 'lucide-react'
 import { useState } from 'react'
-import { cn } from '@/lib/cn'
-import { buttonStyles } from './button-styles'
+import { buttonStyles } from '@/components/actions/button-styles'
+import { cn } from '@/utils/cn'
 
 type CopyFieldProps = {
   value: string
@@ -18,7 +18,7 @@ export function CopyField({ value, tone = 'default', className }: CopyFieldProps
     <div
       className={cn(
         'flex items-center gap-2 rounded-lg p-1.5 pl-3',
-        tone === 'brand' ? 'bg-brand-2 text-on-brand' : 'border border-line bg-card',
+        tone === 'brand' ? 'bg-brand-2 text-on-brand' : 'border-line bg-card border',
         className,
       )}
     >

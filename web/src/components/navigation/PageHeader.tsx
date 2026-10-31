@@ -5,7 +5,7 @@ import { IconButton } from '@/components/actions/IconButton'
 
 type PageHeaderProps = {
   title: string
-  /** Where the back button goes; defaults to the previous page, falling back to Beranda. */
+  /** Where the back button goes; defaults to the previous page, falling back to Home. */
   backTo?: string
   /** `close` (×) for full-screen forms such as Tambah Transaksi. */
   dismiss?: 'back' | 'close'
@@ -24,7 +24,7 @@ export function PageHeader({ title, backTo, dismiss = 'back', meta, actions }: P
   }
 
   return (
-    <header className="flex items-center gap-3 px-5 py-5 pt-safe">
+    <header className="pt-safe-5 flex items-center gap-3 px-5 pb-5">
       <IconButton
         label={dismiss === 'back' ? 'Kembali' : 'Tutup'}
         icon={dismiss === 'back' ? <ChevronLeft /> : <X />}
@@ -32,7 +32,7 @@ export function PageHeader({ title, backTo, dismiss = 'back', meta, actions }: P
       />
       <div className="min-w-0 flex-1">
         <h1 className="truncate text-xl font-extrabold">{title}</h1>
-        {meta && <p className="text-xs text-ink-muted">{meta}</p>}
+        {meta && <p className="text-ink-muted text-xs">{meta}</p>}
       </div>
       {actions}
     </header>

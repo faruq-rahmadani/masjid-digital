@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { describe, expect, it } from 'vitest'
-import { SegmentedControl } from './SegmentedControl'
+import { SegmentedControl } from '@/components/forms/SegmentedControl'
 
 function Harness() {
   const [value, setValue] = useState<'in' | 'out'>('in')
