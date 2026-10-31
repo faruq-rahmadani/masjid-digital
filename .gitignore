@@ -42,3 +42,8 @@ Thumbs.db
 
 # Local config (copied from config.yaml.example)
 /config.yaml
+
+# Local SQLite database
+*.db
+*.db-shm
+*.db-wal
