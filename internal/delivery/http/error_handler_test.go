@@ -58,7 +58,7 @@ func TestErrorHandler(t *testing.T) {
 			name:       "echo body too large",
 			err:        echo.ErrStatusRequestEntityTooLarge,
 			wantStatus: http.StatusRequestEntityTooLarge,
-			wantBody:   `{"code":"INVALID_INPUT","message":"Request Entity Too Large"}`,
+			wantBody:   `{"code":"INVALID_INPUT","message":"ukuran request terlalu besar"}`,
 		},
 		{
 			name:       "echo internal error hides its message",

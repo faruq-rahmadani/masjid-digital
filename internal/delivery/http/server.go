@@ -25,6 +25,14 @@ type Server struct {
 // NewHttpServer creates a new HTTP server instance serving ctrl's handlers,
 // with auth guarding the routes that need a logged in user
 func NewHttpServer(cfg *config.Schema, ctrl *controller.Controller, auth *middleware.Auth) ServerItf {
+	e := newEcho(ctrl, auth)
+	setServerObj(e, cfg.App.HTTPServer)
+
+	return &Server{echo: e}
+}
+
+// newEcho returns the Echo instance with its middlewares and routes
+func newEcho(ctrl *controller.Controller, auth *middleware.Auth) *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
 	e.HidePort = true
@@ -32,13 +40,17 @@ func NewHttpServer(cfg *config.Schema, ctrl *controller.Controller, auth *middle
 
 	e.Use(echomiddleware.Recover())
 	e.Use(echomiddleware.RequestID())
-	e.Use(echomiddleware.BodyLimit("1M"))
+	e.Use(echomiddleware.BodyLimitWithConfig(echomiddleware.BodyLimitConfig{
+		Limit: defaultBodyLimit,
+		// uploads set their own, larger limit on the route
+		Skipper: func(c echo.Context) bool {
+			return largeBodyRoutes[c.Path()]
+		},
+	}))
 
 	registerRouters(e, ctrl, auth)
 
-	setServerObj(e, cfg.App.HTTPServer)
-
-	return &Server{echo: e}
+	return e
 }
 
 // ListenAndServe starts the HTTP server and blocks until it is stopped.

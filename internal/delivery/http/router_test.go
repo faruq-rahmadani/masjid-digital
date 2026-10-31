@@ -1,7 +1,9 @@
 package http
 
 import (
+	"bytes"
 	"errors"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -16,7 +18,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-// newTestRouter serves the real routes. A bearer token equal to a role name logs
+// newTestRouter serves the real routes and middlewares. A bearer token equal to a role name logs
 // in as that role; usecases succeed with empty results, so a request that passes
 // auth and ACL answers 2xx.
 func newTestRouter(t *testing.T) *echo.Echo {
@@ -45,33 +47,52 @@ func newTestRouter(t *testing.T) *echo.Echo {
 	auth.EXPECT().Login(gomock.Any(), gomock.Any()).Return(&domain.LoginResponse{}, nil).AnyTimes()
 	auth.EXPECT().Logout(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
-	e := echo.New()
-	e.HTTPErrorHandler = newErrorHandler()
-	registerRouters(e, controller.NewController(users, auth), middleware.NewAuth(authenticator))
-	return e
+	mosqueProfile := mock.NewMockMosqueProfileUsecaseItf(ctrl)
+	mosqueProfile.EXPECT().Get(gomock.Any()).Return(domain.MosqueProfile{}, nil).AnyTimes()
+	mosqueProfile.EXPECT().Update(gomock.Any(), gomock.Any()).Return(domain.MosqueProfile{}, nil).AnyTimes()
+	mosqueProfile.EXPECT().GetLogo(gomock.Any()).Return(domain.MosqueLogo{}, nil).AnyTimes()
+	mosqueProfile.EXPECT().UpdateLogo(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mosqueProfile.EXPECT().DeleteLogo(gomock.Any()).Return(nil).AnyTimes()
+
+	return newEcho(controller.NewController(users, auth, mosqueProfile), middleware.NewAuth(authenticator))
 }
 
 // TestRouteAccess pins who may call each route, so a route added without its
 // ACL fails here
 func TestRouteAccess(t *testing.T) {
 	const (
-		public    = "public"
-		anyUser   = "any logged in user"
-		superOnly = "super admin only"
+		public      = "public"
+		anyUser     = "any logged in user"
+		superOnly   = "super admin only"
+		superTakmir = "super admin or takmir"
 	)
+
+	// a logo upload, so the route reaches its handler
+	var upload bytes.Buffer
+	form := multipart.NewWriter(&upload)
+	part, _ := form.CreateFormFile("file", "logo.png")
+	part.Write([]byte("\x89PNG"))
+	form.Close()
 
 	routes := []struct {
 		method, path, body, access string
+		contentType                string // JSON when empty
 	}{
-		{http.MethodGet, "/health", "", public},
-		{http.MethodPost, "/api/v1/auth/login", `{}`, public},
-		{http.MethodPost, "/api/v1/auth/logout", "", anyUser},
-		{http.MethodPut, "/api/v1/auth/password", `{}`, anyUser},
-		{http.MethodPost, "/api/v1/users", `{}`, superOnly},
-		{http.MethodGet, "/api/v1/users", "", superOnly},
-		{http.MethodGet, "/api/v1/users/1", "", superOnly},
-		{http.MethodPut, "/api/v1/users/1", `{}`, superOnly},
-		{http.MethodPut, "/api/v1/users/1/password", `{}`, superOnly},
+		{http.MethodGet, "/health", "", public, ""},
+		{http.MethodPost, "/api/v1/auth/login", `{}`, public, ""},
+		{http.MethodPost, "/api/v1/auth/logout", "", anyUser, ""},
+		{http.MethodGet, "/api/v1/auth/profile", "", anyUser, ""},
+		{http.MethodPut, "/api/v1/auth/password", `{}`, anyUser, ""},
+		{http.MethodPost, "/api/v1/users", `{}`, superOnly, ""},
+		{http.MethodGet, "/api/v1/users", "", superOnly, ""},
+		{http.MethodGet, "/api/v1/users/1", "", superOnly, ""},
+		{http.MethodPut, "/api/v1/users/1", `{}`, superOnly, ""},
+		{http.MethodPut, "/api/v1/users/1/password", `{}`, superOnly, ""},
+		{http.MethodGet, "/api/v1/mosque-profile", "", anyUser, ""},
+		{http.MethodPut, "/api/v1/mosque-profile", `{}`, superTakmir, ""},
+		{http.MethodGet, "/api/v1/mosque-profile/logo", "", anyUser, ""},
+		{http.MethodPut, "/api/v1/mosque-profile/logo", upload.String(), superTakmir, form.FormDataContentType()},
+		{http.MethodDelete, "/api/v1/mosque-profile/logo", "", superTakmir, ""},
 	}
 
 	callers := []struct {
@@ -98,12 +119,18 @@ func TestRouteAccess(t *testing.T) {
 					want = http.StatusUnauthorized
 				case route.access == anyUser || caller.role == domain.UserRoleSuperAdmin:
 					want = http.StatusOK
+				case route.access == superTakmir && caller.role == domain.UserRoleTakmir:
+					want = http.StatusOK
 				default:
 					want = http.StatusForbidden
 				}
 
 				req := httptest.NewRequest(route.method, route.path, strings.NewReader(route.body))
-				req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+				contentType := route.contentType
+				if contentType == "" {
+					contentType = echo.MIMEApplicationJSON
+				}
+				req.Header.Set(echo.HeaderContentType, contentType)
 				if caller.token != "" {
 					req.Header.Set(echo.HeaderAuthorization, "Bearer "+caller.token)
 				}
@@ -120,5 +147,45 @@ func TestRouteAccess(t *testing.T) {
 				}
 			})
 		}
+	}
+}
+
+// TestBodyLimits checks uploads get a larger body limit than every other route
+func TestBodyLimits(t *testing.T) {
+	upload := func(size int) (string, string) {
+		var body bytes.Buffer
+		form := multipart.NewWriter(&body)
+		part, _ := form.CreateFormFile("file", "logo.png")
+		part.Write(make([]byte, size))
+		form.Close()
+		return body.String(), form.FormDataContentType()
+	}
+
+	logo2MB, logoType := upload(2 << 20)
+	logo4MB, _ := upload(4 << 20)
+
+	tests := []struct {
+		name, path, body, contentType string
+		want                          int
+	}{
+		{"JSON over the default limit", "/api/v1/mosque-profile", `{"name":"` + strings.Repeat("a", 2<<20) + `"}`, echo.MIMEApplicationJSON, http.StatusRequestEntityTooLarge},
+		{"logo of 2 MB", "/api/v1/mosque-profile/logo", logo2MB, logoType, http.StatusOK},
+		{"logo over the upload limit", "/api/v1/mosque-profile/logo", logo4MB, logoType, http.StatusRequestEntityTooLarge},
+	}
+
+	e := newTestRouter(t)
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodPut, tt.path, strings.NewReader(tt.body))
+			req.Header.Set(echo.HeaderContentType, tt.contentType)
+			req.Header.Set(echo.HeaderAuthorization, "Bearer takmir")
+			rec := httptest.NewRecorder()
+			e.ServeHTTP(rec, req)
+
+			if rec.Code != tt.want {
+				t.Errorf("status = %d (%s), want %d", rec.Code, strings.TrimSpace(rec.Body.String()), tt.want)
+			}
+		})
 	}
 }
