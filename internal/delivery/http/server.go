@@ -8,12 +8,13 @@ import (
 
 	"github.com/faruq-rahmadani/masjid-digital/internal/config"
 	"github.com/faruq-rahmadani/masjid-digital/internal/delivery/http/controller"
+	"github.com/faruq-rahmadani/masjid-digital/internal/delivery/http/middleware"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	echomiddleware "github.com/labstack/echo/v4/middleware"
 )
 
 type ServerItf interface {
-	ListenAndServe()
+	ListenAndServe() error
 	Stop(ctx context.Context)
 }
 
@@ -21,32 +22,36 @@ type Server struct {
 	echo *echo.Echo
 }
 
-// NewHttpServer creates a new HTTP server instance
-func NewHttpServer(cfg *config.Schema) ServerItf {
+// NewHttpServer creates a new HTTP server instance serving ctrl's handlers,
+// with auth guarding the routes that need a logged in user
+func NewHttpServer(cfg *config.Schema, ctrl *controller.Controller, auth *middleware.Auth) ServerItf {
 	e := echo.New()
 	e.HideBanner = true
 	e.HidePort = true
+	e.HTTPErrorHandler = newErrorHandler()
 
-	e.Use(middleware.Recover())
-	e.Use(middleware.RequestID())
-	e.Use(middleware.BodyLimit("1M"))
+	e.Use(echomiddleware.Recover())
+	e.Use(echomiddleware.RequestID())
+	e.Use(echomiddleware.BodyLimit("1M"))
 
-	ctrl := controller.NewController()
-
-	registerRouters(e, ctrl)
+	registerRouters(e, ctrl, auth)
 
 	setServerObj(e, cfg.App.HTTPServer)
 
 	return &Server{echo: e}
 }
 
-// ListenAndServe starts the HTTP server and blocks until it is stopped
-func (s *Server) ListenAndServe() {
+// ListenAndServe starts the HTTP server and blocks until it is stopped.
+// It returns nil after Stop, or the error that kept the server from running,
+// e.g. the port is already in use.
+func (s *Server) ListenAndServe() error {
 	log.Printf("starting HTTP server on %s", s.echo.Server.Addr)
 
 	if err := s.echo.StartServer(s.echo.Server); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		log.Printf("error starting HTTP server: %v", err)
+		return err
 	}
+
+	return nil
 }
 
 // Stop gracefully shuts down the server

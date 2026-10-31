@@ -1,7 +1,10 @@
 package controller
 
-type Controller struct{}
+type Controller struct {
+	user UserUsecaseItf
+	auth AuthUsecaseItf
+}
 
-func NewController() *Controller {
-	return &Controller{}
+func NewController(user UserUsecaseItf, auth AuthUsecaseItf) *Controller {
+	return &Controller{user: user, auth: auth}
 }
