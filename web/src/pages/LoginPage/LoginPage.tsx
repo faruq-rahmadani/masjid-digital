@@ -3,7 +3,18 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Navigate, useNavigate, useSearchParams } from 'react-router'
 import { z } from 'zod'
-import { Button, Callout, Checkbox, Field, Input, MosqueLogo, Sheet, Stack } from '@/components'
+import {
+  Button,
+  Callout,
+  Checkbox,
+  Field,
+  Input,
+  MosqueLogo,
+  PasswordInput,
+  Sheet,
+  Stack,
+} from '@/components'
+import { usePublicMosqueLogo, usePublicMosqueProfile } from '@/hooks/useMosqueProfile'
 import { useAuth } from '@/stores/sessionStore'
 
 const schema = z.object({
@@ -20,6 +31,9 @@ function safeNext(next: string | null) {
 // Login (E2-06). OTP WhatsApp from the mockup is P1 (E14-01) and left out for now.
 export function LoginPage() {
   const { session, login } = useAuth()
+  const mosque = usePublicMosqueProfile({ live: false })
+  const logo = usePublicMosqueLogo({ live: false })
+  const mosqueName = mosque.data?.name ?? 'Masjid Digital'
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const [forgotOpen, setForgotOpen] = useState(false)
@@ -46,10 +60,19 @@ export function LoginPage() {
   return (
     <div className="bg-brand -mx-[env(safe-area-inset-left)] flex min-h-dvh flex-col">
       <div className="pt-safe-10 text-on-brand flex flex-1 flex-col items-center justify-center gap-3.5 px-6 pb-10 text-center">
-        <MosqueLogo />
+        {/* Public endpoints (no login). The placeholder mark and product name stand in while
+            loading, and when the profile or logo hasn't been saved yet. */}
+        {logo.data ? (
+          <img
+            src={logo.data}
+            alt={`Logo ${mosqueName}`}
+            className="bg-card size-18 rounded-full object-contain p-1.5"
+          />
+        ) : (
+          <MosqueLogo />
+        )}
         <h1 className="text-2xl font-extrabold">Panel Pengurus</h1>
-        {/* GET /mosque-profile needs a login, so the mosque name can't be shown here yet. */}
-        <p className="text-on-brand-muted text-base">Masjid Digital</p>
+        <p className="text-on-brand-muted text-base">{mosqueName}</p>
       </div>
 
       <form
@@ -72,9 +95,8 @@ export function LoginPage() {
             />
           </Field>
           <Field label="Password" error={errors.password?.message}>
-            <Input
+            <PasswordInput
               size="lg"
-              type="password"
               autoComplete="current-password"
               {...form.register('password')}
             />

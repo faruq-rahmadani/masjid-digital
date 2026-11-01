@@ -179,8 +179,9 @@ only inside a notice `Callout`.
 | ------------------ | --------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | `Field`            | Wraps one control with label, hint and error. | `label`, `hint`, `error`. Wires `id`, `aria-describedby`, `aria-invalid`.                                 |
 | `Input`            | Single-line text, date, number.               | `size`: md 44 · lg 48 (login only).                                                                       |
+| `PasswordInput`    | Every password field.                         | Masked by default, eye button to show/hide. Same props as `Input` (no `type`). |
 | `Textarea`         | Multi-line text.                              | `rows`, `maxLength` + `showCount` ("57 / 200").                                                           |
-| `Select`           | Choose from a list (native picker on phones). | `size`: md · lg · pill (filter bar).                                                                      |
+| `Select`           | Choose one value from a list.                 | `options`, `value`, `onChange`, `size`: md · lg · pill. Styled listbox (not the native menu): opens under the field at full width in the top layer, flips up near the bottom, keyboard and screen-reader ready. With react-hook-form, wrap it in `Controller`. |
 | `SearchInput`      | Filter a list in place.                       | `label` (required).                                                                                       |
 | `MoneyInput`       | Rupiah amount entry.                          | `value: number \| null`, `onChange`, `flow`: in · out, `max`. Digits only, grouped, selects all on focus. |
 | `SegmentedControl` | One value from 2–5 options.                   | `variant`: track (binary type) · split (scale, Hijri −2..+2) · pill (list filters). `tone` per option.    |

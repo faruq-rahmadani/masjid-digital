@@ -16,6 +16,14 @@ HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement) {
   this.dispatchEvent(new Event('close'))
 }
 
+// jsdom hides [popover] elements but has no Popover API to show them (Select's list uses it).
+HTMLElement.prototype.showPopover = function showPopover(this: HTMLElement) {
+  this.style.display = 'block'
+}
+HTMLElement.prototype.hidePopover = function hidePopover(this: HTMLElement) {
+  this.style.display = 'none'
+}
+
 // Tests run against the strict fakes in ./fakeApi, never the network or the quick mocks
 // inside src/services, so they pass whether a service is mocked or live.
 // (vi.mock is hoisted above imports, so the factories load the fakes themselves.)

@@ -2,7 +2,7 @@ import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { ApiError } from '@/api/client'
-import { fakeMosqueProfileService } from '@/test/fakeApi'
+import { FAKE_PASSWORD, fakeMosqueProfileService } from '@/test/fakeApi'
 import { bendahara, renderRoute, superAdmin } from '@/test/render'
 
 const kelola = () => screen.getByRole('navigation', { name: 'Kelola' })
@@ -62,5 +62,25 @@ describe('HomePage', () => {
     renderRoute('/', { as: superAdmin })
 
     expect(await screen.findByRole('heading', { name: 'Masjid Digital' })).toBeInTheDocument()
+  })
+
+  it('changes the own password from Akun saya', async () => {
+    renderRoute('/', { as: bendahara })
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Akun saya' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Ganti password' }))
+    expect(screen.getByRole('dialog', { name: 'Ganti password' })).toBeInTheDocument()
+
+    await userEvent.type(screen.getByLabelText('Password lama'), 'salah-sekali')
+    await userEvent.type(screen.getByLabelText('Password baru'), 'password-baru-1')
+    await userEvent.click(screen.getByRole('button', { name: 'Simpan password' }))
+    expect(await screen.findByText('Password lama salah')).toBeInTheDocument()
+
+    await userEvent.clear(screen.getByLabelText('Password lama'))
+    await userEvent.type(screen.getByLabelText('Password lama'), FAKE_PASSWORD)
+    await userEvent.click(screen.getByRole('button', { name: 'Simpan password' }))
+
+    expect(await screen.findByText('Password diganti')).toBeInTheDocument()
+    expect(screen.queryByRole('dialog', { name: 'Ganti password' })).not.toBeInTheDocument()
   })
 })

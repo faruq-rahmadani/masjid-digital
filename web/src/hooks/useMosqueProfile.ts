@@ -61,22 +61,25 @@ export function useDeleteMosqueLogo() {
   })
 }
 
-// The TV display reads the public endpoints (no login) and runs for days, so it refetches on a
-// timer; a failed refetch keeps the last data on screen.
+// Public endpoints (no login): the TV display and the login screen. The TV runs for days, so by
+// default it refetches on a timer (a failed refetch keeps the last data on screen); pass
+// { live: false } where one read is enough, such as login.
 const TV_REFRESH = { refetchInterval: 5 * 60_000, refetchIntervalInBackground: true } as const
 
-export function usePublicMosqueProfile() {
+type PublicOptions = { live?: boolean }
+
+export function usePublicMosqueProfile({ live = true }: PublicOptions = {}) {
   return useQuery({
     queryKey: mosqueKeys.publicProfile,
     queryFn: () => orNull(mosqueProfileService.getPublicMosqueProfile),
-    ...TV_REFRESH,
+    ...(live && TV_REFRESH),
   })
 }
 
-export function usePublicMosqueLogo() {
+export function usePublicMosqueLogo({ live = true }: PublicOptions = {}) {
   return useQuery({
     queryKey: mosqueKeys.publicLogo,
     queryFn: async () => (await orNull(mosqueProfileService.getPublicMosqueLogo))?.url ?? null,
-    ...TV_REFRESH,
+    ...(live && TV_REFRESH),
   })
 }

@@ -22,11 +22,15 @@ import { ROLES, roleLabels } from '@/utils/auth/roles'
 import { UserRow } from './components/UserRow'
 import { AddUserDrawer } from './drawers/AddUserDrawer'
 import { ChangeRoleDrawer } from './drawers/ChangeRoleDrawer'
+import { EditUserDrawer } from './drawers/EditUserDrawer'
 import { ResetPasswordDrawer } from './drawers/ResetPasswordDrawer'
 import { DeactivateUserModal } from './modals/DeactivateUserModal'
 import { filterUsers, isLastActiveSuperAdmin, sortUsers, type UserFilter } from './utils'
 
-type Dialog = { kind: 'add' } | { kind: 'role' | 'password' | 'deactivate'; user: User } | null
+type Dialog =
+  | { kind: 'add' }
+  | { kind: 'edit' | 'role' | 'password' | 'deactivate'; user: User }
+  | null
 
 const ROLE_FILTERS = [
   { value: 'all', label: 'Semua' },
@@ -68,10 +72,12 @@ export function UsersPage() {
     if (user.status === 'disabled') {
       return [
         { label: 'Aktifkan kembali', onSelect: () => setStatus(user, 'active') },
+        { label: 'Ubah data', onSelect: () => setDialog({ kind: 'edit', user }) },
         { label: 'Atur ulang password', onSelect: () => setDialog({ kind: 'password', user }) },
       ]
     }
     return [
+      { label: 'Ubah data', onSelect: () => setDialog({ kind: 'edit', user }) },
       { label: 'Ubah peran', onSelect: () => setDialog({ kind: 'role', user }), disabled: locked },
       { label: 'Atur ulang password', onSelect: () => setDialog({ kind: 'password', user }) },
       {
@@ -189,6 +195,7 @@ export function UsersPage() {
       </ActionBar>
 
       {dialog?.kind === 'add' && <AddUserDrawer onClose={close} />}
+      {dialog?.kind === 'edit' && <EditUserDrawer user={dialog.user} onClose={close} />}
       {dialog?.kind === 'role' && <ChangeRoleDrawer user={dialog.user} onClose={close} />}
       {dialog?.kind === 'password' && <ResetPasswordDrawer user={dialog.user} onClose={close} />}
       <DeactivateUserModal

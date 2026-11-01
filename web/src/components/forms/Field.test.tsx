@@ -20,9 +20,11 @@ describe('Field', () => {
   it('marks the control invalid and announces the error first', () => {
     render(
       <Field label="Kategori" hint="Pilih satu" error="Kategori wajib diisi">
-        <Select>
-          <option>Infaq Jumat</option>
-        </Select>
+        <Select
+          options={[{ value: 'jumat', label: 'Infaq Jumat' }]}
+          value={undefined}
+          onChange={() => {}}
+        />
       </Field>,
     )
 

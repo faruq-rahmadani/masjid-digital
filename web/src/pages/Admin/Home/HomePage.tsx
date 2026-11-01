@@ -25,13 +25,14 @@ import { canOpen } from '@/utils/auth/permissions'
 import { roleLabels } from '@/utils/auth/roles'
 import { formatActivityTime, formatTimeAgo } from '@/utils/format/date'
 import { AccountDrawer } from './drawers/AccountDrawer'
+import { ChangePasswordDrawer } from './drawers/ChangePasswordDrawer'
 import { formatCountdown, nextPrayer } from './nextPrayer'
 
 // Home, "Beranda" in the UI (E3-02): the hub. Every other screen opens from the role-filtered "Kelola" grid.
 export function HomePage() {
   const session = useSession()
   const mosque = useMosqueProfile()
-  const [accountOpen, setAccountOpen] = useState(false)
+  const [drawer, setDrawer] = useState<'account' | 'password' | null>(null)
   const now = useNow()
   const prayerTimes = usePrayerTimes()
   const next = prayerTimes.data?.length ? nextPrayer(now, prayerTimes.data) : null
@@ -59,7 +60,7 @@ export function HomePage() {
             variant="brand"
             label="Akun saya"
             aria-haspopup="dialog"
-            onClick={() => setAccountOpen(true)}
+            onClick={() => setDrawer('account')}
             icon={<Avatar name={name ?? role} tone="brand-2" />}
           />
         </div>
@@ -134,9 +135,15 @@ export function HomePage() {
         </section>
       </PageBody>
 
-      {accountOpen && (
-        <AccountDrawer session={session} name={name} onClose={() => setAccountOpen(false)} />
+      {drawer === 'account' && (
+        <AccountDrawer
+          session={session}
+          name={name}
+          onChangePassword={() => setDrawer('password')}
+          onClose={() => setDrawer(null)}
+        />
       )}
+      {drawer === 'password' && <ChangePasswordDrawer onClose={() => setDrawer(null)} />}
     </>
   )
 }

@@ -1,4 +1,4 @@
-import { LogOut } from 'lucide-react'
+import { KeyRound, LogOut } from 'lucide-react'
 import { useState } from 'react'
 import { Avatar, Button, Sheet, Stack } from '@/components'
 import { useAuth } from '@/stores/sessionStore'
@@ -8,10 +8,12 @@ import { roleLabels, roleTones } from '@/utils/auth/roles'
 type AccountDrawerProps = {
   session: Session
   name: string | undefined
+
+  onChangePassword: () => void
   onClose: () => void
 }
 
-export function AccountDrawer({ session, name, onClose }: AccountDrawerProps) {
+export function AccountDrawer({ session, name, onChangePassword, onClose }: AccountDrawerProps) {
   const { logout } = useAuth()
   const [leaving, setLeaving] = useState(false)
   const role = roleLabels[session.role]
@@ -26,6 +28,9 @@ export function AccountDrawer({ session, name, onClose }: AccountDrawerProps) {
             <p className="text-ink-muted text-xs">{role}</p>
           </div>
         </div>
+        <Button variant="secondary" size="lg" block onClick={onChangePassword}>
+          <KeyRound aria-hidden /> Ganti password
+        </Button>
         <Button
           variant="danger"
           size="lg"
