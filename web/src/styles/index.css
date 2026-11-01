@@ -55,7 +55,16 @@
   --color-expense-line: #e8c6b8;
   --color-expense-ink: #6e2a15;
 
+  /* TV display (E8). The rest of its palette reuses the brand, gold and money tokens above. */
+  --color-tv-tile-label: #3d5249; /* prayer name on a cream tile */
+  --color-tv-media: #2a5a4d; /* slide without an image */
+  --color-tv-caption: #0a2a22; /* slide caption bar */
+  --color-tv-dot: #4f7a6d; /* inactive slide dot */
+  --color-tv-dark: #050f0c; /* ground while the prayer is on */
+  --color-tv-dark-ink: #8fa89d; /* dim text on that ground */
+
   --font-sans: "Plus Jakarta Sans Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-arabic: "Amiri", serif; /* TV adzan "Allahu akbar"; loaded by the TV page only */
 
   /* Type scale (px from the mockup). base = 14px body. */
   --text-2xs: 0.6875rem; /* 11 tile labels, column headers, badges */
@@ -79,6 +88,29 @@
   --text-4xl: 2.25rem; /* 36 amount entry */
   --text-4xl--line-height: 1.1;
 
+  /* TV type scale in px of the 1920x1080 stage (tv-26 = 26px). */
+  --text-tv-16: 1rem;
+  --text-tv-18: 1.125rem;
+  --text-tv-20: 1.25rem;
+  --text-tv-22: 1.375rem;
+  --text-tv-24: 1.5rem;
+  --text-tv-26: 1.625rem;
+  --text-tv-28: 1.75rem;
+  --text-tv-30: 1.875rem;
+  --text-tv-32: 2rem;
+  --text-tv-34: 2.125rem;
+  --text-tv-36: 2.25rem;
+  --text-tv-40: 2.5rem;
+  --text-tv-44: 2.75rem;
+  --text-tv-54: 3.375rem;
+  --text-tv-64: 4rem;
+  --text-tv-84: 5.25rem;
+  --text-tv-120: 7.5rem;
+  --text-tv-180: 11.25rem;
+  --text-tv-196: 12.25rem;
+  --text-tv-200: 12.5rem;
+  --text-tv-340: 21.25rem;
+
   /* Radii */
   --radius-sm: 0.5rem; /* 8 badges, stepper buttons */
   --radius-md: 0.625rem; /* 10 inputs, small buttons */
@@ -87,6 +119,8 @@
   --radius-2xl: 1rem; /* 16 cards on brand */
   --radius-3xl: 1.125rem; /* 18 hero balance card */
   --radius-sheet: 1.5rem; /* 24 bottom sheet top corners */
+  --radius-tv: 1.25rem; /* 20 TV cards and tiles */
+  --radius-tv-lg: 1.5rem; /* 24 TV slide */
 
   /* Minimum touch target (WCAG 2.5.5) */
   --spacing-touch: 2.75rem;
@@ -105,10 +139,19 @@
 
   --animate-sheet-in: sheet-in 220ms var(--ease-out);
   --animate-toast-in: toast-in 160ms var(--ease-out);
+  --animate-marquee: marquee linear infinite; /* duration set per text length */
 
   @keyframes sheet-in {
     from {
       transform: translateY(100%);
+    }
+  }
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
     }
   }
   @keyframes toast-in {

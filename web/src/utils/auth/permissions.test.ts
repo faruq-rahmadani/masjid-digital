@@ -8,6 +8,11 @@ describe('permissions (PRD roles table)', () => {
     expect(canOpen('bendahara', 'users')).toBe(false)
   })
 
+  it('lets takmir edit the mosque profile, like the API', () => {
+    expect(accessTo('takmir', 'profile')).toBe('edit')
+    expect(canOpen('bendahara', 'profile')).toBe(false)
+  })
+
   it('gives takmir a read-only view of finance and hides categories', () => {
     expect(accessTo('takmir', 'finance')).toBe('view')
     expect(canOpen('takmir', 'categories')).toBe(false)

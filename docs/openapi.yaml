@@ -7,7 +7,8 @@ info:
 
     ## Authentication
     `POST /api/v1/auth/login` returns an access token. Send it on every other
-    request as `Authorization: Bearer <token>`.
+    request as `Authorization: Bearer <token>`, except the read-only
+    `/api/public/v1/*` routes, which need no login (the TV display uses them).
 
     A user has one session at a time: logging in again (on any device) makes
     the previous token stop working. A token also stops working when the user
@@ -52,6 +53,8 @@ tags:
   - name: Users
     description: User management, `super_admin` only.
   - name: Mosque Profile
+  - name: Public
+    description: Read only, no login, for screens anyone can see (the TV display).
 
 security:
   - bearerAuth: []
@@ -365,6 +368,92 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/UserNotFound"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/public/v1/time:
+    get:
+      tags: [Public]
+      summary: Get the server's clock
+      operationId: getServerTime
+      security: []
+      description: |
+        The TV display corrects its own clock with this (a TV's clock is often
+        unset or drifting). Sent with `Cache-Control: no-store`.
+      responses:
+        "200":
+          description: The server's current time.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    required: [now]
+                    properties:
+                      now:
+                        type: integer
+                        format: int64
+                        description: Unix time in milliseconds.
+                        example: 1793492835123
+
+  /api/public/v1/mosque-profile:
+    get:
+      tags: [Public]
+      summary: Get the mosque profile without logging in
+      operationId: getPublicMosqueProfile
+      security: []
+      description: Same response as `GET /api/v1/mosque-profile`.
+      responses:
+        "200":
+          description: The mosque profile.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/MosqueProfile"
+        "404":
+          description: The profile has not been saved yet.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: NOT_FOUND
+                message: profil masjid belum diisi
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/public/v1/mosque-profile/logo:
+    get:
+      tags: [Public]
+      summary: Get the mosque logo without logging in
+      operationId: getPublicMosqueLogo
+      security: []
+      description: Same response as `GET /api/v1/mosque-profile/logo`.
+      responses:
+        "200":
+          description: The logo.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    required: [url]
+                    properties:
+                      url:
+                        type: string
+                        description: "`data:<content type>;base64,<image>`"
+        "404":
+          $ref: "#/components/responses/MosqueLogoNotFound"
         "500":
           $ref: "#/components/responses/Internal"
 

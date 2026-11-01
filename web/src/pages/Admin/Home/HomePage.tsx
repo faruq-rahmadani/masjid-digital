@@ -15,6 +15,7 @@ import {
 } from '@/components'
 import { usePrayerTimes, useRecentActivity, useScreens } from '@/hooks/useHomeData'
 import { useMosqueProfile } from '@/hooks/useMosqueProfile'
+import { useNow } from '@/hooks/useNow'
 import { useProfile } from '@/hooks/useProfile'
 import { ROUTES } from '@/route'
 import { MENU } from '@/routes/menu'
@@ -25,7 +26,6 @@ import { roleLabels } from '@/utils/auth/roles'
 import { formatActivityTime, formatTimeAgo } from '@/utils/format/date'
 import { AccountDrawer } from './drawers/AccountDrawer'
 import { formatCountdown, nextPrayer } from './nextPrayer'
-import { useNow } from './useNow'
 
 // Home, "Beranda" in the UI (E3-02): the hub. Every other screen opens from the role-filtered "Kelola" grid.
 export function HomePage() {

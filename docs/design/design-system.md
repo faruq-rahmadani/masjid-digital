@@ -79,8 +79,10 @@ Plus Jakarta Sans (variable, self-hosted so the TV works offline). **Tabular num
 | Meta           | `text-xs text-ink-muted`                                    | 12 / 400      | 28 Okt · Infaq transfer   |
 | Caption caps   | `text-2xs font-bold uppercase tracking-wide text-ink-muted` | 11 / 700      | Table headers             |
 
-**TV display** (E8, not built yet): clock 196/800, prayer times 54/800, labels 26, card radius 20,
-gaps 16–24, padding 32. Add `tv-*` tokens when E8 starts.
+**TV display** (E8): sizes are px of the 1920×1080 stage, as `text-tv-<px>` tokens (clock
+`text-tv-196`, prayer times `text-tv-54`, labels `text-tv-26`); cards `rounded-tv` (20), slide
+`rounded-tv-lg` (24); extra colors `tv-tile-label`, `tv-media`, `tv-caption`, `tv-dot`, `tv-dark`,
+`tv-dark-ink`; `font-arabic` (Amiri) for the adzan screen.
 
 ### Spacing
 
@@ -353,7 +355,6 @@ last. Tapping a row opens its edit `Sheet`.
 
 ### Not in the system yet
 
-- **TV display tokens and components** (E8).
 - **Drag to reorder** for slides and running text (E6): needs a drag-and-drop library decision.
 - **Map pin** for Profil masjid (E3-03): Leaflet, per the backlog.
 - **QR code** for Layar TV (E9-06).

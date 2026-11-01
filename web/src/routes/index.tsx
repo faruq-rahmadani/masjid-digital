@@ -8,6 +8,12 @@ import { MENU } from './menu'
 
 // Route table. Pages are lazy-loaded so each screen is its own chunk.
 export const routes: RouteObject[] = [
+  // TV display: public (no login) and full screen, outside the admin column.
+  {
+    path: ROUTES.tv,
+    errorElement: <RouteError />,
+    lazy: async () => ({ Component: (await import('@/pages/Tv/TvPage')).TvPage }),
+  },
   {
     element: <AppShell />,
     errorElement: <RouteError />,
@@ -39,6 +45,18 @@ export const routes: RouteObject[] = [
                 index: true,
                 lazy: async () => ({
                   Component: (await import('@/pages/Admin/Users/UsersPage')).UsersPage,
+                }),
+              },
+            ],
+          },
+          {
+            path: ROUTES.profile,
+            element: <RequireAccess module="profile" />,
+            children: [
+              {
+                index: true,
+                lazy: async () => ({
+                  Component: (await import('@/pages/Admin/Profile/ProfilePage')).ProfilePage,
                 }),
               },
             ],

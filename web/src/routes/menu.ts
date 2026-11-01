@@ -21,7 +21,7 @@ export const MENU: readonly MenuItem[] = [
     ready: false,
   },
   { label: 'Iqamah', path: ROUTES.iqamah, icon: Bell, module: 'iqamah', ready: false },
-  { label: 'Profil masjid', path: ROUTES.profile, icon: House, module: 'profile', ready: false },
+  { label: 'Profil masjid', path: ROUTES.profile, icon: House, module: 'profile', ready: true },
   { label: 'Pengguna', path: ROUTES.users, icon: Users, module: 'users', ready: true },
   { label: 'Layar TV', path: ROUTES.screens, icon: Monitor, module: 'screens', ready: false },
 ]

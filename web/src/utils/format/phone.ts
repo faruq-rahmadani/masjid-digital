@@ -22,3 +22,15 @@ export function formatPhone(e164: string): string {
   const local = `0${e164.slice(3)}`
   return [local.slice(0, 4), local.slice(4, 8), local.slice(8)].filter(Boolean).join('-')
 }
+
+/**
+ * As-you-type formatting: "081234561000" → "0812-3456-1000". Numbers typed with a country code
+ * ("+62…", "+1…") keep only their digits, since their grouping differs per country.
+ */
+export function formatPhoneInput(input: string): string {
+  const plus = input.trimStart().startsWith('+')
+  const digits = input.replace(/\D/g, '')
+  if (plus) return `+${digits}`
+  if (!digits.startsWith('0')) return digits
+  return [digits.slice(0, 4), digits.slice(4, 8), digits.slice(8)].filter(Boolean).join('-')
+}

@@ -5,6 +5,8 @@
  */
 import { ApiError } from '@/api/client'
 import type { LoginRequest, Role } from '@/types/auth'
+import type { MosqueProfile, UpdateMosqueProfileRequest } from '@/types/mosque'
+import type { IqamahSettings, ScheduleItem } from '@/types/tv'
 import type { CreateUserRequest, UpdateUserRequest, User } from '@/types/user'
 import { loadSession } from '@/utils/auth/token'
 import { normalizePhone } from '@/utils/format/phone'
@@ -65,17 +67,22 @@ export const fakeCalls = { listUsers: 0 }
 export function resetFakeApi() {
   users = seed()
   fakeCalls.listUsers = 0
+  mosqueProfile = SEED_MOSQUE
+  fakeServerClock.aheadMs = 0
+  mosqueLogo = null
 }
 
 const fail = (status: number, code: string, message: string): never => {
   throw new ApiError(status, { code, message })
 }
 
-function requireSuperAdmin() {
+function requireRole(...roles: Role[]) {
   const session = loadSession() ?? fail(401, 'UNAUTHENTICATED', 'silakan login terlebih dahulu')
-  if (session.role !== 'super_admin') fail(403, 'FORBIDDEN', 'anda tidak memiliki akses')
+  if (!roles.includes(session.role)) fail(403, 'FORBIDDEN', 'anda tidak memiliki akses')
   return session
 }
+
+const requireSuperAdmin = () => requireRole('super_admin')
 
 const findUser = (id: number) =>
   users.find((u) => u.id === id) ?? fail(404, 'NOT_FOUND', 'user tidak ditemukan')
@@ -116,15 +123,88 @@ export const fakeAuthService = {
   },
 }
 
+const SEED_MOSQUE: MosqueProfile = {
+  name: 'Masjid Nur Husen',
+  address: 'Jl. Merdeka No. 1, Jakarta',
+  contact_phone: '+6281234561000',
+  latitude: -6.2088,
+  longitude: 106.8456,
+  timezone: 'Asia/Jakarta',
+}
+
+let mosqueProfile: MosqueProfile | null = SEED_MOSQUE
+let mosqueLogo: string | null = null
+
+/** Read or replace the fake's stored mosque profile and logo, e.g. null for a fresh install. */
+export const fakeMosque = {
+  get profile() {
+    return mosqueProfile
+  },
+  set profile(value: MosqueProfile | null) {
+    mosqueProfile = value
+  },
+  get logo() {
+    return mosqueLogo
+  },
+  set logo(value: string | null) {
+    mosqueLogo = value
+  },
+}
+
 export const fakeMosqueProfileService = {
-  getMosqueProfile: async () => ({
-    name: 'Masjid Nur Husen',
-    address: 'Jl. Merdeka No. 1, Jakarta',
-    contact_phone: '+6281234561000',
-    latitude: -6.2088,
-    longitude: 106.8456,
-    timezone: 'Asia/Jakarta' as const,
+  getMosqueProfile: async () =>
+    mosqueProfile ?? fail(404, 'NOT_FOUND', 'profil masjid belum diisi'),
+  updateMosqueProfile: async (body: UpdateMosqueProfileRequest) => {
+    requireRole('super_admin', 'takmir')
+    if (body.name.trim() === '') fail(400, 'INVALID_INPUT', 'nama wajib di isi')
+    if (body.latitude === 0 && body.longitude === 0) {
+      fail(400, 'INVALID_INPUT', 'lokasi masjid wajib di isi')
+    }
+    const contact_phone =
+      body.contact_phone === ''
+        ? ''
+        : (normalizePhone(body.contact_phone) ??
+          fail(400, 'INVALID_INPUT', 'kontak pengurus harus nomor HP yang valid'))
+    mosqueProfile = { ...body, name: body.name.trim(), contact_phone }
+    return mosqueProfile
+  },
+  getMosqueLogo: async () => ({
+    url: mosqueLogo ?? fail(404, 'NOT_FOUND', 'logo masjid belum diunggah'),
   }),
+  // No login needed, like /api/public/v1.
+  getPublicMosqueProfile: async () =>
+    mosqueProfile ?? fail(404, 'NOT_FOUND', 'profil masjid belum diisi'),
+  getPublicMosqueLogo: async () => ({
+    url: mosqueLogo ?? fail(404, 'NOT_FOUND', 'logo masjid belum diunggah'),
+  }),
+  uploadMosqueLogo: async (file: File) => {
+    requireRole('super_admin', 'takmir')
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+      fail(400, 'INVALID_INPUT', 'format logo harus PNG, JPG, atau WebP')
+    }
+    mosqueLogo = `data:${file.type};base64,AAAA`
+    return { message: 'logo masjid berhasil disimpan' }
+  },
+  deleteMosqueLogo: async () => {
+    requireRole('super_admin', 'takmir')
+    if (!mosqueLogo) fail(404, 'NOT_FOUND', 'logo masjid belum diunggah')
+    mosqueLogo = null
+    return { message: 'logo masjid berhasil dihapus' }
+  },
+}
+
+/** Any query finds Masjid Raya Makassar (WITA), except "tidak ada" which finds nothing. */
+export const fakeGeocodingService = {
+  searchPlaces: async (query: string) =>
+    query === 'tidak ada'
+      ? []
+      : [
+          {
+            name: 'Masjid Raya Makassar, Jalan Masjid Raya',
+            latitude: -5.1336,
+            longitude: 119.4183,
+          },
+        ],
 }
 
 export const fakeUserService = {
@@ -182,6 +262,53 @@ export const fakePrayerTimeService = {
     { name: 'Maghrib', time: '18:15' },
     { name: 'Isya', time: '19:25' },
   ],
+}
+
+/** How far the fake server's clock runs ahead of the (fake) device clock, in ms. */
+export const fakeServerClock = { aheadMs: 0 }
+
+export const fakeTimeService = {
+  getServerTime: async () => Date.now() + fakeServerClock.aheadMs,
+}
+
+export const fakeTvService = {
+  getTodaySchedule: async (): Promise<ScheduleItem[]> => [
+    { key: 'imsak', name: 'Imsak', time: '04:32' },
+    { key: 'subuh', name: 'Subuh', time: '04:42' },
+    { key: 'terbit', name: 'Terbit', time: '05:56' },
+    { key: 'dzuhur', name: 'Dzuhur', time: '12:09' },
+    { key: 'ashar', name: 'Ashar', time: '15:24' },
+    { key: 'maghrib', name: 'Maghrib', time: '18:15' },
+    { key: 'isya', name: 'Isya', time: '19:25' },
+  ],
+  getCashSummary: async () => ({
+    as_of: '2026-10-28',
+    opening_balance: 91_934_781,
+    income: 1_250_000,
+    expense: 1_126_667,
+    closing_balance: 92_058_114,
+  }),
+  listSlides: async () => [
+    { id: 1, title: 'Kajian Rutin Ahad Pagi', caption: 'Ahad, 08.00 WIB', image_url: '' },
+    { id: 2, title: 'Kajian Tafsir', caption: "Kamis ba'da Maghrib", image_url: '' },
+  ],
+  listRunningTexts: async () => ['Infaq via QRIS tersedia di dekat pintu utama'],
+  listQuotes: async () => [
+    { text: 'Maka sesungguhnya bersama kesulitan ada kemudahan.', source: 'QS. Al-Insyirah: 5' },
+  ],
+  getIqamahSettings: async (): Promise<IqamahSettings> => ({
+    iqamah_minutes: { subuh: 10, dzuhur: 7, ashar: 7, maghrib: 7, isya: 7 },
+    adzan_minutes: 1,
+    prayer_minutes: 10,
+    jumat_before_minutes: 60,
+    khutbah_minutes: 30,
+  }),
+  getDutyRoster: async () => ({
+    imam: 'Ustadz Hasan',
+    muadzin: 'Bilal Ahmad',
+    khatib: 'Ustadz Abdullah',
+    khutbah_theme: 'Menjaga amanah',
+  }),
 }
 
 export const fakeScreenService = {
