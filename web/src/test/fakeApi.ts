@@ -5,13 +5,14 @@
  */
 import { ApiError } from '@/api/client'
 import type { LoginRequest, Role } from '@/types/auth'
+import type { FridayDuty, SaveFridayDutyRequest } from '@/types/fridayDuty'
+import type { IqamahSettings } from '@/types/iqamah'
 import type { MosqueProfile, UpdateMosqueProfileRequest } from '@/types/mosque'
 import type {
   CreatePrayerOverrideRequest,
   PrayerSettings,
   PrayerTimeOverride,
 } from '@/types/prayer'
-import type { IqamahSettings } from '@/types/tv'
 import type { CreateUserRequest, UpdateUserRequest, User } from '@/types/user'
 import { loadSession } from '@/utils/auth/token'
 import { normalizePhone } from '@/utils/format/phone'
@@ -77,6 +78,8 @@ export function resetFakeApi() {
   mosqueLogo = null
   prayerSettings = SEED_PRAYER_SETTINGS()
   prayerOverrides = SEED_PRAYER_OVERRIDES()
+  iqamahSettings = SEED_IQAMAH_SETTINGS()
+  fridayDuties = SEED_FRIDAY_DUTIES()
 }
 
 const fail = (status: number, code: string, message: string): never => {
@@ -396,19 +399,113 @@ export const fakeTvService = {
   listQuotes: async () => [
     { text: 'Maka sesungguhnya bersama kesulitan ada kemudahan.', source: 'QS. Al-Insyirah: 5' },
   ],
-  getIqamahSettings: async (): Promise<IqamahSettings> => ({
-    iqamah_minutes: { subuh: 10, dzuhur: 7, ashar: 7, maghrib: 7, isya: 7 },
-    adzan_minutes: 1,
-    prayer_minutes: 10,
-    jumat_before_minutes: 60,
-    khutbah_minutes: 30,
-  }),
-  getDutyRoster: async () => ({
+}
+
+// Seeded for the TV's fixed timelines: Maghrib iqamah 7 min after a 1-min adzan screen, 10 min of
+// mode sholat; Friday 2026-10-30 has its petugas Jumat.
+const SEED_IQAMAH_SETTINGS = (): IqamahSettings => ({
+  iqamah_min: { subuh: 10, dzuhur: 7, ashar: 7, maghrib: 7, isya: 7 },
+  sholat_min: { subuh: 10, dzuhur: 10, ashar: 10, maghrib: 10, isya: 10, jumat: 10 },
+  adzan_display_min: 1,
+  sholat_display: 'dim',
+  jumat_before_min: 60,
+  khutbah_min: 30,
+  alarm: { enabled: true, at_adzan: true, before_iqamah: true, sound: 'beep', volume: 70 },
+})
+const SEED_FRIDAY_DUTIES = (): FridayDuty[] => [
+  {
+    date: '2026-10-30',
+    khatib: 'Ustadz Abdullah',
     imam: 'Ustadz Hasan',
     muadzin: 'Bilal Ahmad',
-    khatib: 'Ustadz Abdullah',
-    khutbah_theme: 'Menjaga amanah',
-  }),
+    theme: 'Menjaga amanah',
+    updated_by: 1,
+    created_at: SEED_TIME,
+    updated_at: SEED_TIME,
+  },
+]
+
+let iqamahSettings = SEED_IQAMAH_SETTINGS()
+let fridayDuties = SEED_FRIDAY_DUTIES()
+
+/** Read or replace the fake's stored iqamah settings. */
+export const fakeIqamah = {
+  get settings() {
+    return iqamahSettings
+  },
+  set settings(value: IqamahSettings) {
+    iqamahSettings = value
+  },
+}
+
+/** Read or replace the fake's stored petugas Jumat. */
+export const fakeFridayDuties = {
+  get list() {
+    return fridayDuties
+  },
+  set list(value: FridayDuty[]) {
+    fridayDuties = value
+  },
+}
+
+const between = (v: number, lo: number, hi: number) => v >= lo && v <= hi
+
+export const fakeIqamahService = {
+  getIqamahSettings: async () => {
+    requireRole('super_admin', 'takmir', 'bendahara')
+    return iqamahSettings
+  },
+  updateIqamahSettings: async (body: IqamahSettings) => {
+    requireRole('super_admin', 'takmir')
+    if (!Object.values(body.iqamah_min).every((v) => between(v, 1, 30)))
+      fail(400, 'INVALID_INPUT', 'iqamah harus 1 sampai 30 menit')
+    const { jumat, ...sholat } = body.sholat_min
+    if (!Object.values(sholat).every((v) => between(v, 5, 30)))
+      fail(400, 'INVALID_INPUT', 'mode sholat harus 5 sampai 30 menit')
+    if (!between(jumat, 5, 60))
+      fail(400, 'INVALID_INPUT', 'mode sholat Jumat harus 5 sampai 60 menit')
+    iqamahSettings = body
+    return iqamahSettings
+  },
+  getPublicIqamahSettings: async () => iqamahSettings,
+}
+
+export const fakeFridayDutyService = {
+  listFridayDuties: async (from: string, to: string) => {
+    requireRole('super_admin', 'takmir', 'bendahara')
+    return fridayDuties.filter((d) => d.date >= from && d.date <= to)
+  },
+  saveFridayDuty: async (date: string, body: SaveFridayDutyRequest) => {
+    const session = requireRole('super_admin', 'takmir')
+    if (new Date(`${date}T00:00:00Z`).getUTCDay() !== 5)
+      fail(400, 'INVALID_INPUT', 'petugas Jumat hanya untuk hari Jumat')
+    if (!body.khatib.trim() && !body.imam.trim() && !body.muadzin.trim())
+      fail(400, 'INVALID_INPUT', 'isi minimal satu petugas')
+    const now = new Date().toISOString()
+    const existing = fridayDuties.find((d) => d.date === date)
+    const saved: FridayDuty = {
+      date,
+      khatib: body.khatib.trim(),
+      imam: body.imam.trim(),
+      muadzin: body.muadzin.trim(),
+      theme: body.theme.trim(),
+      updated_by: session.userId,
+      created_at: existing?.created_at ?? now,
+      updated_at: now,
+    }
+    fridayDuties = [...fridayDuties.filter((d) => d.date !== date), saved].sort((a, b) =>
+      a.date.localeCompare(b.date),
+    )
+    return saved
+  },
+  deleteFridayDuty: async (date: string) => {
+    requireRole('super_admin', 'takmir')
+    if (!fridayDuties.some((d) => d.date === date))
+      fail(404, 'NOT_FOUND', 'petugas Jumat tidak ditemukan')
+    fridayDuties = fridayDuties.filter((d) => d.date !== date)
+    return { message: 'petugas Jumat dihapus' }
+  },
+  listUpcomingFridayDuties: async () => fridayDuties,
 }
 
 export const fakeScreenService = {

@@ -18,13 +18,13 @@ and has a back button in `PageHeader`. There is no tab bar.
 | Pengguna ✓       | `admin-user.html`         | E2-07   | super admin                          | `Avatar`, `Badge`, `ActionMenu`, `Sheet` + `RadioCard`, `ConfirmDialog`, `Field`, `Select` (form follows the API, see PRD)                          |
 | Layar TV         | `admin-layar.html`        | E9-06   | super admin, takmir                  | `Card brand` + `CopyField`, `Badge` (Online/Offline/BARU), `Callout danger`, `Select`, `Button`                                                     |
 | Waktu sholat     | `admin-waktu.html`        | E4-05   | super admin, takmir                  | Context card, 7-day preview (today highlighted), `Stepper sm` corrections, Pengaturan khusus (mingguan, Hijri, jadwal khusus), `ConfirmDialog` on every save/delete, `LeaveGuard` |
-| Iqamah & alarm   | `admin-iqamah.html`       | E5-04   | super admin, takmir                  | `Stepper md`, `RadioCard`, `Checkbox`, `Select`, `Slider`, `ActionBar`                                                                              |
+| Iqamah & alarm   | `admin-iqamah.html`       | E5-04   | super admin, takmir                  | Brand "Alur di layar" card, iqamah & mode sholat `Stepper sm` table, Jumat group (settings + `NavCard` to Petugas Jumat), Layar & alarm (`RadioCard`, `Checkbox`, `Select`, `Slider`), `ConfirmDialog`, `LeaveGuard` |
 | Slide            | `admin-slide.html`        | E6-04   | super admin, takmir                  | `UploadTile`, `List` + `Thumbnail`, `Sheet` (edit), `Checkbox`, `Select`                                                                            |
 | Running text     | `admin-running-text.html` | E6-05   | super admin, takmir                  | `Textarea showCount`, `Checkbox`, `Badge caps`, `SegmentedControl split`                                                                            |
 | Keuangan         | `admin-keuangan.html`     | E7-06   | super admin, bendahara (takmir view) | `Card brand` + `Stat`, `Button income/expense`, `SearchInput`, `SegmentedControl pill`, `Select pill`, `List` + `Money`, `Callout`, `ConfirmDialog` |
 | Tambah transaksi | `admin-transaksi.html`    | E7-07   | super admin, bendahara               | `SegmentedControl track`, `MoneyInput`, `Field`, `UploadTile tile`, `Callout`, `ActionBar`                                                          |
 | Kategori         | `admin-kategori.html`     | E7-08   | super admin, bendahara               | `Tabs`, `Input`, `List`, `Button danger`, `ConfirmDialog`                                                                                           |
-| Petugas Jumat    | none yet                  | E5-05   | super admin, takmir                  | Reuse the Iqamah screen style in a `Sheet`                                                                                                          |
+| Petugas Jumat    | `admin-petugas.html`      | E5-05   | super admin, takmir                  | Own menu. Brand "Jumat terdekat" card, next 8 Fridays (`Badge notice` "Belum diisi"), `Sheet` form, confirm before save/delete |
 
 ## TV display (1920×1080, `/tv`)
 
@@ -32,9 +32,10 @@ Built at `/tv` (`web/src/pages/Tv/`): one 1920×1080 stage scaled to the screen,
 Public, no login: it reads `/api/public/v1/*` (read-only twins of the admin endpoints). Live:
 mosque name, address, time zone, logo. The clock runs on server time (`GET /api/public/v1/time`,
 resynced every 10 min) shown in the mosque's time zone, so a TV with a wrong clock or zone still
-switches modes on the minute. Prayer times are computed on the TV from `GET /api/public/v1/prayer-time/config` (settings plus 30 days
-of date overrides). Mocked in `tvService`: kas, slides, running text, quotes, iqamah settings,
-petugas.
+switches modes on the minute. Prayer times are computed on the TV from
+`GET /api/public/v1/prayer-time/config` (settings plus 30 days of date overrides). Iqamah
+settings and petugas Jumat come from `GET /api/public/v1/iqamah/config` (petugas for 30 days).
+Mocked in `tvService`: kas, slides, running text, quotes.
 
 | Mode   | Mockup           | Task  | Content                                                                                                                                                                                 |
 | ------ | ---------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

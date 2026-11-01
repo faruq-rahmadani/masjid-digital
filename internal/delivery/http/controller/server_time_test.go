@@ -11,7 +11,7 @@ import (
 
 func TestGetServerTime(t *testing.T) {
 	before := time.Now().UnixMilli()
-	rec, err := serve(NewController(nil, nil, nil, nil).GetServerTime, http.MethodGet, "/api/public/v1/time", "", "")
+	rec, err := serve(NewController(nil, nil, nil, nil, nil, nil).GetServerTime, http.MethodGet, "/api/public/v1/time", "", "")
 	after := time.Now().UnixMilli()
 	if err != nil {
 		t.Fatalf("handler: %v", err)

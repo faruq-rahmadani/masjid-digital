@@ -8,8 +8,10 @@ export const ROUTES = {
   finance: '/finance',
   prayerTimes: '/prayer-times',
   iqamah: '/iqamah',
+  fridayDuties: '/friday-duties',
   profile: '/profile',
   screens: '/screens',
   tv: '/tv',
+  tvPreview: '/tv-preview',
   kit: '/kit',
 } as const

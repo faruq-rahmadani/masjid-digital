@@ -1,7 +1,8 @@
 import { Image } from 'lucide-react'
 import { MosqueLogo } from '@/components'
 import { useCashSummary, useQuotes, useSlides } from '@/hooks/useTvData'
-import type { IqamahSettings, ScheduleItem } from '@/types/tv'
+import type { IqamahSettings } from '@/types/iqamah'
+import type { ScheduleItem } from '@/types/tv'
 import { cn } from '@/utils/cn'
 import { formatRupiah } from '@/utils/format/money'
 import { formatClock, formatHijriDate, formatHms, formatLongDate, formatShortDate } from '../clock'
@@ -55,8 +56,8 @@ export function NormalMode({ tv, state, schedule, settings }: NormalModeProps) {
           </div>
           <div className="text-tv-18 text-ink-soft mt-1">
             {state.jumat
-              ? `Khutbah ${settings.khutbah_minutes} menit setelah adzan`
-              : `Iqamah ${settings.iqamah_minutes[state.next.key]} menit setelah adzan`}
+              ? `Khutbah ${settings.khutbah_min} menit setelah adzan`
+              : `Iqamah ${settings.iqamah_min[state.next.key]} menit setelah adzan`}
           </div>
         </div>
         <ol className="grid flex-1 grid-cols-7 gap-4">

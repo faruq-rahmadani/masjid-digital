@@ -60,6 +60,12 @@ tags:
       only stores how the mosque adjusts them. From the most general layer:
       computed time, then `corrections`, then a weekly override (e.g. every
       Friday Dzuhur), then a date override. The most specific one wins.
+  - name: Iqamah
+    description: |
+      What the TV does around each prayer: the adzan screen, the iqamah countdown, mode sholat,
+      and on Friday the Jumat screen and khutbah; plus the alarm.
+  - name: Friday Duties
+    description: Petugas Jumat (khatib, imam, muadzin, tema khutbah) per Friday, shown on the TV's Jumat screen.
   - name: Public
     description: Read only, no login, for screens anyone can see (the TV display).
 
@@ -877,6 +883,231 @@ paths:
         "500":
           $ref: "#/components/responses/Internal"
 
+  /api/public/v1/iqamah/config:
+    get:
+      tags: [Public, Iqamah]
+      summary: Get the iqamah settings without logging in
+      operationId: getPublicIqamahSettings
+      security: []
+      description: The defaults until first saved.
+      responses:
+        "200":
+          description: The iqamah settings.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/IqamahSettings"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/public/v1/friday-duties:
+    get:
+      tags: [Public, Friday Duties]
+      summary: List the coming petugas Jumat without logging in
+      operationId: listUpcomingFridayDuties
+      security: []
+      description: Petugas Jumat from today to 30 days ahead, ordered by date, so the TV still shows them offline.
+      responses:
+        "200":
+          description: The petugas Jumat.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/FridayDuty"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/iqamah/config:
+    get:
+      tags: [Iqamah]
+      summary: Get the iqamah settings
+      operationId: getIqamahSettings
+      description: Any role. Returns the defaults until first saved.
+      responses:
+        "200":
+          description: The iqamah settings.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/IqamahSettings"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "500":
+          $ref: "#/components/responses/Internal"
+    put:
+      tags: [Iqamah]
+      summary: Save the iqamah settings
+      operationId: updateIqamahSettings
+      description: "`super_admin` and `takmir`. Replaces every setting; also creates them the first time."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IqamahSettings"
+      responses:
+        "200":
+          description: The saved settings.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/IqamahSettings"
+        "400":
+          description: |
+            Invalid input, e.g. `iqamah harus 1 sampai 30 menit`,
+            `mode sholat harus 5 sampai 30 menit`, `mode sholat Jumat harus 5 sampai 60 menit`,
+            `durasi tampilan adzan harus 1 sampai 10 menit`, `durasi khutbah harus 10 sampai 60 menit`.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: INVALID_INPUT
+                message: iqamah harus 1 sampai 30 menit
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/friday-duties:
+    get:
+      tags: [Friday Duties]
+      summary: List petugas Jumat in a range
+      operationId: listFridayDuties
+      description: Any role. Ordered by date.
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema: { type: string, format: date, example: "2026-11-01" }
+        - name: to
+          in: query
+          required: true
+          description: Inclusive, at most 366 days after `from`.
+          schema: { type: string, format: date, example: "2026-11-30" }
+      responses:
+        "200":
+          description: The petugas Jumat.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/FridayDuty"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/friday-duties/{date}:
+    parameters:
+      - name: date
+        in: path
+        required: true
+        description: A Friday, YYYY-MM-DD.
+        schema: { type: string, format: date, example: "2026-11-06" }
+    put:
+      tags: [Friday Duties]
+      summary: Set the petugas of a Friday
+      operationId: saveFridayDuty
+      description: |
+        `super_admin` and `takmir`. Creates or replaces that Friday's petugas. The date must be a
+        Friday not in the past; at least one of khatib, imam, muadzin is required.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                khatib: { type: string, maxLength: 100, example: Ustadz Abdullah }
+                imam: { type: string, maxLength: 100, example: Ustadz Hasan }
+                muadzin: { type: string, maxLength: 100, example: Bilal Ahmad }
+                theme: { type: string, maxLength: 200, example: Menjaga amanah }
+      responses:
+        "200":
+          description: The saved petugas.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/FridayDuty"
+        "400":
+          description: |
+            Invalid input, e.g. `petugas Jumat hanya untuk hari Jumat`, `isi minimal satu petugas`,
+            `tanggal sudah lewat`, `nama petugas maksimal 100 karakter`.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: INVALID_INPUT
+                message: petugas Jumat hanya untuk hari Jumat
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/Internal"
+    delete:
+      tags: [Friday Duties]
+      summary: Delete the petugas of a Friday
+      operationId: deleteFridayDuty
+      description: "`super_admin` and `takmir`."
+      responses:
+        "200":
+          description: Deleted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: petugas Jumat dihapus
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          description: That Friday has no petugas.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: NOT_FOUND
+                message: petugas Jumat tidak ditemukan
+        "500":
+          $ref: "#/components/responses/Internal"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -1178,6 +1409,73 @@ components:
         updated_at:
           type: string
           format: date-time
+
+    PrayerMinutes:
+      type: object
+      required: [subuh, dzuhur, ashar, maghrib, isya]
+      properties:
+        subuh: { type: integer }
+        dzuhur: { type: integer }
+        ashar: { type: integer }
+        maghrib: { type: integer }
+        isya: { type: integer }
+
+    IqamahSettings:
+      type: object
+      required: [iqamah_min, sholat_min, adzan_display_min, sholat_display, jumat_before_min, khutbah_min, alarm]
+      properties:
+        iqamah_min:
+          description: Minutes from the adzan time to iqamah, 1..30.
+          allOf:
+            - $ref: "#/components/schemas/PrayerMinutes"
+        sholat_min:
+          description: How long mode sholat lasts, 5..30; `jumat` 5..60.
+          allOf:
+            - $ref: "#/components/schemas/PrayerMinutes"
+            - type: object
+              required: [jumat]
+              properties:
+                jumat: { type: integer, example: 40 }
+        adzan_display_min:
+          type: integer
+          minimum: 1
+          maximum: 10
+          description: How long the "Telah masuk waktu" screen stays up. Defaults to 4.
+        sholat_display:
+          type: string
+          enum: [dim, black]
+          description: "`dim`: \"Sholat sedang berlangsung\" and a small clock; `black`: a black screen."
+        jumat_before_min:
+          type: integer
+          minimum: 0
+          maximum: 120
+          description: The Jumat screen shows this long before Friday Dzuhur; 0 turns it off.
+        khutbah_min:
+          type: integer
+          minimum: 10
+          maximum: 60
+        alarm:
+          type: object
+          required: [enabled, at_adzan, before_iqamah, sound, volume]
+          properties:
+            enabled: { type: boolean }
+            at_adzan: { type: boolean }
+            before_iqamah: { type: boolean, description: The last 10 seconds before iqamah. }
+            sound: { type: string, enum: [beep, bell] }
+            volume: { type: integer, minimum: 0, maximum: 100 }
+
+    FridayDuty:
+      type: object
+      required: [date, khatib, imam, muadzin, theme, updated_by, created_at, updated_at]
+      properties:
+        date: { type: string, format: date, example: "2026-11-06" }
+        khatib: { type: string, example: Ustadz Abdullah }
+        imam: { type: string, example: Ustadz Hasan }
+        muadzin: { type: string, example: Bilal Ahmad }
+        theme: { type: string, description: Tema khutbah., example: Menjaga amanah }
+        updated_by: { type: integer, format: int64, description: 0 when nobody set it. }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
 
   responses:
     InvalidInput:

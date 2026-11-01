@@ -14,9 +14,10 @@ import {
   useToast,
 } from '@/components'
 import { useCreatePrayerOverride } from '@/hooks/usePrayerTimes'
+import { formatLongDay } from '@/utils/format/day'
 import { SCHEDULE_NAMES } from '@/utils/prayer/calculate'
 import { type OverrideForm, overrideSchema } from '../schema'
-import { formatLongDay, PRAYER_OPTIONS } from '../utils'
+import { PRAYER_OPTIONS } from '../utils'
 
 type AddOverrideDrawerProps = {
   /** The mosque's today, the earliest date that can be picked. */

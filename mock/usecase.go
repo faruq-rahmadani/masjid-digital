@@ -473,3 +473,124 @@ func (mr *MockPrayerTimeRepositoryItfMockRecorder) UpdateSettings(ctx, settings,
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSettings", reflect.TypeOf((*MockPrayerTimeRepositoryItf)(nil).UpdateSettings), ctx, settings, updatedBy)
 }
+
+// MockIqamahRepositoryItf is a mock of IqamahRepositoryItf interface.
+type MockIqamahRepositoryItf struct {
+	ctrl     *gomock.Controller
+	recorder *MockIqamahRepositoryItfMockRecorder
+	isgomock struct{}
+}
+
+// MockIqamahRepositoryItfMockRecorder is the mock recorder for MockIqamahRepositoryItf.
+type MockIqamahRepositoryItfMockRecorder struct {
+	mock *MockIqamahRepositoryItf
+}
+
+// NewMockIqamahRepositoryItf creates a new mock instance.
+func NewMockIqamahRepositoryItf(ctrl *gomock.Controller) *MockIqamahRepositoryItf {
+	mock := &MockIqamahRepositoryItf{ctrl: ctrl}
+	mock.recorder = &MockIqamahRepositoryItfMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockIqamahRepositoryItf) EXPECT() *MockIqamahRepositoryItfMockRecorder {
+	return m.recorder
+}
+
+// GetSettings mocks base method.
+func (m *MockIqamahRepositoryItf) GetSettings(ctx context.Context) (domain.IqamahSettings, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSettings", ctx)
+	ret0, _ := ret[0].(domain.IqamahSettings)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSettings indicates an expected call of GetSettings.
+func (mr *MockIqamahRepositoryItfMockRecorder) GetSettings(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSettings", reflect.TypeOf((*MockIqamahRepositoryItf)(nil).GetSettings), ctx)
+}
+
+// UpdateSettings mocks base method.
+func (m *MockIqamahRepositoryItf) UpdateSettings(ctx context.Context, settings domain.IqamahSettings, updatedBy int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateSettings", ctx, settings, updatedBy)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateSettings indicates an expected call of UpdateSettings.
+func (mr *MockIqamahRepositoryItfMockRecorder) UpdateSettings(ctx, settings, updatedBy any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSettings", reflect.TypeOf((*MockIqamahRepositoryItf)(nil).UpdateSettings), ctx, settings, updatedBy)
+}
+
+// MockFridayDutyRepositoryItf is a mock of FridayDutyRepositoryItf interface.
+type MockFridayDutyRepositoryItf struct {
+	ctrl     *gomock.Controller
+	recorder *MockFridayDutyRepositoryItfMockRecorder
+	isgomock struct{}
+}
+
+// MockFridayDutyRepositoryItfMockRecorder is the mock recorder for MockFridayDutyRepositoryItf.
+type MockFridayDutyRepositoryItfMockRecorder struct {
+	mock *MockFridayDutyRepositoryItf
+}
+
+// NewMockFridayDutyRepositoryItf creates a new mock instance.
+func NewMockFridayDutyRepositoryItf(ctrl *gomock.Controller) *MockFridayDutyRepositoryItf {
+	mock := &MockFridayDutyRepositoryItf{ctrl: ctrl}
+	mock.recorder = &MockFridayDutyRepositoryItfMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockFridayDutyRepositoryItf) EXPECT() *MockFridayDutyRepositoryItfMockRecorder {
+	return m.recorder
+}
+
+// Delete mocks base method.
+func (m *MockFridayDutyRepositoryItf) Delete(ctx context.Context, date string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, date)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockFridayDutyRepositoryItfMockRecorder) Delete(ctx, date any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockFridayDutyRepositoryItf)(nil).Delete), ctx, date)
+}
+
+// FindBetween mocks base method.
+func (m *MockFridayDutyRepositoryItf) FindBetween(ctx context.Context, from, to string) ([]domain.FridayDuty, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindBetween", ctx, from, to)
+	ret0, _ := ret[0].([]domain.FridayDuty)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindBetween indicates an expected call of FindBetween.
+func (mr *MockFridayDutyRepositoryItfMockRecorder) FindBetween(ctx, from, to any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindBetween", reflect.TypeOf((*MockFridayDutyRepositoryItf)(nil).FindBetween), ctx, from, to)
+}
+
+// Save mocks base method.
+func (m *MockFridayDutyRepositoryItf) Save(ctx context.Context, duty domain.FridayDuty) (domain.FridayDuty, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Save", ctx, duty)
+	ret0, _ := ret[0].(domain.FridayDuty)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Save indicates an expected call of Save.
+func (mr *MockFridayDutyRepositoryItfMockRecorder) Save(ctx, duty any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockFridayDutyRepositoryItf)(nil).Save), ctx, duty)
+}

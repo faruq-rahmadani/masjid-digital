@@ -34,7 +34,7 @@ describe('HomePage', () => {
       await screen.findByText(/Assalamu'alaikum, Ahmad Fauzi · Super admin/),
     ).toBeInTheDocument()
     expect(await screen.findByRole('heading', { name: 'Masjid Nur Husen' })).toBeInTheDocument()
-    expect(within(kelola()).getAllByRole('link')).toHaveLength(8)
+    expect(within(kelola()).getAllByRole('link')).toHaveLength(9)
     // Status card plus menu tile; screens and activity come from their services.
     expect(
       await screen.findByRole('link', { name: /1 online · 1 offline sejak 2 jam lalu/ }),

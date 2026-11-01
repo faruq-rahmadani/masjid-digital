@@ -19,7 +19,7 @@ func TestGetPrayerSettings(t *testing.T) {
 	prayerTimes := mock.NewMockPrayerTimeUsecaseItf(gomock.NewController(t))
 	prayerTimes.EXPECT().GetSettings(gomock.Any()).Return(domain.DefaultPrayerSettings(), nil)
 
-	rec, err := serve(authenticated(t, NewController(nil, nil, nil, prayerTimes).GetPrayerSettings), http.MethodGet, "/api/v1/prayer-time/config", "", "Bearer valid-token")
+	rec, err := serve(authenticated(t, NewController(nil, nil, nil, prayerTimes, nil, nil).GetPrayerSettings), http.MethodGet, "/api/v1/prayer-time/config", "", "Bearer valid-token")
 	if err != nil {
 		t.Fatalf("handler: %v", err)
 	}
@@ -42,7 +42,7 @@ func TestUpdatePrayerSettingsTakesUpdaterFromSession(t *testing.T) {
 		})
 
 	body := `{"corrections":{"maghrib":2},"imsak_offset_min":10,"weekly_overrides":[{"weekday":"friday","prayer":"dzuhur","time":"12:00","remarks":""}],"updated_by":99}`
-	rec, err := serve(authenticated(t, NewController(nil, nil, nil, prayerTimes).UpdatePrayerSettings), http.MethodPut, "/api/v1/prayer-time/config", body, "Bearer valid-token")
+	rec, err := serve(authenticated(t, NewController(nil, nil, nil, prayerTimes, nil, nil).UpdatePrayerSettings), http.MethodPut, "/api/v1/prayer-time/config", body, "Bearer valid-token")
 	if err != nil || rec.Code != http.StatusOK {
 		t.Fatalf("handler: %d, %v", rec.Code, err)
 	}
@@ -56,7 +56,7 @@ func TestCreatePrayerOverride(t *testing.T) {
 	}).Return(domain.PrayerTimeOverride{ID: 4, Date: "2026-11-06", Prayer: domain.PrayerDzuhur, Time: "11:58", Remarks: "Jumat", CreatedBy: loggedInAs.UserID, CreatedAt: created, UpdatedAt: created}, nil)
 
 	body := `{"date":"2026-11-06","prayer":"dzuhur","time":"11:58","remarks":"Jumat"}`
-	rec, err := serve(authenticated(t, NewController(nil, nil, nil, prayerTimes).CreatePrayerOverride), http.MethodPost, "/api/v1/prayer-time/overrides", body, "Bearer valid-token")
+	rec, err := serve(authenticated(t, NewController(nil, nil, nil, prayerTimes, nil, nil).CreatePrayerOverride), http.MethodPost, "/api/v1/prayer-time/overrides", body, "Bearer valid-token")
 	if err != nil {
 		t.Fatalf("handler: %v", err)
 	}
@@ -72,7 +72,7 @@ func TestListPrayerOverridesPassesRange(t *testing.T) {
 	prayerTimes := mock.NewMockPrayerTimeUsecaseItf(gomock.NewController(t))
 	prayerTimes.EXPECT().ListOverrides(gomock.Any(), domain.PrayerTimeOverrideRange{From: "2026-11-01", To: "2026-11-30"}).Return([]domain.PrayerTimeOverride{}, nil)
 
-	rec, err := serve(authenticated(t, NewController(nil, nil, nil, prayerTimes).ListPrayerOverrides), http.MethodGet, "/api/v1/prayer-time/overrides?from=2026-11-01&to=2026-11-30", "", "Bearer valid-token")
+	rec, err := serve(authenticated(t, NewController(nil, nil, nil, prayerTimes, nil, nil).ListPrayerOverrides), http.MethodGet, "/api/v1/prayer-time/overrides?from=2026-11-01&to=2026-11-30", "", "Bearer valid-token")
 	if err != nil {
 		t.Fatalf("handler: %v", err)
 	}
@@ -85,7 +85,7 @@ func TestDeletePrayerOverride(t *testing.T) {
 	prayerTimes := mock.NewMockPrayerTimeUsecaseItf(gomock.NewController(t))
 	prayerTimes.EXPECT().DeleteOverride(gomock.Any(), int64(4)).Return(nil)
 
-	rec, err := serve(authenticated(t, NewController(nil, nil, nil, prayerTimes).DeletePrayerOverride), http.MethodDelete, "/api/v1/prayer-time/overrides/4", "", "Bearer valid-token", "id", "4")
+	rec, err := serve(authenticated(t, NewController(nil, nil, nil, prayerTimes, nil, nil).DeletePrayerOverride), http.MethodDelete, "/api/v1/prayer-time/overrides/4", "", "Bearer valid-token", "id", "4")
 	if err != nil {
 		t.Fatalf("handler: %v", err)
 	}
@@ -95,7 +95,7 @@ func TestDeletePrayerOverride(t *testing.T) {
 }
 
 func TestDeletePrayerOverrideBadID(t *testing.T) {
-	_, err := serve(authenticated(t, NewController(nil, nil, nil, nil).DeletePrayerOverride), http.MethodDelete, "/api/v1/prayer-time/overrides/x", "", "Bearer valid-token", "id", "x")
+	_, err := serve(authenticated(t, NewController(nil, nil, nil, nil, nil, nil).DeletePrayerOverride), http.MethodDelete, "/api/v1/prayer-time/overrides/x", "", "Bearer valid-token", "id", "x")
 	var appErr *apperror.AppError
 	if !errors.As(err, &appErr) || appErr.Code != apperror.CodeInvalidInput {
 		t.Errorf("err = %v, want INVALID_INPUT", err)
@@ -106,7 +106,7 @@ func TestGetPrayerConfig(t *testing.T) {
 	prayerTimes := mock.NewMockPrayerTimeUsecaseItf(gomock.NewController(t))
 	prayerTimes.EXPECT().GetConfig(gomock.Any()).Return(domain.PrayerConfig{Settings: domain.DefaultPrayerSettings(), Overrides: []domain.PrayerTimeOverride{}}, nil)
 
-	rec, err := serve(NewController(nil, nil, nil, prayerTimes).GetPrayerConfig, http.MethodGet, "/api/public/v1/prayer-time/config", "", "")
+	rec, err := serve(NewController(nil, nil, nil, prayerTimes, nil, nil).GetPrayerConfig, http.MethodGet, "/api/public/v1/prayer-time/config", "", "")
 	if err != nil {
 		t.Fatalf("handler: %v", err)
 	}
