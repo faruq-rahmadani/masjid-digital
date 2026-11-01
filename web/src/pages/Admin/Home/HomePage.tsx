@@ -9,18 +9,21 @@ import {
   NavCard,
   PageBody,
   SectionHeader,
+  Skeleton,
   Stat,
   StatusDot,
 } from '@/components'
+import { usePrayerTimes, useRecentActivity, useScreens } from '@/hooks/useHomeData'
 import { useMosqueProfile } from '@/hooks/useMosqueProfile'
-import { useUser } from '@/hooks/useUsers'
+import { useProfile } from '@/hooks/useProfile'
 import { ROUTES } from '@/route'
 import { MENU } from '@/routes/menu'
 import { useSession } from '@/stores/sessionStore'
+import type { Screen } from '@/types/home'
 import { canOpen } from '@/utils/auth/permissions'
 import { roleLabels } from '@/utils/auth/roles'
+import { formatActivityTime, formatTimeAgo } from '@/utils/format/date'
 import { AccountDrawer } from './drawers/AccountDrawer'
-import { prayerTimes, recentActivity, screens } from './fixtures'
 import { formatCountdown, nextPrayer } from './nextPrayer'
 import { useNow } from './useNow'
 
@@ -30,12 +33,15 @@ export function HomePage() {
   const mosque = useMosqueProfile()
   const [accountOpen, setAccountOpen] = useState(false)
   const now = useNow()
-  const next = nextPrayer(now, prayerTimes)
+  const prayerTimes = usePrayerTimes()
+  const next = prayerTimes.data?.length ? nextPrayer(now, prayerTimes.data) : null
+  const screens = useScreens()
+  const activity = useRecentActivity()
   const role = roleLabels[session.role]
 
-  // The API has no /me yet; only super admins may read a user, so others are greeted by role.
-  const me = useUser(session.userId, { enabled: session.role === 'super_admin' })
-  const name = me.data?.name
+  const profile = useProfile()
+  const name = profile.data?.name
+  const mosqueName = mosque.data?.name ?? 'Masjid Digital'
 
   const menu = MENU.filter((item) => canOpen(session.role, item.module))
 
@@ -47,7 +53,7 @@ export function HomePage() {
             <p className="text-on-brand-muted truncate text-sm">
               Assalamu'alaikum{name && `, ${name}`} · {role}
             </p>
-            <h1 className="mt-0.5 text-xl font-extrabold">{mosque.name}</h1>
+            <h1 className="mt-0.5 text-xl font-extrabold">{mosqueName}</h1>
           </div>
           <IconButton
             variant="brand"
@@ -58,11 +64,21 @@ export function HomePage() {
           />
         </div>
         <Card tone="brand-2" padding="md" className="flex items-center justify-between">
-          <Stat label="Sholat berikutnya" value={`${next.name} ${next.time}`} size="lg" />
+          <Stat
+            label="Sholat berikutnya"
+            value={
+              next ? `${next.name} ${next.time}` : <Skeleton className="bg-brand mt-1 h-6 w-32" />
+            }
+            size="lg"
+          />
           <Stat
             label="dalam"
             value={
-              <time dateTime={`PT${next.minutesLeft}M`}>{formatCountdown(next.minutesLeft)}</time>
+              next ? (
+                <time dateTime={`PT${next.minutesLeft}M`}>{formatCountdown(next.minutesLeft)}</time>
+              ) : (
+                <Skeleton className="bg-brand mt-1 ml-auto h-6 w-14" />
+              )
             }
             size="lg"
             align="end"
@@ -76,11 +92,12 @@ export function HomePage() {
           <NavCard
             to={ROUTES.screens}
             title="Layar TV"
-            description={`${screens.online} online · ${screens.offline} offline sejak ${screens.offlineSince}`}
+            description={screens.data ? screenSummary(screens.data, now) : 'Memuat…'}
             trailing={
               <span className="flex gap-1.5">
-                <StatusDot tone="success" />
-                <StatusDot tone="danger" />
+                {screens.data?.map((s) => (
+                  <StatusDot key={s.id} tone={s.status === 'online' ? 'success' : 'danger'} />
+                ))}
               </span>
             }
           />
@@ -102,12 +119,14 @@ export function HomePage() {
           />
           <Card padding="list">
             <List>
-              {recentActivity.map((item) => (
+              {activity.data?.map((item) => (
                 <li key={item.id} className="flex gap-2.5 py-2.5 text-xs">
                   <span className="flex-1 leading-snug">
-                    <b>{item.actor}</b> {item.action}
+                    <b>{item.actor_name}</b> {item.summary}
                   </span>
-                  <span className="text-ink-muted whitespace-nowrap">{item.time}</span>
+                  <span className="text-ink-muted whitespace-nowrap">
+                    {formatActivityTime(item.created_at, now)}
+                  </span>
                 </li>
               ))}
             </List>
@@ -120,4 +139,13 @@ export function HomePage() {
       )}
     </>
   )
+}
+
+function screenSummary(screens: Screen[], now: Date) {
+  if (screens.length === 0) return 'Belum ada layar terpasang'
+  const online = screens.filter((s) => s.status === 'online').length
+  const offline = screens.filter((s) => s.status === 'offline')
+  if (offline.length === 0) return `${online} online`
+  const oldest = offline.reduce((a, b) => (a.last_seen_at < b.last_seen_at ? a : b))
+  return `${online} online · ${offline.length} offline sejak ${formatTimeAgo(oldest.last_seen_at, now)}`
 }

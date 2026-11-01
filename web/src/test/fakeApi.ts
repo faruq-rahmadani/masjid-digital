@@ -110,6 +110,21 @@ export const fakeAuthService = {
     return { token: fakeToken((user as User).id, (user as User).role), expire_in: 3600 }
   },
   logout: async () => ({ message: 'logout berhasil' }),
+  getProfile: async () => {
+    const session = loadSession() ?? fail(401, 'UNAUTHENTICATED', 'silakan login terlebih dahulu')
+    return findUser(session.userId)
+  },
+}
+
+export const fakeMosqueProfileService = {
+  getMosqueProfile: async () => ({
+    name: 'Masjid Nur Husen',
+    address: 'Jl. Merdeka No. 1, Jakarta',
+    contact_phone: '+6281234561000',
+    latitude: -6.2088,
+    longitude: 106.8456,
+    timezone: 'Asia/Jakarta' as const,
+  }),
 }
 
 export const fakeUserService = {
@@ -117,10 +132,6 @@ export const fakeUserService = {
     fakeCalls.listUsers++
     requireSuperAdmin()
     return users
-  },
-  getUser: async (id: number) => {
-    requireSuperAdmin()
-    return findUser(id)
   },
   createUser: async ({ password: _password, ...body }: CreateUserRequest) => {
     const session = requireSuperAdmin()
@@ -159,4 +170,34 @@ export const fakeUserService = {
     findUser(id)
     return { message: 'password berhasil direset' }
   },
+}
+
+const minutesAgo = (m: number) => new Date(Date.now() - m * 60_000).toISOString()
+
+export const fakePrayerTimeService = {
+  getTodayPrayerTimes: async () => [
+    { name: 'Subuh', time: '04:42' },
+    { name: 'Dzuhur', time: '12:09' },
+    { name: 'Ashar', time: '15:24' },
+    { name: 'Maghrib', time: '18:15' },
+    { name: 'Isya', time: '19:25' },
+  ],
+}
+
+export const fakeScreenService = {
+  listScreens: async () => [
+    { id: 1, name: 'TV Ruang Utama', status: 'online' as const, last_seen_at: minutesAgo(1) },
+    { id: 2, name: 'TV Teras', status: 'offline' as const, last_seen_at: minutesAgo(125) },
+  ],
+}
+
+export const fakeActivityService = {
+  listRecentActivity: async () => [
+    {
+      id: 1,
+      actor_name: 'Siti Aminah',
+      summary: 'menambah pemasukan Rp 750.000',
+      created_at: minutesAgo(5),
+    },
+  ],
 }

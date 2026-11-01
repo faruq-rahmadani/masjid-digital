@@ -29,6 +29,9 @@ go.work.sum
 *.log
 tmp/
 
+# Vite cache, e.g. when a dev server is started from the repo root instead of web/
+.vite/
+
 # IDE / editor
 .idea/
 .vscode/
