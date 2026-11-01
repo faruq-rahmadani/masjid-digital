@@ -1,17 +1,13 @@
+import { useUpcomingFridayDuties } from '@/hooks/useFridayDuties'
+import { usePublicIqamahSettings } from '@/hooks/useIqamah'
 import { usePublicMosqueLogo, usePublicMosqueProfile } from '@/hooks/useMosqueProfile'
 import { usePublicDaySchedule } from '@/hooks/usePrayerTimes'
 import { useServerNow } from '@/hooks/useServerClock'
-import { useIqamahSettings } from '@/hooks/useTvData'
 import { localDate } from '@/utils/prayer/calendar'
 import { timezoneLabel } from '@/utils/timezone'
 import { wallClock } from './clock'
+import { TvScreen } from './components/TvScreen'
 import { TvStage } from './components/TvStage'
-import { displayMode } from './displayMode'
-import { AdzanMode } from './modes/AdzanMode'
-import { IqamahMode } from './modes/IqamahMode'
-import { JumatMode } from './modes/JumatMode'
-import { NormalMode } from './modes/NormalMode'
-import { SholatMode } from './modes/SholatMode'
 import type { TvContext } from './types'
 import { useWakeLock } from './useWakeLock'
 
@@ -22,11 +18,15 @@ export function TvPage() {
   const now = useServerNow()
   const profile = usePublicMosqueProfile()
   const logo = usePublicMosqueLogo()
-  const settings = useIqamahSettings()
+  const iqamah = usePublicIqamahSettings()
+  const fridayDuties = useUpcomingFridayDuties()
 
   const timeZone = profile.data?.timezone ?? 'Asia/Jakarta'
   // Computed on the TV for the mosque's date, so it rolls over at the mosque's midnight
-  const schedule = usePublicDaySchedule(localDate(now, timeZone))
+  const today = localDate(now, timeZone)
+  const schedule = usePublicDaySchedule(today)
+  const settings = iqamah.data
+  const duty = fridayDuties.data?.find((d) => d.date === today)
   const tv: TvContext = {
     now,
     clock: wallClock(now, timeZone),
@@ -48,18 +48,11 @@ export function TvPage() {
       </TvStage>
     )
   }
-  if (!schedule.data || !settings.data) return <TvStage className="bg-brand">{null}</TvStage>
-  const state = displayMode(tv.clock, schedule.data, settings.data)
+  if (!schedule.data || !settings) return <TvStage className="bg-brand">{null}</TvStage>
 
   return (
     <TvStage>
-      {state.mode === 'normal' && (
-        <NormalMode tv={tv} state={state} schedule={schedule.data} settings={settings.data} />
-      )}
-      {state.mode === 'adzan' && <AdzanMode tv={tv} state={state} settings={settings.data} />}
-      {state.mode === 'iqamah' && <IqamahMode tv={tv} state={state} />}
-      {state.mode === 'sholat' && <SholatMode tv={tv} state={state} />}
-      {state.mode === 'jumat' && <JumatMode tv={tv} state={state} />}
+      <TvScreen tv={tv} schedule={schedule.data} settings={settings} duty={duty} />
     </TvStage>
   )
 }

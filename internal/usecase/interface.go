@@ -65,3 +65,21 @@ type PrayerTimeRepositoryItf interface {
 	FindOverridesBetween(ctx context.Context, from, to string) ([]domain.PrayerTimeOverride, error)
 	DeleteOverride(ctx context.Context, id int64) error
 }
+
+// IqamahRepositoryItf stores what the TV does around each prayer, as one JSON row in configurations
+type IqamahRepositoryItf interface {
+	// GetSettings returns domain.ErrIqamahSettingsNotFound when never saved
+	GetSettings(ctx context.Context) (domain.IqamahSettings, error)
+	// UpdateSettings inserts or replaces the settings; updatedBy 0 is nobody
+	UpdateSettings(ctx context.Context, settings domain.IqamahSettings, updatedBy int64) error
+}
+
+// FridayDutyRepositoryItf stores the petugas Jumat, one row per Friday
+type FridayDutyRepositoryItf interface {
+	// Save inserts or replaces the petugas of duty.Date and returns the stored row
+	Save(ctx context.Context, duty domain.FridayDuty) (domain.FridayDuty, error)
+	// FindBetween returns the petugas Jumat dated from..to inclusive, YYYY-MM-DD
+	FindBetween(ctx context.Context, from, to string) ([]domain.FridayDuty, error)
+	// Delete returns domain.ErrFridayDutyNotFound when that Friday has no petugas
+	Delete(ctx context.Context, date string) error
+}

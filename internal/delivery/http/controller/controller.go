@@ -13,10 +13,12 @@ type Controller struct {
 	auth          AuthUsecaseItf
 	mosqueProfile MosqueProfileUsecaseItf
 	prayerTime    PrayerTimeUsecaseItf
+	iqamah        IqamahUsecaseItf
+	fridayDuty    FridayDutyUsecaseItf
 }
 
-func NewController(user UserUsecaseItf, auth AuthUsecaseItf, mosqueProfile MosqueProfileUsecaseItf, prayerTime PrayerTimeUsecaseItf) *Controller {
-	return &Controller{user: user, auth: auth, mosqueProfile: mosqueProfile, prayerTime: prayerTime}
+func NewController(user UserUsecaseItf, auth AuthUsecaseItf, mosqueProfile MosqueProfileUsecaseItf, prayerTime PrayerTimeUsecaseItf, iqamah IqamahUsecaseItf, fridayDuty FridayDutyUsecaseItf) *Controller {
+	return &Controller{user: user, auth: auth, mosqueProfile: mosqueProfile, prayerTime: prayerTime, iqamah: iqamah, fridayDuty: fridayDuty}
 }
 
 // dataResponse wraps a successful payload as {"data": ...}

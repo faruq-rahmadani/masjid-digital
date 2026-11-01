@@ -24,11 +24,3 @@ export function useRunningTexts() {
 export function useQuotes() {
   return useQuery({ queryKey: ['tv', 'quotes'], queryFn: tvService.listQuotes, ...REFRESH })
 }
-
-export function useIqamahSettings() {
-  return useQuery({ queryKey: ['tv', 'iqamah'], queryFn: tvService.getIqamahSettings, ...REFRESH })
-}
-
-export function useDutyRoster() {
-  return useQuery({ queryKey: ['tv', 'duty'], queryFn: tvService.getDutyRoster, ...REFRESH })
-}

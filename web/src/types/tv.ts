@@ -29,23 +29,3 @@ export type Slide = {
 }
 
 export type Quote = { text: string; source: string }
-
-/** Iqamah & alarm settings (E5-04), in minutes. Iqamah is counted from the adzan time. */
-export type IqamahSettings = {
-  iqamah_minutes: Record<PrayerKey, number>
-  /** How long the "Telah masuk waktu" screen stays up after the adzan time. */
-  adzan_minutes: number
-  /** How long the screen stays dim after iqamah, while the prayer is on. */
-  prayer_minutes: number
-  /** Friday: the Jumat screen shows this long before Dzuhur, and the khutbah lasts this long. */
-  jumat_before_minutes: number
-  khutbah_minutes: number
-}
-
-/** Petugas (E5-05): today's imam and muadzin, and on Friday the khatib and theme. */
-export type DutyRoster = {
-  imam: string
-  muadzin: string
-  khatib: string
-  khutbah_theme: string
-}

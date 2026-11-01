@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import type { IqamahSettings, ScheduleItem } from '@/types/tv'
+import type { IqamahSettings } from '@/types/iqamah'
+import type { ScheduleItem } from '@/types/tv'
 import { formatHijriDate, formatHms, formatLongDate, formatMs, parseTime, wallClock } from './clock'
 import { displayMode } from './displayMode'
 
@@ -14,11 +15,13 @@ const SCHEDULE: ScheduleItem[] = [
 ]
 
 const SETTINGS: IqamahSettings = {
-  iqamah_minutes: { subuh: 10, dzuhur: 7, ashar: 7, maghrib: 7, isya: 7 },
-  adzan_minutes: 1,
-  prayer_minutes: 10,
-  jumat_before_minutes: 60,
-  khutbah_minutes: 30,
+  iqamah_min: { subuh: 10, dzuhur: 7, ashar: 7, maghrib: 7, isya: 7 },
+  sholat_min: { subuh: 10, dzuhur: 10, ashar: 10, maghrib: 10, isya: 10, jumat: 10 },
+  adzan_display_min: 1,
+  sholat_display: 'dim',
+  jumat_before_min: 60,
+  khutbah_min: 30,
+  alarm: { enabled: true, at_adzan: true, before_iqamah: true, sound: 'beep', volume: 70 },
 }
 
 const WEDNESDAY = 3

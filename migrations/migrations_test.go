@@ -80,6 +80,15 @@ func TestMigrations(t *testing.T) {
 				t.Errorf("duplicate override: err = %v, want ErrUniqueViolation", err)
 			}
 
+			// 00006: one petugas Jumat row per date
+			insertDuty := "INSERT INTO friday_duties (date, khatib, updated_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?)"
+			if _, err := db.Exec(ctx, insertDuty, "2026-11-06", "Ustadz Abdullah", id, now, now); err != nil {
+				t.Fatalf("insert friday duty: %v", err)
+			}
+			if _, err := db.Exec(ctx, insertDuty, "2026-11-06", "Ustadz Hasan", id, now, now); !errors.Is(err, database.ErrUniqueViolation) {
+				t.Errorf("duplicate friday duty: err = %v, want ErrUniqueViolation", err)
+			}
+
 			for {
 				version, err := m.Version(ctx)
 				if err != nil {

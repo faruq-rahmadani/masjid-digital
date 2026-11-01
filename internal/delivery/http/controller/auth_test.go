@@ -61,7 +61,7 @@ func TestLogin(t *testing.T) {
 		Login(gomock.Any(), &domain.LoginRequest{Identifier: "081234567890", Password: "bismillah123"}).
 		Return(&domain.LoginResponse{Token: "signed-token", ExpireIn: 86400}, nil)
 
-	rec, err := serve(NewController(nil, auth, nil, nil).Login, http.MethodPost, "/api/v1/auth/login", `{"identifier":"081234567890","password":"bismillah123"}`, "")
+	rec, err := serve(NewController(nil, auth, nil, nil, nil, nil).Login, http.MethodPost, "/api/v1/auth/login", `{"identifier":"081234567890","password":"bismillah123"}`, "")
 	if err != nil {
 		t.Fatalf("handler: %v", err)
 	}
@@ -77,7 +77,7 @@ func TestLoginInvalidJSON(t *testing.T) {
 	// no EXPECT: a malformed body must not reach the usecase
 	auth := mock.NewMockAuthUsecaseItf(gomock.NewController(t))
 
-	_, err := serve(NewController(nil, auth, nil, nil).Login, http.MethodPost, "/api/v1/auth/login", `{"identifier":`, "")
+	_, err := serve(NewController(nil, auth, nil, nil, nil, nil).Login, http.MethodPost, "/api/v1/auth/login", `{"identifier":`, "")
 	assertCode(t, err, apperror.CodeInvalidInput)
 }
 
@@ -87,7 +87,7 @@ func TestLoginUsecaseError(t *testing.T) {
 	auth := mock.NewMockAuthUsecaseItf(gomock.NewController(t))
 	auth.EXPECT().Login(gomock.Any(), gomock.Any()).Return(nil, want)
 
-	_, err := serve(NewController(nil, auth, nil, nil).Login, http.MethodPost, "/api/v1/auth/login", `{"identifier":"081234567890","password":"wrong"}`, "")
+	_, err := serve(NewController(nil, auth, nil, nil, nil, nil).Login, http.MethodPost, "/api/v1/auth/login", `{"identifier":"081234567890","password":"wrong"}`, "")
 	if err != want {
 		t.Errorf("err = %v, want the usecase error returned as is", err)
 	}
@@ -97,7 +97,7 @@ func TestLogout(t *testing.T) {
 	auth := mock.NewMockAuthUsecaseItf(gomock.NewController(t))
 	auth.EXPECT().Logout(gomock.Any(), loggedInAs).Return(nil)
 
-	rec, err := serve(authenticated(t, NewController(nil, auth, nil, nil).Logout), http.MethodPost, "/api/v1/auth/logout", "", "Bearer valid-token")
+	rec, err := serve(authenticated(t, NewController(nil, auth, nil, nil, nil, nil).Logout), http.MethodPost, "/api/v1/auth/logout", "", "Bearer valid-token")
 	if err != nil {
 		t.Fatalf("handler: %v", err)
 	}
@@ -110,7 +110,7 @@ func TestLogoutUnauthenticated(t *testing.T) {
 	// no EXPECT: without a valid session the handler must not run
 	auth := mock.NewMockAuthUsecaseItf(gomock.NewController(t))
 
-	_, err := serve(authenticated(t, NewController(nil, auth, nil, nil).Logout), http.MethodPost, "/api/v1/auth/logout", "", "Bearer unknown-token")
+	_, err := serve(authenticated(t, NewController(nil, auth, nil, nil, nil, nil).Logout), http.MethodPost, "/api/v1/auth/logout", "", "Bearer unknown-token")
 	assertCode(t, err, apperror.CodeUnauthenticated)
 }
 
@@ -120,7 +120,7 @@ func TestLogoutUsecaseError(t *testing.T) {
 	auth := mock.NewMockAuthUsecaseItf(gomock.NewController(t))
 	auth.EXPECT().Logout(gomock.Any(), loggedInAs).Return(want)
 
-	_, err := serve(authenticated(t, NewController(nil, auth, nil, nil).Logout), http.MethodPost, "/api/v1/auth/logout", "", "Bearer valid-token")
+	_, err := serve(authenticated(t, NewController(nil, auth, nil, nil, nil, nil).Logout), http.MethodPost, "/api/v1/auth/logout", "", "Bearer valid-token")
 	if err != want {
 		t.Errorf("err = %v, want the usecase error returned as is", err)
 	}

@@ -1,7 +1,7 @@
 import { ConfirmDialog } from '@/components'
 import type { PrayerTimeOverride } from '@/types/prayer'
+import { formatLongDay } from '@/utils/format/day'
 import { SCHEDULE_NAMES } from '@/utils/prayer/calculate'
-import { formatLongDay } from '../utils'
 
 type DeleteOverrideModalProps = {
   /** The override to delete; null keeps the modal closed. */

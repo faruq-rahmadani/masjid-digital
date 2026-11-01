@@ -1,7 +1,7 @@
 import { screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ROUTES } from '@/route'
-import { fakeMosque, fakeServerClock } from '@/test/fakeApi'
+import { fakeFridayDuties, fakeIqamah, fakeMosque, fakeServerClock } from '@/test/fakeApi'
 import { renderRoute } from '@/test/render'
 
 // Only Date is faked, so the page's own 1 s timer and React Query still run normally.
@@ -73,12 +73,32 @@ describe('TvPage', () => {
       'aria-valuenow',
       '74',
     )
-    expect(await screen.findByText('Imam: Ustadz Hasan')).toBeInTheDocument()
+    // no imam card: petugas per waktu come with the daily roster (E12-02)
+    expect(screen.queryByText(/^Imam:/)).not.toBeInTheDocument()
     second.unmount()
 
     at('2026-10-28T11:25:00Z') // 18:25 WIB
     renderRoute(ROUTES.tv)
     expect(await screen.findByText('Sholat Maghrib sedang berlangsung')).toBeInTheDocument()
+  })
+
+  it('goes fully black during the prayer when set to', async () => {
+    fakeIqamah.settings = { ...fakeIqamah.settings, sholat_display: 'black' }
+    at('2026-10-28T11:25:00Z') // 18:25 WIB, Maghrib prayer on
+    renderRoute(ROUTES.tv)
+
+    const black = await screen.findByRole('img', { name: 'Sholat Maghrib sedang berlangsung' })
+    expect(black).toHaveClass('bg-black')
+    expect(screen.queryByText('Mohon tenang dan jaga kekhusyukan')).not.toBeInTheDocument()
+  })
+
+  it('shows the Jumat screen without petugas when none were filled in', async () => {
+    fakeFridayDuties.list = []
+    at('2026-10-30T04:51:48Z') // Friday 11:51:48 WIB
+    renderRoute(ROUTES.tv)
+
+    expect(await screen.findByText('SHOLAT JUMAT')).toBeInTheDocument()
+    expect(screen.queryByText('KHATIB')).not.toBeInTheDocument()
   })
 
   it('shows the Jumat screen before Friday Dzuhur', async () => {

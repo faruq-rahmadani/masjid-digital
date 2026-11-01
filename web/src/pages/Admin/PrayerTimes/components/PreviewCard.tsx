@@ -1,8 +1,8 @@
 import { Card, SectionHeader, Table, TBody, Td, THead, Th, Tr } from '@/components'
 import type { PrayerTimeEntry } from '@/types/prayer'
 import { cn } from '@/utils/cn'
+import { formatShortDay } from '@/utils/format/day'
 import { PRAYER_KEYS } from '@/utils/prayer/calculate'
-import { formatShortDay } from '../utils'
 
 const heads = { subuh: 'Sbh', dzuhur: 'Dzh', ashar: 'Asr', maghrib: 'Mgr', isya: 'Isy' } as const
 
