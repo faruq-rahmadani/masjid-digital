@@ -13,14 +13,6 @@ export function useSlides() {
   return useQuery({ queryKey: ['tv', 'slides'], queryFn: tvService.listSlides, ...REFRESH })
 }
 
-export function useRunningTexts() {
-  return useQuery({
-    queryKey: ['tv', 'running-texts'],
-    queryFn: tvService.listRunningTexts,
-    ...REFRESH,
-  })
-}
-
 export function useQuotes() {
   return useQuery({ queryKey: ['tv', 'quotes'], queryFn: tvService.listQuotes, ...REFRESH })
 }

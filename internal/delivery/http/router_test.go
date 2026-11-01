@@ -62,7 +62,17 @@ func newTestRouter(t *testing.T) *echo.Echo {
 	prayerTime.EXPECT().DeleteOverride(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 	prayerTime.EXPECT().GetConfig(gomock.Any()).Return(domain.PrayerConfig{}, nil).AnyTimes()
 
-	return newEcho(controller.NewController(users, auth, mosqueProfile, prayerTime), middleware.NewAuth(authenticator))
+	runningText := mock.NewMockRunningTextUsecaseItf(ctrl)
+	runningText.EXPECT().List(gomock.Any()).Return(nil, nil).AnyTimes()
+	runningText.EXPECT().Create(gomock.Any(), gomock.Any()).Return(domain.RunningText{}, nil).AnyTimes()
+	runningText.EXPECT().Update(gomock.Any(), gomock.Any()).Return(domain.RunningText{}, nil).AnyTimes()
+	runningText.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	runningText.EXPECT().Reorder(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	runningText.EXPECT().GetSetting(gomock.Any()).Return(domain.RunningTextSetting{}, nil).AnyTimes()
+	runningText.EXPECT().UpdateSetting(gomock.Any(), gomock.Any()).Return(domain.RunningTextSetting{}, nil).AnyTimes()
+	runningText.EXPECT().GetDisplay(gomock.Any()).Return(domain.RunningTextDisplay{}, nil).AnyTimes()
+
+	return newEcho(controller.NewController(users, auth, mosqueProfile, prayerTime, runningText), middleware.NewAuth(authenticator))
 }
 
 // TestRouteAccess pins who may call each route, so a route added without its
@@ -91,6 +101,7 @@ func TestRouteAccess(t *testing.T) {
 		{http.MethodGet, "/api/public/v1/mosque-profile", "", public, ""},
 		{http.MethodGet, "/api/public/v1/mosque-profile/logo", "", public, ""},
 		{http.MethodGet, "/api/public/v1/prayer-time/config", "", public, ""},
+		{http.MethodGet, "/api/public/v1/running-texts", "", public, ""},
 		{http.MethodPost, "/api/v1/auth/login", `{}`, public, ""},
 		{http.MethodPost, "/api/v1/auth/logout", "", anyUser, ""},
 		{http.MethodGet, "/api/v1/auth/profile", "", anyUser, ""},
@@ -110,6 +121,13 @@ func TestRouteAccess(t *testing.T) {
 		{http.MethodGet, "/api/v1/prayer-time/overrides?from=2026-11-01&to=2026-11-30", "", anyUser, ""},
 		{http.MethodPost, "/api/v1/prayer-time/overrides", `{}`, superTakmir, ""},
 		{http.MethodDelete, "/api/v1/prayer-time/overrides/1", "", superTakmir, ""},
+		{http.MethodGet, "/api/v1/running-texts", "", anyUser, ""},
+		{http.MethodPost, "/api/v1/running-texts", `{}`, superTakmir, ""},
+		{http.MethodPut, "/api/v1/running-texts/order", `{}`, superTakmir, ""},
+		{http.MethodPut, "/api/v1/running-texts/1", `{}`, superTakmir, ""},
+		{http.MethodDelete, "/api/v1/running-texts/1", "", superTakmir, ""},
+		{http.MethodGet, "/api/v1/running-text/setting", "", anyUser, ""},
+		{http.MethodPut, "/api/v1/running-text/setting", `{}`, superTakmir, ""},
 	}
 
 	callers := []struct {

@@ -12,11 +12,13 @@ import (
 	repodb "github.com/faruq-rahmadani/masjid-digital/internal/repository/database"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/mosqueprofiles"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/prayertimes"
+	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/runningtexts"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/users"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/authentication"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/mosqueprofile"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/prayertime"
+	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/runningtext"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/user"
 	"github.com/faruq-rahmadani/masjid-digital/migrations"
 	"github.com/faruq-rahmadani/masjid-digital/pkg/cache"
@@ -30,6 +32,7 @@ type repositories struct {
 	sessions       usecase.SessionRepositoryItf
 	mosqueProfiles usecase.MosqueProfileRepositoryItf
 	prayerTimes    usecase.PrayerTimeRepositoryItf
+	runningTexts   usecase.RunningTextRepositoryItf
 }
 
 type usecases struct {
@@ -37,6 +40,7 @@ type usecases struct {
 	auth          *authentication.AuthenticationUseCase // used by both the controller and the auth middleware
 	mosqueProfile controller.MosqueProfileUsecaseItf
 	prayerTime    controller.PrayerTimeUsecaseItf
+	runningText   controller.RunningTextUsecaseItf
 }
 
 // handlers is what the HTTP server serves
@@ -77,7 +81,7 @@ func newHandlers(ctx context.Context, cfg *config.Schema) (h handlers, cleanup f
 	}
 
 	return handlers{
-		controller: controller.NewController(ucs.user, ucs.auth, ucs.mosqueProfile, ucs.prayerTime),
+		controller: controller.NewController(ucs.user, ucs.auth, ucs.mosqueProfile, ucs.prayerTime, ucs.runningText),
 		auth:       middleware.NewAuth(ucs.auth),
 	}, cleanup, nil
 }
@@ -90,6 +94,7 @@ func newRepositories(db *database.DB, c cache.Cache) repositories {
 		sessions:       sessions.NewSessionCacheRepository(c),
 		mosqueProfiles: mosqueprofiles.NewMosqueProfileDBRepository(dbClient),
 		prayerTimes:    prayertimes.NewPrayerTimeDBRepository(dbClient),
+		runningTexts:   runningtexts.New(dbClient),
 	}
 }
 
@@ -106,6 +111,7 @@ func newUsecases(cfg *config.Schema, repos repositories) (usecases, error) {
 		auth:          authentication.New(repos.users, passwordHasher, tokenIssuer, repos.sessions),
 		mosqueProfile: mosqueprofile.NewMosqueProfileUsecase(repos.mosqueProfiles),
 		prayerTime:    prayertime.NewPrayerTimeUsecase(repos.prayerTimes),
+		runningText:   runningtext.New(repos.runningTexts),
 	}, nil
 }
 

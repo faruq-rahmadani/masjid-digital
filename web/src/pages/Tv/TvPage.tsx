@@ -1,3 +1,4 @@
+import { useDocumentBranding } from '@/hooks/useDocumentBranding'
 import { usePublicMosqueLogo, usePublicMosqueProfile } from '@/hooks/useMosqueProfile'
 import { usePublicDaySchedule } from '@/hooks/usePrayerTimes'
 import { useServerNow } from '@/hooks/useServerClock'
@@ -18,6 +19,7 @@ import { useWakeLock } from './useWakeLock'
 // TV display (E8), /tv. Public and read-only; switches between its modes on its own from the prayer times.
 export function TvPage() {
   useWakeLock()
+  useDocumentBranding()
   // The server's clock, not the TV's: a TV is often unset or drifting.
   const now = useServerNow()
   const profile = usePublicMosqueProfile()

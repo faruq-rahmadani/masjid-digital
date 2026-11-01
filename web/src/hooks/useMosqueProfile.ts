@@ -33,7 +33,11 @@ export function useUpdateMosqueProfile() {
   return useMutation({
     mutationFn: (body: UpdateMosqueProfileRequest) =>
       mosqueProfileService.updateMosqueProfile(body),
-    onSuccess: (saved) => queryClient.setQueryData(mosqueKeys.profile, saved),
+    onSuccess: (saved) => {
+      queryClient.setQueryData(mosqueKeys.profile, saved)
+      // the tab title (useDocumentBranding) reads the public twin
+      queryClient.setQueryData(mosqueKeys.publicProfile, saved)
+    },
   })
 }
 
@@ -49,7 +53,12 @@ export function useUploadMosqueLogo() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (file: File) => mosqueProfileService.uploadMosqueLogo(file),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: mosqueKeys.logo }),
+    // the favicon (useDocumentBranding) reads the public twin
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: mosqueKeys.logo }),
+        queryClient.invalidateQueries({ queryKey: mosqueKeys.publicLogo }),
+      ]),
   })
 }
 
@@ -57,7 +66,10 @@ export function useDeleteMosqueLogo() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: mosqueProfileService.deleteMosqueLogo,
-    onSuccess: () => queryClient.setQueryData(mosqueKeys.logo, null),
+    onSuccess: () => {
+      queryClient.setQueryData(mosqueKeys.logo, null)
+      queryClient.setQueryData(mosqueKeys.publicLogo, null)
+    },
   })
 }
 

@@ -11,6 +11,7 @@ import type {
   PrayerSettings,
   PrayerTimeOverride,
 } from '@/types/prayer'
+import type { RunningText, RunningTextSetting, UpdateRunningTextRequest } from '@/types/runningText'
 import type { IqamahSettings } from '@/types/tv'
 import type { CreateUserRequest, UpdateUserRequest, User } from '@/types/user'
 import { loadSession } from '@/utils/auth/token'
@@ -77,6 +78,8 @@ export function resetFakeApi() {
   mosqueLogo = null
   prayerSettings = SEED_PRAYER_SETTINGS()
   prayerOverrides = SEED_PRAYER_OVERRIDES()
+  runningTexts = SEED_RUNNING_TEXTS()
+  runningTextSetting = { speed: 'medium' }
 }
 
 const fail = (status: number, code: string, message: string): never => {
@@ -373,6 +376,125 @@ export const fakePrayerTimeService = {
   getPublicPrayerConfig: async () => ({ settings: prayerSettings, overrides: prayerOverrides }),
 }
 
+const SEED_RUNNING_TEXTS = (): RunningText[] =>
+  [
+    'Mohon matikan nada dering HP selama di dalam masjid',
+    "Kajian Tafsir setiap Kamis ba'da Maghrib",
+    'Infaq via QRIS tersedia di dekat pintu utama',
+    'Pendaftaran qurban dibuka sampai 20 Mei',
+  ].map((text, i) => ({
+    id: i + 1,
+    text,
+    active: i < 3,
+    position: i,
+    created_by: 1,
+    created_by_name: 'Ahmad Fauzi',
+    deactivated_at: i < 3 ? null : SEED_TIME,
+    created_at: SEED_TIME,
+    updated_at: SEED_TIME,
+  }))
+
+let runningTexts = SEED_RUNNING_TEXTS()
+let runningTextSetting: RunningTextSetting = { speed: 'medium' }
+
+/** Read or replace the fake's stored running texts (in display order) and scroll speed. */
+export const fakeRunningText = {
+  get texts() {
+    return runningTexts
+  },
+  set texts(value: RunningText[]) {
+    runningTexts = value
+  },
+  get setting() {
+    return runningTextSetting
+  },
+}
+
+function validRunningText(text: string) {
+  const trimmed = text.trim()
+  if (trimmed === '') fail(400, 'INVALID_INPUT', 'teks wajib diisi')
+  if ([...trimmed].length > 200) fail(400, 'INVALID_INPUT', 'teks maksimal 200 karakter')
+  return trimmed
+}
+
+const findRunningText = (id: number) =>
+  runningTexts.find((t) => t.id === id) ?? fail(404, 'NOT_FOUND', 'running text tidak ditemukan')
+
+export const fakeRunningTextService = {
+  listRunningTexts: async () => {
+    requireRole('super_admin', 'takmir', 'bendahara')
+    return runningTexts
+  },
+  createRunningText: async (text: string) => {
+    const session = requireRole('super_admin', 'takmir')
+    const now = new Date().toISOString()
+    const created: RunningText = {
+      id: Math.max(0, ...runningTexts.map((t) => t.id)) + 1,
+      text: validRunningText(text),
+      active: true,
+      position: Math.max(-1, ...runningTexts.map((t) => t.position)) + 1,
+      created_by: session.userId,
+      created_by_name: findUser(session.userId).name,
+      deactivated_at: null,
+      created_at: now,
+      updated_at: now,
+    }
+    runningTexts = [...runningTexts, created]
+    return created
+  },
+  updateRunningText: async (id: number, body: UpdateRunningTextRequest) => {
+    requireRole('super_admin', 'takmir')
+    const current = findRunningText(id)
+    const now = new Date().toISOString()
+    const saved = {
+      ...current,
+      text: validRunningText(body.text),
+      active: body.active,
+      // stamped when turned off, kept while only edited, cleared when turned on
+      deactivated_at: body.active ? null : (current.deactivated_at ?? now),
+      updated_at: now,
+    }
+    runningTexts = runningTexts.map((t) => (t.id === id ? saved : t))
+    return saved
+  },
+  deleteRunningText: async (id: number) => {
+    requireRole('super_admin', 'takmir')
+    findRunningText(id)
+    runningTexts = runningTexts.filter((t) => t.id !== id)
+    return { message: 'running text dihapus' }
+  },
+  reorderRunningTexts: async (ids: number[]) => {
+    requireRole('super_admin', 'takmir')
+    const sameSet =
+      ids.length === runningTexts.length &&
+      new Set(ids).size === ids.length &&
+      ids.every((id) => runningTexts.some((t) => t.id === id))
+    if (!sameSet)
+      fail(
+        400,
+        'INVALID_INPUT',
+        'daftar running text sudah berubah, muat ulang halaman lalu urutkan lagi',
+      )
+    runningTexts = ids.map((id, position) => ({ ...findRunningText(id), position }))
+    return runningTexts
+  },
+  getRunningTextSetting: async () => {
+    requireRole('super_admin', 'takmir', 'bendahara')
+    return runningTextSetting
+  },
+  updateRunningTextSetting: async (body: RunningTextSetting) => {
+    requireRole('super_admin', 'takmir')
+    if (!['slow', 'medium', 'fast'].includes(body.speed))
+      fail(400, 'INVALID_INPUT', 'kecepatan gulir tidak valid')
+    runningTextSetting = body
+    return runningTextSetting
+  },
+  getPublicRunningTexts: async () => ({
+    speed: runningTextSetting.speed,
+    texts: runningTexts.filter((t) => t.active).map((t) => t.text),
+  }),
+}
+
 /** How far the fake server's clock runs ahead of the (fake) device clock, in ms. */
 export const fakeServerClock = { aheadMs: 0 }
 
@@ -392,7 +514,6 @@ export const fakeTvService = {
     { id: 1, title: 'Kajian Rutin Ahad Pagi', caption: 'Ahad, 08.00 WIB', image_url: '' },
     { id: 2, title: 'Kajian Tafsir', caption: "Kamis ba'da Maghrib", image_url: '' },
   ],
-  listRunningTexts: async () => ['Infaq via QRIS tersedia di dekat pintu utama'],
   listQuotes: async () => [
     { text: 'Maka sesungguhnya bersama kesulitan ada kemudahan.', source: 'QS. Al-Insyirah: 5' },
   ],

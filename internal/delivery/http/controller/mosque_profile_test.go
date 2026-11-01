@@ -49,7 +49,7 @@ func TestGetMosqueProfile(t *testing.T) {
 	profiles := mock.NewMockMosqueProfileUsecaseItf(gomock.NewController(t))
 	profiles.EXPECT().Get(gomock.Any()).Return(mosqueProfile, nil)
 
-	rec, err := serve(authenticated(t, NewController(nil, nil, profiles, nil).GetMosqueProfile), http.MethodGet, "/api/v1/mosque-profile", "", "Bearer valid-token")
+	rec, err := serve(authenticated(t, NewController(nil, nil, profiles, nil, nil).GetMosqueProfile), http.MethodGet, "/api/v1/mosque-profile", "", "Bearer valid-token")
 	if err != nil {
 		t.Fatalf("handler: %v", err)
 	}
@@ -62,7 +62,7 @@ func TestGetMosqueProfileNeverSaved(t *testing.T) {
 	profiles := mock.NewMockMosqueProfileUsecaseItf(gomock.NewController(t))
 	profiles.EXPECT().Get(gomock.Any()).Return(domain.MosqueProfile{}, nil)
 
-	rec, err := serve(authenticated(t, NewController(nil, nil, profiles, nil).GetMosqueProfile), http.MethodGet, "/api/v1/mosque-profile", "", "Bearer valid-token")
+	rec, err := serve(authenticated(t, NewController(nil, nil, profiles, nil, nil).GetMosqueProfile), http.MethodGet, "/api/v1/mosque-profile", "", "Bearer valid-token")
 	if err != nil {
 		t.Fatalf("handler: %v", err)
 	}
@@ -85,7 +85,7 @@ func TestUpdateMosqueProfile(t *testing.T) {
 	}).Return(mosqueProfile, nil)
 
 	// UpdatedBy in the body must not fake who made the change
-	rec, err := serve(authenticated(t, NewController(nil, nil, profiles, nil).UpdateMosqueProfile), http.MethodPut, "/api/v1/mosque-profile",
+	rec, err := serve(authenticated(t, NewController(nil, nil, profiles, nil, nil).UpdateMosqueProfile), http.MethodPut, "/api/v1/mosque-profile",
 		`{"UpdatedBy":1,"name":"Masjid Al-Ikhlas","address":"Jl. Merdeka No. 1","contact_phone":"0812-3456-7890","latitude":-6.2088,"longitude":106.8456,"timezone":"Asia/Jakarta"}`, "Bearer valid-token")
 	if err != nil {
 		t.Fatalf("handler: %v", err)
@@ -99,7 +99,7 @@ func TestUpdateMosqueProfileInvalidJSON(t *testing.T) {
 	// no EXPECT: a malformed body must not reach the usecase
 	profiles := mock.NewMockMosqueProfileUsecaseItf(gomock.NewController(t))
 
-	_, err := serve(authenticated(t, NewController(nil, nil, profiles, nil).UpdateMosqueProfile), http.MethodPut, "/api/v1/mosque-profile", `{"name":`, "Bearer valid-token")
+	_, err := serve(authenticated(t, NewController(nil, nil, profiles, nil, nil).UpdateMosqueProfile), http.MethodPut, "/api/v1/mosque-profile", `{"name":`, "Bearer valid-token")
 	assertCode(t, err, apperror.CodeInvalidInput)
 }
 
@@ -109,7 +109,7 @@ func TestUpdateMosqueProfileUsecaseError(t *testing.T) {
 	profiles := mock.NewMockMosqueProfileUsecaseItf(gomock.NewController(t))
 	profiles.EXPECT().Update(gomock.Any(), gomock.Any()).Return(domain.MosqueProfile{}, want)
 
-	_, err := serve(authenticated(t, NewController(nil, nil, profiles, nil).UpdateMosqueProfile), http.MethodPut, "/api/v1/mosque-profile", `{"name":"Masjid"}`, "Bearer valid-token")
+	_, err := serve(authenticated(t, NewController(nil, nil, profiles, nil, nil).UpdateMosqueProfile), http.MethodPut, "/api/v1/mosque-profile", `{"name":"Masjid"}`, "Bearer valid-token")
 	if err != want {
 		t.Errorf("err = %v, want the usecase error returned as is", err)
 	}
@@ -119,7 +119,7 @@ func TestGetMosqueLogo(t *testing.T) {
 	profiles := mock.NewMockMosqueProfileUsecaseItf(gomock.NewController(t))
 	profiles.EXPECT().GetLogo(gomock.Any()).Return(domain.MosqueLogo{ContentType: "image/png", Data: []byte("\x89PNG\r\n\x1a\n")}, nil)
 
-	rec, err := serve(authenticated(t, NewController(nil, nil, profiles, nil).GetMosqueLogo), http.MethodGet, "/api/v1/mosque-profile/logo", "", "Bearer valid-token")
+	rec, err := serve(authenticated(t, NewController(nil, nil, profiles, nil, nil).GetMosqueLogo), http.MethodGet, "/api/v1/mosque-profile/logo", "", "Bearer valid-token")
 	if err != nil {
 		t.Fatalf("handler: %v", err)
 	}
@@ -134,7 +134,7 @@ func TestGetMosqueLogoNotFound(t *testing.T) {
 	profiles := mock.NewMockMosqueProfileUsecaseItf(gomock.NewController(t))
 	profiles.EXPECT().GetLogo(gomock.Any()).Return(domain.MosqueLogo{}, want)
 
-	_, err := serve(authenticated(t, NewController(nil, nil, profiles, nil).GetMosqueLogo), http.MethodGet, "/api/v1/mosque-profile/logo", "", "Bearer valid-token")
+	_, err := serve(authenticated(t, NewController(nil, nil, profiles, nil, nil).GetMosqueLogo), http.MethodGet, "/api/v1/mosque-profile/logo", "", "Bearer valid-token")
 	if err != want {
 		t.Errorf("err = %v, want the usecase error returned as is", err)
 	}
@@ -146,7 +146,7 @@ func TestUpdateMosqueLogo(t *testing.T) {
 	profiles := mock.NewMockMosqueProfileUsecaseItf(gomock.NewController(t))
 	profiles.EXPECT().UpdateLogo(gomock.Any(), domain.UpdateMosqueLogoRequest{UpdatedBy: loggedInAs.UserID, Data: data}).Return(nil)
 
-	rec, err := serveUpload(authenticated(t, NewController(nil, nil, profiles, nil).UpdateMosqueLogo), "file", data)
+	rec, err := serveUpload(authenticated(t, NewController(nil, nil, profiles, nil, nil).UpdateMosqueLogo), "file", data)
 	if err != nil {
 		t.Fatalf("handler: %v", err)
 	}
@@ -162,7 +162,7 @@ func TestUpdateMosqueLogoReadsOneByteOverTheLimit(t *testing.T) {
 		return len(req.Data) == domain.MaxMosqueLogoSize+1
 	})).Return(nil)
 
-	if _, err := serveUpload(authenticated(t, NewController(nil, nil, profiles, nil).UpdateMosqueLogo), "file", make([]byte, domain.MaxMosqueLogoSize+100)); err != nil {
+	if _, err := serveUpload(authenticated(t, NewController(nil, nil, profiles, nil, nil).UpdateMosqueLogo), "file", make([]byte, domain.MaxMosqueLogoSize+100)); err != nil {
 		t.Fatalf("handler: %v", err)
 	}
 }
@@ -172,21 +172,21 @@ func TestUpdateMosqueLogoRejects(t *testing.T) {
 		// no EXPECT: the request must not reach the usecase
 		profiles := mock.NewMockMosqueProfileUsecaseItf(gomock.NewController(t))
 
-		_, err := serveUpload(authenticated(t, NewController(nil, nil, profiles, nil).UpdateMosqueLogo), "", nil)
+		_, err := serveUpload(authenticated(t, NewController(nil, nil, profiles, nil, nil).UpdateMosqueLogo), "", nil)
 		assertCode(t, err, apperror.CodeInvalidInput)
 	})
 
 	t.Run("wrong field", func(t *testing.T) {
 		profiles := mock.NewMockMosqueProfileUsecaseItf(gomock.NewController(t))
 
-		_, err := serveUpload(authenticated(t, NewController(nil, nil, profiles, nil).UpdateMosqueLogo), "logo", []byte("\x89PNG"))
+		_, err := serveUpload(authenticated(t, NewController(nil, nil, profiles, nil, nil).UpdateMosqueLogo), "logo", []byte("\x89PNG"))
 		assertCode(t, err, apperror.CodeInvalidInput)
 	})
 
 	t.Run("not multipart", func(t *testing.T) {
 		profiles := mock.NewMockMosqueProfileUsecaseItf(gomock.NewController(t))
 
-		_, err := serve(authenticated(t, NewController(nil, nil, profiles, nil).UpdateMosqueLogo), http.MethodPut, "/api/v1/mosque-profile/logo", `{"file":"x"}`, "Bearer valid-token")
+		_, err := serve(authenticated(t, NewController(nil, nil, profiles, nil, nil).UpdateMosqueLogo), http.MethodPut, "/api/v1/mosque-profile/logo", `{"file":"x"}`, "Bearer valid-token")
 		assertCode(t, err, apperror.CodeInvalidInput)
 	})
 }
@@ -195,7 +195,7 @@ func TestDeleteMosqueLogo(t *testing.T) {
 	profiles := mock.NewMockMosqueProfileUsecaseItf(gomock.NewController(t))
 	profiles.EXPECT().DeleteLogo(gomock.Any()).Return(nil)
 
-	rec, err := serve(authenticated(t, NewController(nil, nil, profiles, nil).DeleteMosqueLogo), http.MethodDelete, "/api/v1/mosque-profile/logo", "", "Bearer valid-token")
+	rec, err := serve(authenticated(t, NewController(nil, nil, profiles, nil, nil).DeleteMosqueLogo), http.MethodDelete, "/api/v1/mosque-profile/logo", "", "Bearer valid-token")
 	if err != nil {
 		t.Fatalf("handler: %v", err)
 	}

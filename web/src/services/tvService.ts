@@ -4,7 +4,8 @@ import type { CashSummary, DutyRoster, IqamahSettings, Quote, Slide } from '@/ty
  * Content for the TV display that has no endpoint yet. Each function returns mock data in the
  * shape the API will return; swap in the real call when its task lands (noted per function).
  * The mosque name, address, time zone and logo are live (mosqueProfileService), and so are
- * the prayer times (computed on the TV from prayerTimeService's config).
+ * the prayer times (computed on the TV from prayerTimeService's config) and the running text
+ * (runningTextService).
  */
 
 /** E7: the latest period's cash report. */
@@ -15,11 +16,6 @@ export async function getCashSummary(): Promise<CashSummary> {
 /** E6-04: active slides in display order. */
 export async function listSlides(): Promise<Slide[]> {
   return MOCK_SLIDES
-}
-
-/** E6-05: active running texts in display order. */
-export async function listRunningTexts(): Promise<string[]> {
-  return MOCK_RUNNING_TEXTS
 }
 
 /** Quotes rotating under the clock. */
@@ -63,12 +59,6 @@ const MOCK_SLIDES: Slide[] = [
     caption: 'QRIS tersedia di dekat pintu utama',
     image_url: '',
   },
-]
-
-const MOCK_RUNNING_TEXTS = [
-  "Kajian Tafsir setiap Kamis ba'da Maghrib",
-  'Infaq via QRIS tersedia di dekat pintu utama',
-  'Mohon matikan nada dering HP selama di dalam masjid',
 ]
 
 const MOCK_QUOTES: Quote[] = [
