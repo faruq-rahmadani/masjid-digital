@@ -54,7 +54,15 @@ func newTestRouter(t *testing.T) *echo.Echo {
 	mosqueProfile.EXPECT().UpdateLogo(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 	mosqueProfile.EXPECT().DeleteLogo(gomock.Any()).Return(nil).AnyTimes()
 
-	return newEcho(controller.NewController(users, auth, mosqueProfile), middleware.NewAuth(authenticator))
+	prayerTime := mock.NewMockPrayerTimeUsecaseItf(ctrl)
+	prayerTime.EXPECT().GetSettings(gomock.Any()).Return(domain.PrayerSettings{}, nil).AnyTimes()
+	prayerTime.EXPECT().UpdateSettings(gomock.Any(), gomock.Any()).Return(domain.PrayerSettings{}, nil).AnyTimes()
+	prayerTime.EXPECT().ListOverrides(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	prayerTime.EXPECT().CreateOverride(gomock.Any(), gomock.Any()).Return(domain.PrayerTimeOverride{}, nil).AnyTimes()
+	prayerTime.EXPECT().DeleteOverride(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	prayerTime.EXPECT().GetConfig(gomock.Any()).Return(domain.PrayerConfig{}, nil).AnyTimes()
+
+	return newEcho(controller.NewController(users, auth, mosqueProfile, prayerTime), middleware.NewAuth(authenticator))
 }
 
 // TestRouteAccess pins who may call each route, so a route added without its
@@ -82,6 +90,7 @@ func TestRouteAccess(t *testing.T) {
 		{http.MethodGet, "/api/public/v1/time", "", public, ""},
 		{http.MethodGet, "/api/public/v1/mosque-profile", "", public, ""},
 		{http.MethodGet, "/api/public/v1/mosque-profile/logo", "", public, ""},
+		{http.MethodGet, "/api/public/v1/prayer-time/config", "", public, ""},
 		{http.MethodPost, "/api/v1/auth/login", `{}`, public, ""},
 		{http.MethodPost, "/api/v1/auth/logout", "", anyUser, ""},
 		{http.MethodGet, "/api/v1/auth/profile", "", anyUser, ""},
@@ -96,6 +105,11 @@ func TestRouteAccess(t *testing.T) {
 		{http.MethodGet, "/api/v1/mosque-profile/logo", "", anyUser, ""},
 		{http.MethodPut, "/api/v1/mosque-profile/logo", upload.String(), superTakmir, form.FormDataContentType()},
 		{http.MethodDelete, "/api/v1/mosque-profile/logo", "", superTakmir, ""},
+		{http.MethodGet, "/api/v1/prayer-time/config", "", anyUser, ""},
+		{http.MethodPut, "/api/v1/prayer-time/config", `{}`, superTakmir, ""},
+		{http.MethodGet, "/api/v1/prayer-time/overrides?from=2026-11-01&to=2026-11-30", "", anyUser, ""},
+		{http.MethodPost, "/api/v1/prayer-time/overrides", `{}`, superTakmir, ""},
+		{http.MethodDelete, "/api/v1/prayer-time/overrides/1", "", superTakmir, ""},
 	}
 
 	callers := []struct {

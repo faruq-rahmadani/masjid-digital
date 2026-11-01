@@ -61,6 +61,19 @@ export const routes: RouteObject[] = [
               },
             ],
           },
+          {
+            path: ROUTES.prayerTimes,
+            element: <RequireAccess module="prayerTimes" />,
+            children: [
+              {
+                index: true,
+                lazy: async () => ({
+                  Component: (await import('@/pages/Admin/PrayerTimes/PrayerTimesPage'))
+                    .PrayerTimesPage,
+                }),
+              },
+            ],
+          },
           // Menu items without a screen yet, each still guarded by its role permission.
           ...MENU.filter((item) => !item.ready).map((item) => ({
             path: item.path,

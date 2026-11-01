@@ -31,6 +31,7 @@ func registerRouters(e *echo.Echo, ctrl *controller.Controller, auth *middleware
 	public.GET("/time", ctrl.GetServerTime)
 	public.GET("/mosque-profile", ctrl.GetMosqueProfile)
 	public.GET("/mosque-profile/logo", ctrl.GetMosqueLogo)
+	public.GET("/prayer-time/config", ctrl.GetPrayerConfig)
 
 	v1 := e.Group("/api/v1")
 	v1.POST("/auth/login", ctrl.Login)
@@ -54,6 +55,13 @@ func registerRouters(e *echo.Echo, ctrl *controller.Controller, auth *middleware
 	v1WithAuth.GET("/mosque-profile/logo", ctrl.GetMosqueLogo)
 	v1WithAuth.PUT("/mosque-profile/logo", ctrl.UpdateMosqueLogo, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir), echomiddleware.BodyLimit(uploadBodyLimit))
 	v1WithAuth.DELETE("/mosque-profile/logo", ctrl.DeleteMosqueLogo, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
+
+	// prayer times: computed on each device; the settings and date overrides
+	v1WithAuth.GET("/prayer-time/config", ctrl.GetPrayerSettings)
+	v1WithAuth.PUT("/prayer-time/config", ctrl.UpdatePrayerSettings, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
+	v1WithAuth.GET("/prayer-time/overrides", ctrl.ListPrayerOverrides)
+	v1WithAuth.POST("/prayer-time/overrides", ctrl.CreatePrayerOverride, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
+	v1WithAuth.DELETE("/prayer-time/overrides/:id", ctrl.DeletePrayerOverride, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
 }
 
 func healthcheckHandler(c echo.Context) error {

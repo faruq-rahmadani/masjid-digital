@@ -1,19 +1,47 @@
-import type { PrayerTime } from '@/types/home'
+import {
+  apiDelete,
+  apiGet,
+  apiPost,
+  apiPut,
+  type DataResponse,
+  type MessageResponse,
+} from '@/api/client'
+import type {
+  CreatePrayerOverrideRequest,
+  PrayerConfig,
+  PrayerSettings,
+  PrayerTimeOverride,
+} from '@/types/prayer'
 
-// Not wired yet. Per the PRD, times are computed on the device from the mosque's coordinates
-// (Kemenag method, E4-01) plus per-waktu corrections from the API (E4-02). Mocked until then.
-
-export async function getTodayPrayerTimes(): Promise<PrayerTime[]> {
-  return MOCK_PRAYER_TIMES
+export async function getPrayerSettings(): Promise<PrayerSettings> {
+  const resp = await apiGet<DataResponse<PrayerSettings>>('/v1/prayer-time/config')
+  return resp.data
 }
 
-// --- Mock ----------------------------------------------------------------------------------
-// Jakarta, from the mockup.
+export async function updatePrayerSettings(payload: PrayerSettings): Promise<PrayerSettings> {
+  const resp = await apiPut<DataResponse<PrayerSettings>>('/v1/prayer-time/config', payload)
+  return resp.data
+}
 
-const MOCK_PRAYER_TIMES: PrayerTime[] = [
-  { name: 'Subuh', time: '04:42' },
-  { name: 'Dzuhur', time: '12:09' },
-  { name: 'Ashar', time: '15:24' },
-  { name: 'Maghrib', time: '18:15' },
-  { name: 'Isya', time: '19:25' },
-]
+export async function listPrayerOverrides(from: string, to: string): Promise<PrayerTimeOverride[]> {
+  const resp = await apiGet<DataResponse<PrayerTimeOverride[]>>('/v1/prayer-time/overrides', {
+    params: { from, to },
+  })
+  return resp.data
+}
+
+export async function createPrayerOverride(
+  payload: CreatePrayerOverrideRequest,
+): Promise<PrayerTimeOverride> {
+  const resp = await apiPost<DataResponse<PrayerTimeOverride>>('/v1/prayer-time/overrides', payload)
+  return resp.data
+}
+
+export async function deletePrayerOverride(id: number): Promise<MessageResponse> {
+  return apiDelete<MessageResponse>(`/v1/prayer-time/overrides/${id}`)
+}
+
+export async function getPublicPrayerConfig(): Promise<PrayerConfig> {
+  const resp = await apiGet<DataResponse<PrayerConfig>>('/public/v1/prayer-time/config')
+  return resp.data
+}

@@ -1,6 +1,8 @@
 // What the TV display (/tv) shows besides the mosque profile. All mocked for now; see tvService.
 
-export type PrayerKey = 'subuh' | 'dzuhur' | 'ashar' | 'maghrib' | 'isya'
+import type { PrayerKey } from './prayer'
+
+export type { PrayerKey }
 
 /** One tile of the day's schedule. Imsak and Terbit are shown but have no adzan or iqamah. */
 export type ScheduleItem = {

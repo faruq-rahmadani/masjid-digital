@@ -1,22 +1,11 @@
-import type {
-  CashSummary,
-  DutyRoster,
-  IqamahSettings,
-  Quote,
-  ScheduleItem,
-  Slide,
-} from '@/types/tv'
+import type { CashSummary, DutyRoster, IqamahSettings, Quote, Slide } from '@/types/tv'
 
 /*
  * Content for the TV display that has no endpoint yet. Each function returns mock data in the
  * shape the API will return; swap in the real call when its task lands (noted per function).
- * The mosque name, address, time zone and logo are live (mosqueProfileService).
+ * The mosque name, address, time zone and logo are live (mosqueProfileService), and so are
+ * the prayer times (computed on the TV from prayerTimeService's config).
  */
-
-/** E4-01: computed on the device from the mosque's coordinates (Kemenag method). */
-export async function getTodaySchedule(): Promise<ScheduleItem[]> {
-  return MOCK_SCHEDULE
-}
 
 /** E7: the latest period's cash report. */
 export async function getCashSummary(): Promise<CashSummary> {
@@ -50,16 +39,6 @@ export async function getDutyRoster(): Promise<DutyRoster> {
 
 // --- Mock ----------------------------------------------------------------------------------
 // From the mockups (Jakarta).
-
-const MOCK_SCHEDULE: ScheduleItem[] = [
-  { key: 'imsak', name: 'Imsak', time: '04:32' },
-  { key: 'subuh', name: 'Subuh', time: '04:42' },
-  { key: 'terbit', name: 'Terbit', time: '05:56' },
-  { key: 'dzuhur', name: 'Dzuhur', time: '12:09' },
-  { key: 'ashar', name: 'Ashar', time: '15:24' },
-  { key: 'maghrib', name: 'Maghrib', time: '18:15' },
-  { key: 'isya', name: 'Isya', time: '19:25' },
-]
 
 const MOCK_CASH: CashSummary = {
   as_of: '2026-10-28',

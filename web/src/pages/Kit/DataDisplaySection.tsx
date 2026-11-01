@@ -157,6 +157,7 @@ export function DataDisplaySection() {
           <Badge tone="gold" caps>
             Penting
           </Badge>
+          <Badge tone="notice">Langsung tersimpan</Badge>
         </Row>
       </Specimen>
 

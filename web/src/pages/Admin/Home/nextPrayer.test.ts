@@ -9,7 +9,8 @@ const times = [
 
 describe('nextPrayer', () => {
   it('finds the next prayer today', () => {
-    expect(nextPrayer(new Date(2026, 9, 28, 17, 28), times)).toEqual({
+    // 17:28 WIB
+    expect(nextPrayer(new Date('2026-10-28T10:28:00Z'), times, 'Asia/Jakarta')).toEqual({
       name: 'Maghrib',
       time: '18:15',
       minutesLeft: 47,
@@ -17,10 +18,17 @@ describe('nextPrayer', () => {
   })
 
   it('rolls over to tomorrow’s Subuh after Isya', () => {
-    expect(nextPrayer(new Date(2026, 9, 28, 22, 0), times)).toMatchObject({
+    // 22:00 WIB
+    expect(nextPrayer(new Date('2026-10-28T15:00:00Z'), times, 'Asia/Jakarta')).toMatchObject({
       name: 'Subuh',
       minutesLeft: 6 * 60 + 42,
     })
+  })
+
+  it("counts on the mosque's clock, not the device's zone", () => {
+    // the same instant is 17:28 WIB but 18:28 WITA: Maghrib has passed in Makassar
+    const at = new Date('2026-10-28T10:28:00Z')
+    expect(nextPrayer(at, times, 'Asia/Makassar')).toMatchObject({ name: 'Isya', minutesLeft: 57 })
   })
 
   it('formats the countdown as hours:minutes', () => {

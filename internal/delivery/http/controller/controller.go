@@ -12,10 +12,11 @@ type Controller struct {
 	user          UserUsecaseItf
 	auth          AuthUsecaseItf
 	mosqueProfile MosqueProfileUsecaseItf
+	prayerTime    PrayerTimeUsecaseItf
 }
 
-func NewController(user UserUsecaseItf, auth AuthUsecaseItf, mosqueProfile MosqueProfileUsecaseItf) *Controller {
-	return &Controller{user: user, auth: auth, mosqueProfile: mosqueProfile}
+func NewController(user UserUsecaseItf, auth AuthUsecaseItf, mosqueProfile MosqueProfileUsecaseItf, prayerTime PrayerTimeUsecaseItf) *Controller {
+	return &Controller{user: user, auth: auth, mosqueProfile: mosqueProfile, prayerTime: prayerTime}
 }
 
 // dataResponse wraps a successful payload as {"data": ...}
@@ -33,7 +34,7 @@ func paramID(c echo.Context) (int64, error) {
 
 	id, err := strconv.ParseInt(raw, 10, 64)
 	if err != nil || id <= 0 {
-		return 0, apperror.New(apperror.CodeInvalidInput, fmt.Errorf("invalid user id %q", raw), "id user tidak valid")
+		return 0, apperror.New(apperror.CodeInvalidInput, fmt.Errorf("invalid id %q", raw), "id tidak valid")
 	}
 
 	return id, nil

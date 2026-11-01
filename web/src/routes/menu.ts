@@ -18,7 +18,7 @@ export const MENU: readonly MenuItem[] = [
     path: ROUTES.prayerTimes,
     icon: Clock,
     module: 'prayerTimes',
-    ready: false,
+    ready: true,
   },
   { label: 'Iqamah', path: ROUTES.iqamah, icon: Bell, module: 'iqamah', ready: false },
   { label: 'Profil masjid', path: ROUTES.profile, icon: House, module: 'profile', ready: true },
