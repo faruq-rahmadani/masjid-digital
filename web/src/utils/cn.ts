@@ -5,7 +5,9 @@ import { extendTailwindMerge } from 'tailwind-merge'
 const twMerge = extendTailwindMerge({
   extend: {
     theme: {
-      radius: ['sheet'],
+      radius: ['sheet', 'tv', 'tv-lg'],
+      // TV sizes are named by px (text-tv-26); without this they read as colors and clash.
+      text: [(value: string) => /^tv-\d+$/.test(value)],
     },
   },
 })

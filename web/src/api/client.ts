@@ -56,7 +56,7 @@ export function configureApiAuth(options: {
   onUnauthenticated = options.onUnauthenticated
 }
 
-// Private: requests go through apiGet / apiPost / apiPut so they all share the interceptors.
+// Private: requests go through apiGet / apiPost / apiPut / apiDelete so they all share the interceptors.
 const http = axios.create({
   baseURL: env.apiBaseUrl,
   headers: { Accept: 'application/json' },
@@ -96,4 +96,8 @@ export async function apiPost<T, B = unknown>(url: string, body?: B, config?: Ax
 
 export async function apiPut<T, B = unknown>(url: string, body?: B, config?: AxiosRequestConfig) {
   return (await http.put<T>(url, body, config)).data
+}
+
+export async function apiDelete<T>(url: string, config?: AxiosRequestConfig) {
+  return (await http.delete<T>(url, config)).data
 }

@@ -79,6 +79,9 @@ func TestRouteAccess(t *testing.T) {
 		contentType                string // JSON when empty
 	}{
 		{http.MethodGet, "/health", "", public, ""},
+		{http.MethodGet, "/api/public/v1/time", "", public, ""},
+		{http.MethodGet, "/api/public/v1/mosque-profile", "", public, ""},
+		{http.MethodGet, "/api/public/v1/mosque-profile/logo", "", public, ""},
 		{http.MethodPost, "/api/v1/auth/login", `{}`, public, ""},
 		{http.MethodPost, "/api/v1/auth/logout", "", anyUser, ""},
 		{http.MethodGet, "/api/v1/auth/profile", "", anyUser, ""},

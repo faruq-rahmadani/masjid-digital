@@ -10,5 +10,6 @@ export const ROUTES = {
   iqamah: '/iqamah',
   profile: '/profile',
   screens: '/screens',
+  tv: '/tv',
   kit: '/kit',
 } as const

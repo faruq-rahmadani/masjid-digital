@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatPhone, normalizePhone } from './phone'
+import { formatPhone, formatPhoneInput, normalizePhone } from './phone'
 
 describe('phone', () => {
   it('normalizes Indonesian numbers to E.164 like the API', () => {
@@ -17,5 +17,18 @@ describe('phone', () => {
   it('formats E.164 for display', () => {
     expect(formatPhone('+6281234561001')).toBe('0812-3456-1001')
     expect(formatPhone('+14155550123')).toBe('+14155550123')
+  })
+
+  it('adds dashes while typing a local number', () => {
+    expect(formatPhoneInput('0812')).toBe('0812')
+    expect(formatPhoneInput('08123')).toBe('0812-3')
+    expect(formatPhoneInput('081234561001')).toBe('0812-3456-1001')
+    expect(formatPhoneInput('0812 3456.1001x')).toBe('0812-3456-1001')
+    expect(formatPhoneInput('')).toBe('')
+  })
+
+  it('keeps numbers with a country code as digits', () => {
+    expect(formatPhoneInput('+62 812-3456')).toBe('+628123456')
+    expect(formatPhoneInput('+14155550123')).toBe('+14155550123')
   })
 })

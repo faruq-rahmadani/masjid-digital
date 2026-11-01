@@ -26,6 +26,12 @@ var largeBodyRoutes = map[string]bool{
 func registerRouters(e *echo.Echo, ctrl *controller.Controller, auth *middleware.Auth) {
 	e.GET("/health", healthcheckHandler)
 
+	// public: read only, no login, for screens anyone can see (the TV display)
+	public := e.Group("/api/public/v1")
+	public.GET("/time", ctrl.GetServerTime)
+	public.GET("/mosque-profile", ctrl.GetMosqueProfile)
+	public.GET("/mosque-profile/logo", ctrl.GetMosqueLogo)
+
 	v1 := e.Group("/api/v1")
 	v1.POST("/auth/login", ctrl.Login)
 

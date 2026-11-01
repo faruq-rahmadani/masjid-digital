@@ -18,7 +18,7 @@ type Access = 'edit' | 'view'
 
 const MATRIX: Record<ModuleKey, Partial<Record<Role, Access>>> = {
   home: { super_admin: 'edit', takmir: 'view', bendahara: 'view' },
-  profile: { super_admin: 'edit', takmir: 'view' },
+  profile: { super_admin: 'edit', takmir: 'edit' },
   users: { super_admin: 'edit' },
   screens: { super_admin: 'edit', takmir: 'edit' },
   prayerTimes: { super_admin: 'edit', takmir: 'edit' },

@@ -5,7 +5,7 @@ export type PrayerTime = {
 
 export type ScreenStatus = 'online' | 'offline'
 
-/** A TV that opened /tv/{slug} (E9-02: heartbeat, last seen). */
+/** A TV that opened /tv (E9-02: heartbeat, last seen). */
 export type Screen = {
   id: number
   name: string

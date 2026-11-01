@@ -6,6 +6,8 @@
 *.dll
 *.so
 *.dylib
+# Delve debug builds (e.g. cmd/http/__debug_bin3015032072)
+__debug_bin*
 
 # Test & coverage
 *.test

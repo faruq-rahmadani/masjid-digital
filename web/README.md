@@ -45,9 +45,10 @@ web/
     │   ├── menu.ts            # Beranda "Kelola" menu: label, icon, path, permission
     │   ├── guards.tsx         # RequireAuth, RequireAccess
     │   └── types.ts
-    ├── layouts/               # AppShell (390px column, session lifecycle)
+    ├── layouts/               # AppShell (390px column, session lifecycle), TvShell (full screen)
     ├── pages/
     │   ├── LoginPage/  Kit/   # public / dev-only
+    │   ├── Tv/                # TV display (/tv): 1920x1080 stage, modes, clock + mode logic
     │   ├── NotFoundPage, ComingSoonPage, RouteError
     │   └── Admin/             # internal users; access per role via the ACL, not the folder
     │       ├── Home/          # hub every role lands on
@@ -131,14 +132,16 @@ Pages never hold data: anything a screen shows comes from a service, even before
 exists. Until then the service function returns mock data, and swapping in the real call later
 doesn't touch the page.
 
-| Service                | Status                                   |
-| ---------------------- | ---------------------------------------- |
-| `authService`          | Live                                     |
-| `userService`          | Live                                     |
-| `mosqueProfileService` | Live                                     |
-| `prayerTimeService`    | Mock (computed on device per PRD, E4-01) |
-| `screenService`        | Mock (`GET /screens`, E9-02)             |
-| `activityService`      | Mock (activity log, E2-05)               |
+| Service                | Status                                      |
+| ---------------------- | ------------------------------------------- |
+| `authService`          | Live                                        |
+| `userService`          | Live                                        |
+| `mosqueProfileService` | Live                                        |
+| `geocodingService`     | Live, OpenStreetMap Nominatim (not our API) |
+| `prayerTimeService`    | Mock (computed on device per PRD, E4-01)    |
+| `screenService`        | Mock (`GET /screens`, E9-02)                |
+| `activityService`      | Mock (activity log, E2-05)                  |
+| `tvService`            | Mock (TV content: E4, E5, E6, E7)           |
 
 Mock in the shape the API will return (timestamps, ids), not display text; pages format it.
 Pattern:
