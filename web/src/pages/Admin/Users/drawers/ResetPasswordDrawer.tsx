@@ -1,11 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
-import { Button, Checkbox, Field, Input, Sheet, Stack, useToast } from '@/components'
+import { Button, Field, PasswordInput, Sheet, Stack, useToast } from '@/components'
 import { useResetPassword } from '@/hooks/useUsers'
 import type { User } from '@/types/user'
-import { passwordSchema } from '../schema'
+import { passwordSchema } from '@/utils/auth/password'
 
 const schema = z.object({ password: passwordSchema })
 
@@ -16,7 +15,6 @@ type ResetPasswordDrawerProps = {
 
 // The API lets a super admin set a new password directly; there is no reset link yet.
 export function ResetPasswordDrawer({ user, onClose }: ResetPasswordDrawerProps) {
-  const [visible, setVisible] = useState(false)
   const reset = useResetPassword()
   const toast = useToast()
   const form = useForm({ resolver: zodResolver(schema), defaultValues: { password: '' } })
@@ -58,17 +56,8 @@ export function ResetPasswordDrawer({ user, onClose }: ResetPasswordDrawerProps)
             hint="Minimal 8 karakter"
             error={form.formState.errors.password?.message}
           >
-            <Input
-              type={visible ? 'text' : 'password'}
-              autoComplete="new-password"
-              {...form.register('password')}
-            />
+            <PasswordInput autoComplete="new-password" {...form.register('password')} />
           </Field>
-          <Checkbox
-            label="Tampilkan password"
-            checked={visible}
-            onChange={(event) => setVisible(event.currentTarget.checked)}
-          />
         </Stack>
       </form>
     </Sheet>

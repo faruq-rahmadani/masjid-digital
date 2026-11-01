@@ -82,7 +82,8 @@ describe('UsersPage', () => {
 
     await userEvent.type(screen.getByLabelText('Nama'), 'Yusuf Ramli')
     await userEvent.type(screen.getByLabelText('Nomor HP'), '0812 9999 0001')
-    await userEvent.selectOptions(screen.getByLabelText('Peran'), 'bendahara')
+    await userEvent.click(screen.getByRole('combobox', { name: 'Peran' }))
+    await userEvent.click(screen.getByRole('option', { name: 'Bendahara' }))
     await userEvent.type(screen.getByLabelText('Password awal'), 'rahasia-kuat')
     await userEvent.click(screen.getByRole('button', { name: 'Simpan pengguna' }))
 
@@ -177,5 +178,36 @@ describe('UsersPage', () => {
     await within(await userList()).findByText(/Yusuf Ramli/)
 
     expect(fakeCalls.listUsers).toBe(2)
+  })
+
+  it("edits a user's name, phone and email from the row menu", async () => {
+    renderRoute(ROUTES.users, { as: superAdmin })
+
+    await openActions('Hasan Basri')
+    await userEvent.click(screen.getByRole('button', { name: 'Ubah data' }))
+    const drawer = screen.getByRole('dialog', { name: 'Ubah data Hasan Basri' })
+    expect(within(drawer).getByLabelText('Nomor HP')).toHaveValue('0812-3456-1001')
+
+    await userEvent.clear(within(drawer).getByLabelText('Nama'))
+    await userEvent.type(within(drawer).getByLabelText('Nama'), 'Hasan Basri Ali')
+    await userEvent.type(within(drawer).getByLabelText('Email (opsional)'), 'hasan@masjid.id')
+    await userEvent.click(screen.getByRole('button', { name: 'Simpan perubahan' }))
+
+    const row = (await within(await userList()).findByText(/Hasan Basri Ali/)).closest('li')!
+    expect(row).toHaveTextContent('hasan@masjid.id')
+  })
+
+  it('shows a taken phone number on the edit form', async () => {
+    renderRoute(ROUTES.users, { as: superAdmin })
+
+    await openActions('Hasan Basri')
+    await userEvent.click(screen.getByRole('button', { name: 'Ubah data' }))
+    const phone = screen.getByLabelText('Nomor HP')
+    await userEvent.clear(phone)
+    await userEvent.type(phone, '0812-3456-1002')
+    await userEvent.click(screen.getByRole('button', { name: 'Simpan perubahan' }))
+
+    expect(await screen.findByText('Nomor HP atau email sudah terdaftar')).toBeInTheDocument()
+    expect(phone).toHaveAttribute('aria-invalid', 'true')
   })
 })

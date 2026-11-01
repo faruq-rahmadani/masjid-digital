@@ -4,6 +4,7 @@ import {
   Field,
   Input,
   MoneyInput,
+  PasswordInput,
   RadioCard,
   SearchInput,
   SegmentedControl,
@@ -18,6 +19,8 @@ import { Group, Row, Specimen } from '@/pages/Kit/Specimen'
 export function FormsSection() {
   const [flow, setFlow] = useState<'in' | 'out'>('in')
   const [filter, setFilter] = useState<'all' | 'in' | 'out'>('all')
+  const [category, setCategory] = useState('transfer')
+  const [period, setPeriod] = useState('2026-10')
   const [hijri, setHijri] = useState('0')
   const [amount, setAmount] = useState<number | null>(750_000)
   const [correction, setCorrection] = useState(2)
@@ -41,10 +44,15 @@ export function FormsSection() {
           <Input defaultValue="bendahara@" />
         </Field>
         <Field label="Kategori">
-          <Select defaultValue="Infaq transfer">
-            <option>Infaq transfer</option>
-            <option>Kotak amal harian</option>
-          </Select>
+          <Select
+            options={[
+              { value: 'transfer', label: 'Infaq transfer' },
+              { value: 'kotak', label: 'Kotak amal harian' },
+              { value: 'jumat', label: 'Infaq Jumat' },
+            ]}
+            value={category}
+            onChange={setCategory}
+          />
         </Field>
         <Field label="Tanggal">
           <Input type="date" defaultValue="2026-10-28" />
@@ -61,9 +69,13 @@ export function FormsSection() {
         </Field>
       </Specimen>
 
-      <Specimen name="Input · lg" usage="48px, login only." surface="card">
+      <Specimen
+        name="PasswordInput"
+        usage="Every password field: masked, with an eye button to show it. size lg on login."
+        surface="card"
+      >
         <Field label="Password">
-          <Input size="lg" type="password" defaultValue="rahasia123" />
+          <PasswordInput size="lg" defaultValue="rahasia123" />
         </Field>
       </Specimen>
 
@@ -111,9 +123,17 @@ export function FormsSection() {
               { value: 'out', label: 'Keluar' },
             ]}
           />
-          <Select size="pill" aria-label="Periode" className="ml-auto">
-            <option>Okt 2026</option>
-          </Select>
+          <Select
+            size="pill"
+            aria-label="Periode"
+            className="ml-auto"
+            options={[
+              { value: '2026-10', label: 'Okt 2026' },
+              { value: '2026-09', label: 'Sep 2026' },
+            ]}
+            value={period}
+            onChange={setPeriod}
+          />
         </Row>
       </Specimen>
 

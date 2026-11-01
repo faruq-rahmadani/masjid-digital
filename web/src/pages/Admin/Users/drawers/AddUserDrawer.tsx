@@ -1,7 +1,17 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { ApiError } from '@/api/client'
-import { Button, Callout, Field, Input, Select, Sheet, Stack, useToast } from '@/components'
+import {
+  Button,
+  Callout,
+  Field,
+  Input,
+  PasswordInput,
+  Select,
+  Sheet,
+  Stack,
+  useToast,
+} from '@/components'
 import { useCreateUser } from '@/hooks/useUsers'
 import { ROLES, roleLabels } from '@/utils/auth/roles'
 import { normalizePhone } from '@/utils/format/phone'
@@ -67,25 +77,26 @@ export function AddUserDrawer({ onClose }: { onClose: () => void }) {
             <Input type="email" inputMode="email" autoComplete="off" {...form.register('email')} />
           </Field>
           <Field label="Peran">
-            <Select {...form.register('role')}>
-              {ROLES.map((role) => (
-                <option key={role} value={role}>
-                  {roleLabels[role]}
-                </option>
-              ))}
-            </Select>
+            <Controller
+              control={form.control}
+              name="role"
+              render={({ field }) => (
+                <Select
+                  options={ROLES.map((role) => ({ value: role, label: roleLabels[role] }))}
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  name={field.name}
+                />
+              )}
+            />
           </Field>
           <Field
             label="Password awal"
             hint="Minimal 8 karakter. Berikan ke pengguna secara langsung."
             error={errors.password?.message}
           >
-            <Input
-              type="text"
-              autoComplete="new-password"
-              spellCheck={false}
-              {...form.register('password')}
-            />
+            <PasswordInput autoComplete="new-password" {...form.register('password')} />
           </Field>
           {errors.root?.message && <Callout tone="danger">{errors.root.message}</Callout>}
         </Stack>

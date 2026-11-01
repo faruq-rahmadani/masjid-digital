@@ -2,7 +2,7 @@ import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { ROUTES } from '@/route'
-import { FAKE_PASSWORD } from '@/test/fakeApi'
+import { FAKE_PASSWORD, fakeMosque } from '@/test/fakeApi'
 import { renderRoute } from '@/test/render'
 
 async function logIn(identifier: string, password: string) {
@@ -60,5 +60,25 @@ describe('LoginPage', () => {
 
     await screen.findByText(/Assalamu'alaikum/)
     expect(router.state.location.pathname).toBe(ROUTES.home)
+  })
+
+  it('shows the mosque name and logo from the public profile', async () => {
+    fakeMosque.logo = 'data:image/png;base64,AAAA'
+    renderRoute(ROUTES.login)
+
+    const name = fakeMosque.profile?.name ?? ''
+    expect(await screen.findByText(name)).toBeInTheDocument()
+    expect(await screen.findByRole('img', { name: `Logo ${name}` })).toHaveAttribute(
+      'src',
+      'data:image/png;base64,AAAA',
+    )
+  })
+
+  it('falls back to the product name and placeholder mark before the profile is saved', async () => {
+    fakeMosque.profile = null
+    renderRoute(ROUTES.login)
+
+    expect(await screen.findByText('Masjid Digital')).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: 'Logo masjid' })).toBeInTheDocument()
   })
 })

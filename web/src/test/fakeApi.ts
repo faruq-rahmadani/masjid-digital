@@ -121,6 +121,14 @@ export const fakeAuthService = {
     const session = loadSession() ?? fail(401, 'UNAUTHENTICATED', 'silakan login terlebih dahulu')
     return findUser(session.userId)
   },
+  changePassword: async (currentPassword: string, newPassword: string) => {
+    loadSession() ?? fail(401, 'UNAUTHENTICATED', 'silakan login terlebih dahulu')
+    if (currentPassword !== FAKE_PASSWORD) fail(400, 'INVALID_INPUT', 'password lama salah')
+    if (newPassword === currentPassword) {
+      fail(400, 'INVALID_INPUT', 'password baru harus berbeda dari password lama')
+    }
+    return { message: 'password berhasil diganti' }
+  },
 }
 
 const SEED_MOSQUE: MosqueProfile = {

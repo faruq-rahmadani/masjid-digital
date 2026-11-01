@@ -1,15 +1,12 @@
 import { z } from 'zod'
+import { passwordSchema } from '@/utils/auth/password'
 import { ROLES } from '@/utils/auth/roles'
 import { normalizePhone } from '@/utils/format/phone'
 
 // Same limits as internal/domain/user.go, so most mistakes are caught before the request.
 
-export const passwordSchema = z
-  .string()
-  .min(8, 'Password minimal 8 karakter')
-  .max(128, 'Password maksimal 128 karakter')
-
-export const createUserSchema = z.object({
+/** Name, phone and email: what "Ubah data" edits. */
+export const userDetailsSchema = z.object({
   name: z.string().trim().min(1, 'Nama wajib diisi').max(100, 'Nama maksimal 100 karakter'),
   phone: z
     .string()
@@ -24,8 +21,12 @@ export const createUserSchema = z.object({
     .trim()
     .toLowerCase()
     .refine((value) => value === '' || z.email().safeParse(value).success, 'Email tidak valid'),
+})
+
+export const createUserSchema = userDetailsSchema.extend({
   role: z.enum(ROLES),
   password: passwordSchema,
 })
 
+export type UserDetailsForm = z.input<typeof userDetailsSchema>
 export type CreateUserForm = z.input<typeof createUserSchema>
