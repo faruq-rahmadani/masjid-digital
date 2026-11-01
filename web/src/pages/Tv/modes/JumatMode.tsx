@@ -1,22 +1,25 @@
-import { useDutyRoster } from '@/hooks/useTvData'
+import type { FridayDuty } from '@/types/fridayDuty'
 import { formatClock, formatHms, formatLongDate } from '../clock'
 import { RunningText } from '../components/RunningText'
 import { TopBar } from '../components/TopBar'
 import type { DisplayState } from '../displayMode'
 import type { TvContext } from '../types'
 
-type JumatModeProps = { tv: TvContext; state: Extract<DisplayState, { mode: 'jumat' }> }
+type JumatModeProps = {
+  tv: TvContext
+  state: Extract<DisplayState, { mode: 'jumat' }>
+  /** Today's petugas Jumat; undefined when nobody filled them in. */
+  duty: FridayDuty | undefined
+}
 
 // Jumat (E8-05, tv-jumat.html): before the adzan and during the khutbah.
-export function JumatMode({ tv, state }: JumatModeProps) {
-  const duty = useDutyRoster().data
-  const officers = duty
-    ? [
-        { label: 'KHATIB', name: duty.khatib },
-        { label: 'IMAM', name: duty.imam },
-        { label: 'MUADZIN', name: duty.muadzin },
-      ]
-    : []
+export function JumatMode({ tv, state, duty }: JumatModeProps) {
+  // only the petugas filled in; a Friday may have just the khatib
+  const officers = [
+    { label: 'KHATIB', name: duty?.khatib },
+    { label: 'IMAM', name: duty?.imam },
+    { label: 'MUADZIN', name: duty?.muadzin },
+  ].filter((officer) => officer.name)
 
   return (
     <div className="bg-brand text-on-brand flex min-h-0 flex-1 flex-col gap-8 px-16 py-12">
@@ -50,10 +53,10 @@ export function JumatMode({ tv, state }: JumatModeProps) {
               <div className="text-tv-44 mt-1.5 font-extrabold">{officer.name}</div>
             </div>
           ))}
-          {duty?.khutbah_theme && (
+          {duty?.theme && (
             <div className="border-gold rounded-tv border-2 px-9 py-7">
               <div className="text-tv-22 text-gold tracking-wider">TEMA KHUTBAH</div>
-              <div className="text-tv-32 mt-1.5 font-bold">{duty.khutbah_theme}</div>
+              <div className="text-tv-32 mt-1.5 font-bold">{duty.theme}</div>
             </div>
           )}
         </div>

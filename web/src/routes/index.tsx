@@ -14,6 +14,18 @@ export const routes: RouteObject[] = [
     errorElement: <RouteError />,
     lazy: async () => ({ Component: (await import('@/pages/Tv/TvPage')).TvPage }),
   },
+  // TV preview on mock data and a simulated clock, to watch every mode switch; not shipped.
+  ...(import.meta.env.DEV
+    ? [
+        {
+          path: ROUTES.tvPreview,
+          errorElement: <RouteError />,
+          lazy: async () => ({
+            Component: (await import('@/pages/TvPreview/TvPreviewPage')).TvPreviewPage,
+          }),
+        },
+      ]
+    : []),
   {
     element: <AppShell />,
     errorElement: <RouteError />,
@@ -83,6 +95,31 @@ export const routes: RouteObject[] = [
                 lazy: async () => ({
                   Component: (await import('@/pages/Admin/RunningTexts/RunningTextsPage'))
                     .RunningTextsPage,
+                }),
+              },
+            ],
+          },
+          {
+            path: ROUTES.iqamah,
+            element: <RequireAccess module="iqamah" />,
+            children: [
+              {
+                index: true,
+                lazy: async () => ({
+                  Component: (await import('@/pages/Admin/Iqamah/IqamahPage')).IqamahPage,
+                }),
+              },
+            ],
+          },
+          {
+            path: ROUTES.fridayDuties,
+            element: <RequireAccess module="fridayDuty" />,
+            children: [
+              {
+                index: true,
+                lazy: async () => ({
+                  Component: (await import('@/pages/Admin/FridayDuties/FridayDutiesPage'))
+                    .FridayDutiesPage,
                 }),
               },
             ],

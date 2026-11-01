@@ -1,4 +1,14 @@
-import { AlignLeft, Bell, Clock, CreditCard, House, Image, Monitor, Users } from 'lucide-react'
+import {
+  AlignLeft,
+  Bell,
+  Clock,
+  CreditCard,
+  House,
+  Image,
+  Monitor,
+  UserRound,
+  Users,
+} from 'lucide-react'
 import { ROUTES } from '@/route'
 import type { MenuItem } from './types'
 
@@ -20,7 +30,14 @@ export const MENU: readonly MenuItem[] = [
     module: 'prayerTimes',
     ready: true,
   },
-  { label: 'Iqamah', path: ROUTES.iqamah, icon: Bell, module: 'iqamah', ready: false },
+  { label: 'Iqamah', path: ROUTES.iqamah, icon: Bell, module: 'iqamah', ready: true },
+  {
+    label: 'Petugas Jumat',
+    path: ROUTES.fridayDuties,
+    icon: UserRound,
+    module: 'fridayDuty',
+    ready: true,
+  },
   { label: 'Profil masjid', path: ROUTES.profile, icon: House, module: 'profile', ready: true },
   { label: 'Pengguna', path: ROUTES.users, icon: Users, module: 'users', ready: true },
   { label: 'Layar TV', path: ROUTES.screens, icon: Monitor, module: 'screens', ready: false },

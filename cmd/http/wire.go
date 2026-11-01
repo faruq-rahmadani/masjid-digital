@@ -10,12 +10,16 @@ import (
 	"github.com/faruq-rahmadani/masjid-digital/internal/delivery/http/middleware"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/cache/sessions"
 	repodb "github.com/faruq-rahmadani/masjid-digital/internal/repository/database"
+	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/fridayduties"
+	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/iqamahsettings"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/mosqueprofiles"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/prayertimes"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/runningtexts"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/users"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/authentication"
+	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/fridayduty"
+	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/iqamah"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/mosqueprofile"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/prayertime"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/runningtext"
@@ -33,6 +37,8 @@ type repositories struct {
 	mosqueProfiles usecase.MosqueProfileRepositoryItf
 	prayerTimes    usecase.PrayerTimeRepositoryItf
 	runningTexts   usecase.RunningTextRepositoryItf
+	iqamah         usecase.IqamahRepositoryItf
+	fridayDuties   usecase.FridayDutyRepositoryItf
 }
 
 type usecases struct {
@@ -41,6 +47,8 @@ type usecases struct {
 	mosqueProfile controller.MosqueProfileUsecaseItf
 	prayerTime    controller.PrayerTimeUsecaseItf
 	runningText   controller.RunningTextUsecaseItf
+	iqamah        controller.IqamahUsecaseItf
+	fridayDuty    controller.FridayDutyUsecaseItf
 }
 
 // handlers is what the HTTP server serves
@@ -81,7 +89,7 @@ func newHandlers(ctx context.Context, cfg *config.Schema) (h handlers, cleanup f
 	}
 
 	return handlers{
-		controller: controller.NewController(ucs.user, ucs.auth, ucs.mosqueProfile, ucs.prayerTime, ucs.runningText),
+		controller: controller.NewController(ucs.user, ucs.auth, ucs.mosqueProfile, ucs.prayerTime, ucs.runningText, ucs.iqamah, ucs.fridayDuty),
 		auth:       middleware.NewAuth(ucs.auth),
 	}, cleanup, nil
 }
@@ -95,6 +103,8 @@ func newRepositories(db *database.DB, c cache.Cache) repositories {
 		mosqueProfiles: mosqueprofiles.NewMosqueProfileDBRepository(dbClient),
 		prayerTimes:    prayertimes.NewPrayerTimeDBRepository(dbClient),
 		runningTexts:   runningtexts.New(dbClient),
+		iqamah:         iqamahsettings.NewIqamahDBRepository(dbClient),
+		fridayDuties:   fridayduties.NewFridayDutyDBRepository(dbClient),
 	}
 }
 
@@ -112,6 +122,8 @@ func newUsecases(cfg *config.Schema, repos repositories) (usecases, error) {
 		mosqueProfile: mosqueprofile.NewMosqueProfileUsecase(repos.mosqueProfiles),
 		prayerTime:    prayertime.NewPrayerTimeUsecase(repos.prayerTimes),
 		runningText:   runningtext.New(repos.runningTexts),
+		iqamah:        iqamah.NewIqamahUsecase(repos.iqamah),
+		fridayDuty:    fridayduty.NewFridayDutyUsecase(repos.fridayDuties),
 	}, nil
 }
 

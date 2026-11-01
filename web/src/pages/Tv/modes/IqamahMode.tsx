@@ -1,4 +1,3 @@
-import { useDutyRoster } from '@/hooks/useTvData'
 import { formatClock, formatMs } from '../clock'
 import { TopBar } from '../components/TopBar'
 import type { DisplayState } from '../displayMode'
@@ -6,16 +5,16 @@ import type { TvContext } from '../types'
 
 type IqamahModeProps = { tv: TvContext; state: Extract<DisplayState, { mode: 'iqamah' }> }
 
-// Iqamah (E8-03, tv-iqamah.html): countdown with progress, reminders, imam and muadzin.
+// Iqamah (E8-03, tv-iqamah.html): countdown with progress and reminders.
 export function IqamahMode({ tv, state }: IqamahModeProps) {
-  const duty = useDutyRoster().data
   const total = state.totalMinutes * 60
   const percent = Math.round((Math.min(state.secondsLeft, total) / total) * 100)
   const cards = [
     { title: 'Luruskan dan rapatkan shaf', note: 'Isi shaf terdepan lebih dulu' },
     { title: 'Matikan nada dering HP', note: 'Agar sholat tetap khusyuk' },
-    ...(duty ? [{ title: `Imam: ${duty.imam}`, note: `Muadzin: ${duty.muadzin}` }] : []),
   ]
+  // The mockup's third card, imam and muadzin per waktu, comes with the daily roster (E12-02);
+  // P0 has petugas Jumat only.
 
   return (
     <div className="bg-brand text-on-brand flex min-h-0 flex-1 flex-col px-16 py-12">
@@ -42,7 +41,7 @@ export function IqamahMode({ tv, state }: IqamahModeProps) {
         </div>
         <div className="text-tv-26 text-on-brand-muted">dari {state.totalMinutes} menit</div>
       </div>
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 gap-6">
         {cards.map((card) => (
           <div key={card.title} className="bg-canvas text-ink rounded-tv px-8 py-7">
             <div className="text-tv-30 font-extrabold">{card.title}</div>
