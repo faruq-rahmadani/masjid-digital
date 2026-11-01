@@ -6,6 +6,7 @@ const tones = {
   success: 'bg-income-soft text-income', // Online, Takmir
   danger: 'bg-expense-soft text-expense', // Offline
   gold: 'bg-gold-soft text-gold-ink', // BARU, PENTING, Bendahara
+  notice: 'bg-notice text-notice-ink', // Langsung tersimpan: acts right away
   neutral: 'bg-line-soft text-ink-muted', // Nonaktif, Super admin
 } as const
 

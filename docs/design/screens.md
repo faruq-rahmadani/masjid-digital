@@ -17,7 +17,7 @@ and has a back button in `PageHeader`. There is no tab bar.
 | Profil masjid ✓  | `admin-profil.html`       | E3-03   | super admin, takmir                  | `UploadTile`, `Field`, `InfoTile`, map pin (Leaflet), `ActionBar`                                                                                   |
 | Pengguna ✓       | `admin-user.html`         | E2-07   | super admin                          | `Avatar`, `Badge`, `ActionMenu`, `Sheet` + `RadioCard`, `ConfirmDialog`, `Field`, `Select` (form follows the API, see PRD)                          |
 | Layar TV         | `admin-layar.html`        | E9-06   | super admin, takmir                  | `Card brand` + `CopyField`, `Badge` (Online/Offline/BARU), `Callout danger`, `Select`, `Button`                                                     |
-| Waktu sholat     | `admin-waktu.html`        | E4-05   | super admin, takmir                  | `Table`, `Stepper sm`, `SegmentedControl split` (Hijri), `Field`, `ActionBar`                                                                       |
+| Waktu sholat     | `admin-waktu.html`        | E4-05   | super admin, takmir                  | Context card, 7-day preview (today highlighted), `Stepper sm` corrections, Pengaturan khusus (mingguan, Hijri, jadwal khusus), `ConfirmDialog` on every save/delete, `LeaveGuard` |
 | Iqamah & alarm   | `admin-iqamah.html`       | E5-04   | super admin, takmir                  | `Stepper md`, `RadioCard`, `Checkbox`, `Select`, `Slider`, `ActionBar`                                                                              |
 | Slide            | `admin-slide.html`        | E6-04   | super admin, takmir                  | `UploadTile`, `List` + `Thumbnail`, `Sheet` (edit), `Checkbox`, `Select`                                                                            |
 | Running text     | `admin-running-text.html` | E6-05   | super admin, takmir                  | `Textarea showCount`, `Checkbox`, `Badge caps`, `SegmentedControl split`                                                                            |
@@ -32,8 +32,9 @@ Built at `/tv` (`web/src/pages/Tv/`): one 1920×1080 stage scaled to the screen,
 Public, no login: it reads `/api/public/v1/*` (read-only twins of the admin endpoints). Live:
 mosque name, address, time zone, logo. The clock runs on server time (`GET /api/public/v1/time`,
 resynced every 10 min) shown in the mosque's time zone, so a TV with a wrong clock or zone still
-switches modes on the minute. Mocked in
-`tvService`: prayer times, kas, slides, running text, quotes, iqamah settings, petugas.
+switches modes on the minute. Prayer times are computed on the TV from `GET /api/public/v1/prayer-time/config` (settings plus 30 days
+of date overrides). Mocked in `tvService`: kas, slides, running text, quotes, iqamah settings,
+petugas.
 
 | Mode   | Mockup           | Task  | Content                                                                                                                                                                                 |
 | ------ | ---------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

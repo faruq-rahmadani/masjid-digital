@@ -62,4 +62,5 @@ export { TextLink } from '@/components/navigation/TextLink'
 // Overlays
 export { type Action, ActionMenu } from '@/components/overlays/ActionMenu'
 export { ConfirmDialog } from '@/components/overlays/ConfirmDialog'
+export { LeaveGuard } from '@/components/overlays/LeaveGuard'
 export { Sheet } from '@/components/overlays/Sheet'

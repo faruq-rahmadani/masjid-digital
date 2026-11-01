@@ -201,7 +201,7 @@ what to do ("Format email atau nomor HP tidak dikenali"), in rust, under the con
 | `Card`                                         | Group related content.                                 | `tone`: default · brand (one hero figure per screen) · brand-2 (on green). `padding`: none · list · md · lg · xl. |
 | `List`, `ListRow`                              | Records with a title, meta line and trailing value.    | `leading`, `title`, `description`, `trailing`. Wrap in `Card padding="list"`.                                     |
 | `Table` (+ `THead`, `TBody`, `Tr`, `Th`, `Td`) | Real tabular data with column headers (7-day preview). | `density`: default · compact; `caption`. `Th scope="row"` for row labels. Scrolls sideways inside its card.       |
-| `Badge`                                        | Short status or role.                                  | `tone`: success · danger · gold · neutral; `size`: sm (tag) · md (status); `caps` (BARU, PENTING).                |
+| `Badge`                                        | Short status or role.                                  | `tone`: success · danger · gold · notice · neutral; `size`: sm (tag) · md (status); `caps` (BARU, PENTING).                |
 | `Avatar`                                       | A person, as initials.                                 | `name`, `tone` (follows role), `size`: md 40 · lg 44.                                                             |
 | `Stat`                                         | A labelled figure.                                     | `label`, `value`, `size`: md · lg · xl, `onBrand`, `align`.                                                       |
 | `Money`                                        | Any Rupiah amount.                                     | `amount`, `flow` (signed + colored), `withSymbol`.                                                                |
@@ -265,6 +265,7 @@ Four tones shared by Toast and Banner, each with its own icon: **info** (Info), 
 | `Sheet`         | Short form or detail without leaving the screen. | `open`, `onClose`, `title`, `footer`. Native `<dialog>`: focus trap, Escape, backdrop close. |
 | `ActionMenu`    | The ⋯ at the end of a row.                       | `label` (row name), `actions: { label, onSelect, danger?, disabled? }[]`. Destructive last.  |
 | `ConfirmDialog` | Confirm before anything that locks or deletes.   | `title`, `description`, `confirmLabel`, `danger`, `requireReason` → `onConfirm(reason)`.     |
+| `LeaveGuard`    | A screen with a draft that is saved by a button. | `when` (unsaved changes). Asks before back or a link; the browser asks on tab close.         |
 
 No centered modals and no tooltips: on a phone, sheets keep actions in thumb reach and tooltips
 can't be hovered.
@@ -305,6 +306,29 @@ input and show a `danger` toast; never clear a form on error.
 **Undo over confirm.** For reversible, low-stakes changes (deactivate a slide, reorder), act
 immediately and offer "Batalkan" in the toast. Keep `ConfirmDialog` for what can't be undone or
 needs a reason.
+
+**What reaches the TV.** A save that goes straight to the screens (Waktu sholat settings, a
+jadwal khusus) asks with `ConfirmDialog` first, and so does removing an item, even from a draft.
+Draft edits (steppers, segmented controls) don't ask; the save does.
+
+**Color roles on settings screens** (Waktu sholat sets the pattern; Iqamah and Layar follow).
+Each color has one job, so the hierarchy reads without labels:
+
+| Color                              | Means                               | e.g.                                                       |
+| ---------------------------------- | ----------------------------------- | ---------------------------------------------------------- |
+| `brand` (`Card tone="brand"`)      | Context from elsewhere, or "now"    | Method + location card; today's row in the 7-day preview   |
+| `card` (white)                     | Settings edited on this screen      | Koreksi waktu, Jadwal mingguan, Koreksi Hijriah            |
+| `gold` / `gold-ink`                | Differs from computed or from saved | Times replaced by an override; a changed stepper's value   |
+| `highlight`                        | Row being edited                    | A correction row changed since the last save               |
+| `notice` (`Badge tone="notice"`)   | Acts right away, take care          | "Langsung tersimpan"; "Ada perubahan belum disimpan"       |
+| `expense`                          | Removes something                   | × on a rule or override                                    |
+
+One big brand block per screen; elsewhere brand stays small (a row, a button). Gold never
+decorates: it always means "not the computed or saved value". Income and expense greens and reds
+stay with money.
+
+**Unsaved changes.** A screen with a draft shows "Ada perubahan belum disimpan" above its save
+button and mounts `LeaveGuard` while the draft differs from what is saved.
 
 **Destructive and locking actions.** Always `ConfirmDialog`. Transaction edits and deletes use
 `requireReason`. Tutup buku explains the lock in the description.

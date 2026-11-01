@@ -13,9 +13,10 @@ import {
   Stat,
   StatusDot,
 } from '@/components'
-import { usePrayerTimes, useRecentActivity, useScreens } from '@/hooks/useHomeData'
+import { useRecentActivity, useScreens } from '@/hooks/useHomeData'
 import { useMosqueProfile } from '@/hooks/useMosqueProfile'
 import { useNow } from '@/hooks/useNow'
+import { useDaySchedule } from '@/hooks/usePrayerTimes'
 import { useProfile } from '@/hooks/useProfile'
 import { ROUTES } from '@/route'
 import { MENU } from '@/routes/menu'
@@ -24,6 +25,8 @@ import type { Screen } from '@/types/home'
 import { canOpen } from '@/utils/auth/permissions'
 import { roleLabels } from '@/utils/auth/roles'
 import { formatActivityTime, formatTimeAgo } from '@/utils/format/date'
+import { PRAYER_KEYS } from '@/utils/prayer/calculate'
+import { localDate } from '@/utils/prayer/calendar'
 import { AccountDrawer } from './drawers/AccountDrawer'
 import { ChangePasswordDrawer } from './drawers/ChangePasswordDrawer'
 import { formatCountdown, nextPrayer } from './nextPrayer'
@@ -34,8 +37,12 @@ export function HomePage() {
   const mosque = useMosqueProfile()
   const [drawer, setDrawer] = useState<'account' | 'password' | null>(null)
   const now = useNow()
-  const prayerTimes = usePrayerTimes()
-  const next = prayerTimes.data?.length ? nextPrayer(now, prayerTimes.data) : null
+  const timezone = mosque.data?.timezone ?? 'Asia/Jakarta'
+  const schedule = useDaySchedule(localDate(now, timezone))
+  const prayers = schedule.data?.filter((e) => (PRAYER_KEYS as readonly string[]).includes(e.key))
+  const next = prayers?.length ? nextPrayer(now, prayers, timezone) : null
+  // no location saved yet: nothing to compute the times from
+  const noLocation = schedule.data === null
   const screens = useScreens()
   const activity = useRecentActivity()
   const role = roleLabels[session.role]
@@ -67,20 +74,12 @@ export function HomePage() {
         <Card tone="brand-2" padding="md" className="flex items-center justify-between">
           <Stat
             label="Sholat berikutnya"
-            value={
-              next ? `${next.name} ${next.time}` : <Skeleton className="bg-brand mt-1 h-6 w-32" />
-            }
+            value={<NextPrayerName next={next} noLocation={noLocation} />}
             size="lg"
           />
           <Stat
             label="dalam"
-            value={
-              next ? (
-                <time dateTime={`PT${next.minutesLeft}M`}>{formatCountdown(next.minutesLeft)}</time>
-              ) : (
-                <Skeleton className="bg-brand mt-1 ml-auto h-6 w-14" />
-              )
-            }
+            value={<NextPrayerCountdown next={next} noLocation={noLocation} />}
             size="lg"
             align="end"
             valueClassName="text-gold"
@@ -155,4 +154,28 @@ function screenSummary(screens: Screen[], now: Date) {
   if (offline.length === 0) return `${online} online`
   const oldest = offline.reduce((a, b) => (a.last_seen_at < b.last_seen_at ? a : b))
   return `${online} online · ${offline.length} offline sejak ${formatTimeAgo(oldest.last_seen_at, now)}`
+}
+
+type NextPrayerProps = {
+  next: ReturnType<typeof nextPrayer> | null
+  /** No location saved yet: nothing to compute the times from. */
+  noLocation: boolean
+}
+
+function NextPrayerName({ next, noLocation }: NextPrayerProps) {
+  if (next) return `${next.name} ${next.time}`
+  if (noLocation) {
+    return (
+      <span className="text-on-brand-muted text-sm font-semibold">Isi lokasi di Profil masjid</span>
+    )
+  }
+  return <Skeleton className="bg-brand mt-1 h-6 w-32" />
+}
+
+function NextPrayerCountdown({ next, noLocation }: NextPrayerProps) {
+  if (next) {
+    return <time dateTime={`PT${next.minutesLeft}M`}>{formatCountdown(next.minutesLeft)}</time>
+  }
+  if (noLocation) return '—'
+  return <Skeleton className="bg-brand mt-1 ml-auto h-6 w-14" />
 }

@@ -1,8 +1,3 @@
-export type PrayerTime = {
-  name: string
-  time: string /** "HH:MM", local time. */
-}
-
 export type ScreenStatus = 'online' | 'offline'
 
 /** A TV that opened /tv (E9-02: heartbeat, last seen). */

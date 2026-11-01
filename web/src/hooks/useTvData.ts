@@ -5,10 +5,6 @@ import * as tvService from '@/services/tvService'
 // (TanStack Query keeps `data` when a refetch fails), so a network blip never blanks the screen.
 const REFRESH = { refetchInterval: 5 * 60_000, refetchIntervalInBackground: true } as const
 
-export function useTodaySchedule() {
-  return useQuery({ queryKey: ['tv', 'schedule'], queryFn: tvService.getTodaySchedule, ...REFRESH })
-}
-
 export function useCashSummary() {
   return useQuery({ queryKey: ['tv', 'cash'], queryFn: tvService.getCashSummary, ...REFRESH })
 }

@@ -71,6 +71,15 @@ func TestMigrations(t *testing.T) {
 				t.Errorf("duplicate phone: err = %v, want ErrUniqueViolation", err)
 			}
 
+			// 00005: one override per prayer per date
+			insertOverride := "INSERT INTO prayer_time_overrides (date, prayer, time, remarks, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
+			if _, err := db.Exec(ctx, insertOverride, "2026-11-06", "dzuhur", "11:58", "Jumat", id, now, now); err != nil {
+				t.Fatalf("insert override: %v", err)
+			}
+			if _, err := db.Exec(ctx, insertOverride, "2026-11-06", "dzuhur", "12:00", "", id, now, now); !errors.Is(err, database.ErrUniqueViolation) {
+				t.Errorf("duplicate override: err = %v, want ErrUniqueViolation", err)
+			}
+
 			for {
 				version, err := m.Version(ctx)
 				if err != nil {

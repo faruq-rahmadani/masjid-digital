@@ -1,6 +1,8 @@
 import { usePublicMosqueLogo, usePublicMosqueProfile } from '@/hooks/useMosqueProfile'
+import { usePublicDaySchedule } from '@/hooks/usePrayerTimes'
 import { useServerNow } from '@/hooks/useServerClock'
-import { useIqamahSettings, useTodaySchedule } from '@/hooks/useTvData'
+import { useIqamahSettings } from '@/hooks/useTvData'
+import { localDate } from '@/utils/prayer/calendar'
 import { timezoneLabel } from '@/utils/timezone'
 import { wallClock } from './clock'
 import { TvStage } from './components/TvStage'
@@ -20,10 +22,11 @@ export function TvPage() {
   const now = useServerNow()
   const profile = usePublicMosqueProfile()
   const logo = usePublicMosqueLogo()
-  const schedule = useTodaySchedule()
   const settings = useIqamahSettings()
 
   const timeZone = profile.data?.timezone ?? 'Asia/Jakarta'
+  // Computed on the TV for the mosque's date, so it rolls over at the mosque's midnight
+  const schedule = usePublicDaySchedule(localDate(now, timeZone))
   const tv: TvContext = {
     now,
     clock: wallClock(now, timeZone),
@@ -36,6 +39,15 @@ export function TvPage() {
     },
   }
 
+  if (schedule.data === null) {
+    return (
+      <TvStage className="bg-brand">
+        <p className="text-on-brand-muted text-tv-36 m-auto max-w-[1100px] text-center font-semibold">
+          Jadwal sholat tampil setelah lokasi masjid diisi di menu Profil masjid.
+        </p>
+      </TvStage>
+    )
+  }
   if (!schedule.data || !settings.data) return <TvStage className="bg-brand">{null}</TvStage>
   const state = displayMode(tv.clock, schedule.data, settings.data)
 

@@ -53,6 +53,13 @@ tags:
   - name: Users
     description: User management, `super_admin` only.
   - name: Mosque Profile
+  - name: Prayer Times
+    description: |
+      Prayer times are computed on each device from the mosque's location with
+      the Kemenag method (Subuh 20°, Isya 18°, ihtiyat 2 minutes); the server
+      only stores how the mosque adjusts them. From the most general layer:
+      computed time, then `corrections`, then a weekly override (e.g. every
+      Friday Dzuhur), then a date override. The most specific one wins.
   - name: Public
     description: Read only, no login, for screens anyone can see (the TV display).
 
@@ -632,6 +639,244 @@ paths:
         "500":
           $ref: "#/components/responses/Internal"
 
+  /api/public/v1/prayer-time/config:
+    get:
+      tags: [Public, Prayer Times]
+      summary: Get what a device needs to compute the prayer times
+      operationId: getPrayerConfig
+      security: []
+      description: |
+        The settings (defaults until first saved) and the date overrides from
+        today to 30 days ahead, so a TV keeps showing correct times offline.
+      responses:
+        "200":
+          description: The prayer config.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    required: [settings, overrides]
+                    properties:
+                      settings:
+                        $ref: "#/components/schemas/PrayerSettings"
+                      overrides:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/PrayerTimeOverride"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/prayer-time/config:
+    get:
+      tags: [Prayer Times]
+      summary: Get the prayer settings
+      operationId: getPrayerSettings
+      description: Any role. Returns the defaults until first saved.
+      responses:
+        "200":
+          description: The prayer settings.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PrayerSettings"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "500":
+          $ref: "#/components/responses/Internal"
+    put:
+      tags: [Prayer Times]
+      summary: Save the prayer settings
+      operationId: updatePrayerSettings
+      description: |
+        `super_admin` and `takmir`. Replaces every setting, so send all of them.
+        Also creates the settings the first time.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PrayerSettings"
+      responses:
+        "200":
+          description: The saved settings.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PrayerSettings"
+        "400":
+          description: |
+            Invalid input, e.g. `koreksi waktu harus antara -10 dan +10 menit`,
+            `imsak harus 1 sampai 30 menit sebelum subuh`, `hari tidak valid`,
+            `format jam harus HH:MM`,
+            `satu waktu sholat hanya boleh punya satu jadwal mingguan per hari`,
+            `koreksi tanggal hijriah harus antara -2 dan +2 hari`.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: INVALID_INPUT
+                message: koreksi waktu harus antara -10 dan +10 menit
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/prayer-time/overrides:
+    get:
+      tags: [Prayer Times]
+      summary: List the date overrides in a range
+      operationId: listPrayerOverrides
+      description: Any role. Ordered by date, then prayer.
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+            example: "2026-11-01"
+        - name: to
+          in: query
+          required: true
+          description: Inclusive, at most 366 days after `from`.
+          schema:
+            type: string
+            format: date
+            example: "2026-11-30"
+      responses:
+        "200":
+          description: The overrides.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/PrayerTimeOverride"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "500":
+          $ref: "#/components/responses/Internal"
+    post:
+      tags: [Prayer Times]
+      summary: Override one prayer time on one date
+      operationId: createPrayerOverride
+      description: "`super_admin` and `takmir`. The date must not be in the past."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [date, prayer, time]
+              properties:
+                date:
+                  type: string
+                  format: date
+                  example: "2026-11-06"
+                prayer:
+                  $ref: "#/components/schemas/Prayer"
+                time:
+                  type: string
+                  pattern: "^\\d{2}:\\d{2}$"
+                  example: "11:58"
+                remarks:
+                  type: string
+                  maxLength: 100
+                  example: Khatib tamu
+      responses:
+        "201":
+          description: The created override.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PrayerTimeOverride"
+        "400":
+          description: |
+            Invalid input, e.g. `format tanggal harus YYYY-MM-DD`,
+            `waktu sholat tidak valid`, `format jam harus HH:MM`, `tanggal sudah lewat`.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: INVALID_INPUT
+                message: tanggal sudah lewat
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          description: The prayer already has an override on that date; delete it first.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: ALREADY_EXISTS
+                message: waktu sholat ini sudah punya jadwal khusus di tanggal tersebut
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/prayer-time/overrides/{id}:
+    delete:
+      tags: [Prayer Times]
+      summary: Delete a date override
+      operationId: deletePrayerOverride
+      description: "`super_admin` and `takmir`."
+      parameters:
+        - $ref: "#/components/parameters/UserID"
+      responses:
+        "200":
+          description: Override deleted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: jadwal khusus dihapus
+        "400":
+          $ref: "#/components/responses/InvalidUserID"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          description: No override with this ID.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: NOT_FOUND
+                message: jadwal khusus tidak ditemukan
+        "500":
+          $ref: "#/components/responses/Internal"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -846,6 +1091,94 @@ components:
         timezone:
           $ref: "#/components/schemas/MosqueTimezone"
 
+    Prayer:
+      type: string
+      enum: [subuh, dzuhur, ashar, maghrib, isya]
+      description: Imsak and Terbit follow Subuh and sunrise; they are adjusted only by settings.
+
+    PrayerSettings:
+      type: object
+      required: [corrections, imsak_offset_min, weekly_overrides, hijri_offset_days, hijri_offset_from]
+      properties:
+        corrections:
+          type: object
+          description: Minutes added to each computed time every day, -10 to 10.
+          required: [subuh, terbit, dzuhur, ashar, maghrib, isya]
+          properties:
+            subuh: { type: integer, minimum: -10, maximum: 10, example: 0 }
+            terbit: { type: integer, minimum: -10, maximum: 10, example: 0 }
+            dzuhur: { type: integer, minimum: -10, maximum: 10, example: 0 }
+            ashar: { type: integer, minimum: -10, maximum: 10, example: 0 }
+            maghrib: { type: integer, minimum: -10, maximum: 10, example: 2 }
+            isya: { type: integer, minimum: -10, maximum: 10, example: 0 }
+        imsak_offset_min:
+          type: integer
+          minimum: 1
+          maximum: 30
+          description: Minutes before Subuh. Defaults to 10.
+          example: 10
+        weekly_overrides:
+          type: array
+          description: At most one per weekday and prayer.
+          items:
+            type: object
+            required: [weekday, prayer, time, remarks]
+            properties:
+              weekday:
+                type: string
+                enum: [monday, tuesday, wednesday, thursday, friday, saturday, sunday]
+              prayer:
+                $ref: "#/components/schemas/Prayer"
+              time:
+                type: string
+                example: "12:00"
+              remarks:
+                type: string
+                maxLength: 100
+                example: Sholat Jumat
+        hijri_offset_days:
+          type: integer
+          minimum: -2
+          maximum: 2
+          description: Days added to the computed Hijri date, e.g. after the sidang isbat.
+          example: 0
+        hijri_offset_from:
+          type: string
+          description: The date (YYYY-MM-DD) the Hijri offset applies from; empty means always.
+          example: ""
+
+    PrayerTimeOverride:
+      type: object
+      required: [id, date, prayer, time, remarks, created_by, created_at, updated_at]
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 4
+        date:
+          type: string
+          format: date
+          example: "2026-11-06"
+        prayer:
+          $ref: "#/components/schemas/Prayer"
+        time:
+          type: string
+          example: "11:58"
+        remarks:
+          type: string
+          example: Khatib tamu
+        created_by:
+          type: integer
+          format: int64
+          description: 0 when nobody created it, e.g. seeded.
+          example: 7
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
   responses:
     InvalidInput:
       description: The request is malformed or a field is invalid; `message` says which.
@@ -864,7 +1197,7 @@ components:
             $ref: "#/components/schemas/Error"
           example:
             code: INVALID_INPUT
-            message: id user tidak valid
+            message: id tidak valid
     Unauthenticated:
       description: |
         No token (`silakan login terlebih dahulu`), or the token is invalid,

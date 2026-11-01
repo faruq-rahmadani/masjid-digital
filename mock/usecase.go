@@ -376,3 +376,100 @@ func (mr *MockSessionRepositoryItfMockRecorder) GetSessionID(ctx, userID any) *g
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSessionID", reflect.TypeOf((*MockSessionRepositoryItf)(nil).GetSessionID), ctx, userID)
 }
+
+// MockPrayerTimeRepositoryItf is a mock of PrayerTimeRepositoryItf interface.
+type MockPrayerTimeRepositoryItf struct {
+	ctrl     *gomock.Controller
+	recorder *MockPrayerTimeRepositoryItfMockRecorder
+	isgomock struct{}
+}
+
+// MockPrayerTimeRepositoryItfMockRecorder is the mock recorder for MockPrayerTimeRepositoryItf.
+type MockPrayerTimeRepositoryItfMockRecorder struct {
+	mock *MockPrayerTimeRepositoryItf
+}
+
+// NewMockPrayerTimeRepositoryItf creates a new mock instance.
+func NewMockPrayerTimeRepositoryItf(ctrl *gomock.Controller) *MockPrayerTimeRepositoryItf {
+	mock := &MockPrayerTimeRepositoryItf{ctrl: ctrl}
+	mock.recorder = &MockPrayerTimeRepositoryItfMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockPrayerTimeRepositoryItf) EXPECT() *MockPrayerTimeRepositoryItfMockRecorder {
+	return m.recorder
+}
+
+// CreateOverride mocks base method.
+func (m *MockPrayerTimeRepositoryItf) CreateOverride(ctx context.Context, override domain.PrayerTimeOverride) (domain.PrayerTimeOverride, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateOverride", ctx, override)
+	ret0, _ := ret[0].(domain.PrayerTimeOverride)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateOverride indicates an expected call of CreateOverride.
+func (mr *MockPrayerTimeRepositoryItfMockRecorder) CreateOverride(ctx, override any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOverride", reflect.TypeOf((*MockPrayerTimeRepositoryItf)(nil).CreateOverride), ctx, override)
+}
+
+// DeleteOverride mocks base method.
+func (m *MockPrayerTimeRepositoryItf) DeleteOverride(ctx context.Context, id int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteOverride", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteOverride indicates an expected call of DeleteOverride.
+func (mr *MockPrayerTimeRepositoryItfMockRecorder) DeleteOverride(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteOverride", reflect.TypeOf((*MockPrayerTimeRepositoryItf)(nil).DeleteOverride), ctx, id)
+}
+
+// FindOverridesBetween mocks base method.
+func (m *MockPrayerTimeRepositoryItf) FindOverridesBetween(ctx context.Context, from, to string) ([]domain.PrayerTimeOverride, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindOverridesBetween", ctx, from, to)
+	ret0, _ := ret[0].([]domain.PrayerTimeOverride)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindOverridesBetween indicates an expected call of FindOverridesBetween.
+func (mr *MockPrayerTimeRepositoryItfMockRecorder) FindOverridesBetween(ctx, from, to any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindOverridesBetween", reflect.TypeOf((*MockPrayerTimeRepositoryItf)(nil).FindOverridesBetween), ctx, from, to)
+}
+
+// GetSettings mocks base method.
+func (m *MockPrayerTimeRepositoryItf) GetSettings(ctx context.Context) (domain.PrayerSettings, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSettings", ctx)
+	ret0, _ := ret[0].(domain.PrayerSettings)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSettings indicates an expected call of GetSettings.
+func (mr *MockPrayerTimeRepositoryItfMockRecorder) GetSettings(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSettings", reflect.TypeOf((*MockPrayerTimeRepositoryItf)(nil).GetSettings), ctx)
+}
+
+// UpdateSettings mocks base method.
+func (m *MockPrayerTimeRepositoryItf) UpdateSettings(ctx context.Context, settings domain.PrayerSettings, updatedBy int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateSettings", ctx, settings, updatedBy)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateSettings indicates an expected call of UpdateSettings.
+func (mr *MockPrayerTimeRepositoryItfMockRecorder) UpdateSettings(ctx, settings, updatedBy any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSettings", reflect.TypeOf((*MockPrayerTimeRepositoryItf)(nil).UpdateSettings), ctx, settings, updatedBy)
+}

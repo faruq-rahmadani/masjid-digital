@@ -1,0 +1,17 @@
+-- +goose Up
+-- One prayer time replaced on one date, e.g. Jumat Dzuhur at 11:58. Settings that apply every
+-- day (corrections, Imsak, weekly rules, Hijri offset) live in configurations under prayer_settings.
+CREATE TABLE prayer_time_overrides (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    date       TEXT NOT NULL,                -- local date of the mosque, YYYY-MM-DD
+    prayer     TEXT NOT NULL,                -- subuh, dzuhur, ashar, maghrib, isya (checked in domain.Prayer)
+    time       TEXT NOT NULL,                -- local time, HH:MM
+    remarks    TEXT NOT NULL DEFAULT '',
+    created_by INTEGER REFERENCES users(id),
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL,
+    UNIQUE (date, prayer)                    -- one override per prayer per date
+);
+
+-- +goose Down
+DROP TABLE prayer_time_overrides;

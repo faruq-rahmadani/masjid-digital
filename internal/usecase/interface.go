@@ -57,3 +57,11 @@ type SessionRepositoryItf interface {
 	GetSessionID(ctx context.Context, userID int64) (string, error)
 	Delete(ctx context.Context, userID int64) error
 }
+
+type PrayerTimeRepositoryItf interface {
+	GetSettings(ctx context.Context) (domain.PrayerSettings, error)
+	UpdateSettings(ctx context.Context, settings domain.PrayerSettings, updatedBy int64) error
+	CreateOverride(ctx context.Context, override domain.PrayerTimeOverride) (domain.PrayerTimeOverride, error)
+	FindOverridesBetween(ctx context.Context, from, to string) ([]domain.PrayerTimeOverride, error)
+	DeleteOverride(ctx context.Context, id int64) error
+}

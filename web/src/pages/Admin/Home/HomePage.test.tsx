@@ -1,11 +1,30 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ApiError } from '@/api/client'
-import { FAKE_PASSWORD, fakeMosqueProfileService } from '@/test/fakeApi'
+import {
+  FAKE_PASSWORD,
+  fakeMosque,
+  fakeMosqueProfileService,
+  fakeServerClock,
+} from '@/test/fakeApi'
 import { bendahara, renderRoute, superAdmin } from '@/test/render'
 
 const kelola = () => screen.getByRole('navigation', { name: 'Kelola' })
+
+// Only Date is faked, so timers and React Query run normally. The fake seeds a Maghrib override of
+// 18:15 on 2026-10-28, which pins the countdown.
+function at(iso: string) {
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(new Date(iso))
+}
+
+const nextPrayerCard = async () =>
+  (await screen.findByText('Sholat berikutnya')).closest('div.rounded-2xl') as HTMLElement
+
+afterEach(() => {
+  vi.useRealTimers()
+})
 
 describe('HomePage', () => {
   it('greets a super admin by name and shows every menu', async () => {
@@ -44,6 +63,26 @@ describe('HomePage', () => {
       within(card as HTMLElement).getByText(/^(Subuh|Dzuhur|Ashar|Maghrib|Isya) \d{2}:\d{2}$/),
     ).toBeInTheDocument()
     expect(card.querySelector('time')).toHaveTextContent(/^\d{2}:\d{2}$/)
+  })
+
+  it("counts down on the server's clock when the phone's is wrong", async () => {
+    at('2026-10-28T10:27:00Z') // the phone says 17:27 WIB
+    fakeServerClock.aheadMs = 30 * 60_000 // the server says 17:57
+    renderRoute('/', { as: superAdmin })
+
+    const card = await nextPrayerCard()
+    expect(await within(card).findByText('Maghrib 18:15')).toBeInTheDocument()
+    await vi.waitFor(() => expect(card.querySelector('time')).toHaveTextContent('00:18'))
+  })
+
+  it("counts down on the mosque's clock, not the phone's zone", async () => {
+    fakeMosque.profile = { ...fakeMosque.profile!, timezone: 'Asia/Makassar' }
+    at('2026-10-28T10:27:00Z') // 17:27 WIB on a Jakarta phone, but 18:27 WITA at the mosque
+    renderRoute('/', { as: superAdmin })
+
+    const card = await nextPrayerCard()
+    // Maghrib (18:15) has passed in Makassar
+    expect(await within(card).findByText(/^Isya \d{2}:\d{2}$/)).toBeInTheDocument()
   })
 
   it('logs out from the account sheet', async () => {

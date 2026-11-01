@@ -6,7 +6,12 @@
 import { ApiError } from '@/api/client'
 import type { LoginRequest, Role } from '@/types/auth'
 import type { MosqueProfile, UpdateMosqueProfileRequest } from '@/types/mosque'
-import type { IqamahSettings, ScheduleItem } from '@/types/tv'
+import type {
+  CreatePrayerOverrideRequest,
+  PrayerSettings,
+  PrayerTimeOverride,
+} from '@/types/prayer'
+import type { IqamahSettings } from '@/types/tv'
 import type { CreateUserRequest, UpdateUserRequest, User } from '@/types/user'
 import { loadSession } from '@/utils/auth/token'
 import { normalizePhone } from '@/utils/format/phone'
@@ -70,6 +75,8 @@ export function resetFakeApi() {
   mosqueProfile = SEED_MOSQUE
   fakeServerClock.aheadMs = 0
   mosqueLogo = null
+  prayerSettings = SEED_PRAYER_SETTINGS()
+  prayerOverrides = SEED_PRAYER_OVERRIDES()
 }
 
 const fail = (status: number, code: string, message: string): never => {
@@ -262,14 +269,108 @@ export const fakeUserService = {
 
 const minutesAgo = (m: number) => new Date(Date.now() - m * 60_000).toISOString()
 
-export const fakePrayerTimeService = {
-  getTodayPrayerTimes: async () => [
-    { name: 'Subuh', time: '04:42' },
-    { name: 'Dzuhur', time: '12:09' },
-    { name: 'Ashar', time: '15:24' },
-    { name: 'Maghrib', time: '18:15' },
-    { name: 'Isya', time: '19:25' },
+// Seeded so the TV's timeline is fixed: Wednesday 2026-10-28 Maghrib at 18:15 (a date override)
+// and Friday Dzuhur at 12:09 (a weekly rule); every other time is computed for the seed mosque.
+const SEED_PRAYER_SETTINGS = (): PrayerSettings => ({
+  corrections: { subuh: 0, terbit: 0, dzuhur: 0, ashar: 0, maghrib: 0, isya: 0 },
+  imsak_offset_min: 10,
+  weekly_overrides: [
+    { weekday: 'friday', prayer: 'dzuhur', time: '12:09', remarks: 'Sholat Jumat' },
   ],
+  hijri_offset_days: 0,
+  hijri_offset_from: '',
+})
+const SEED_PRAYER_OVERRIDES = (): PrayerTimeOverride[] => [
+  {
+    id: 1,
+    date: '2026-10-28',
+    prayer: 'maghrib',
+    time: '18:15',
+    remarks: 'Pengajian akbar',
+    created_by: 1,
+    created_at: SEED_TIME,
+    updated_at: SEED_TIME,
+  },
+]
+
+let prayerSettings = SEED_PRAYER_SETTINGS()
+let prayerOverrides = SEED_PRAYER_OVERRIDES()
+
+/** Read or replace the fake's stored prayer settings and date overrides. */
+export const fakePrayer = {
+  get settings() {
+    return prayerSettings
+  },
+  set settings(value: PrayerSettings) {
+    prayerSettings = value
+  },
+  get overrides() {
+    return prayerOverrides
+  },
+  set overrides(value: PrayerTimeOverride[]) {
+    prayerOverrides = value
+  },
+}
+
+const CLOCK = /^([01]\d|2[0-3]):[0-5]\d$/
+
+export const fakePrayerTimeService = {
+  getPrayerSettings: async () => {
+    requireRole('super_admin', 'takmir', 'bendahara')
+    return prayerSettings
+  },
+  updatePrayerSettings: async (body: PrayerSettings) => {
+    requireRole('super_admin', 'takmir')
+    const corrections = Object.values(body.corrections)
+    if (corrections.some((c) => c < -10 || c > 10))
+      fail(400, 'INVALID_INPUT', 'koreksi waktu harus antara -10 dan +10 menit')
+    if (body.imsak_offset_min < 1 || body.imsak_offset_min > 30)
+      fail(400, 'INVALID_INPUT', 'imsak harus 1 sampai 30 menit sebelum subuh')
+    const keys = body.weekly_overrides.map((o) => `${o.weekday}/${o.prayer}`)
+    if (new Set(keys).size !== keys.length)
+      fail(
+        400,
+        'INVALID_INPUT',
+        'satu waktu sholat hanya boleh punya satu jadwal mingguan per hari',
+      )
+    if (body.weekly_overrides.some((o) => !CLOCK.test(o.time)))
+      fail(400, 'INVALID_INPUT', 'format jam harus HH:MM')
+    prayerSettings = body
+    return prayerSettings
+  },
+  listPrayerOverrides: async (from: string, to: string) => {
+    requireRole('super_admin', 'takmir', 'bendahara')
+    return prayerOverrides
+      .filter((o) => o.date >= from && o.date <= to)
+      .sort((a, b) => a.date.localeCompare(b.date) || a.prayer.localeCompare(b.prayer))
+  },
+  createPrayerOverride: async (body: CreatePrayerOverrideRequest) => {
+    const session = requireRole('super_admin', 'takmir')
+    if (!CLOCK.test(body.time)) fail(400, 'INVALID_INPUT', 'format jam harus HH:MM')
+    if (body.date < new Date().toISOString().slice(0, 10))
+      fail(400, 'INVALID_INPUT', 'tanggal sudah lewat')
+    if (prayerOverrides.some((o) => o.date === body.date && o.prayer === body.prayer))
+      fail(409, 'ALREADY_EXISTS', 'waktu sholat ini sudah punya jadwal khusus di tanggal tersebut')
+    const now = new Date().toISOString()
+    const created: PrayerTimeOverride = {
+      ...body,
+      remarks: body.remarks.trim(),
+      id: Math.max(0, ...prayerOverrides.map((o) => o.id)) + 1,
+      created_by: session.userId,
+      created_at: now,
+      updated_at: now,
+    }
+    prayerOverrides = [...prayerOverrides, created]
+    return created
+  },
+  deletePrayerOverride: async (id: number) => {
+    requireRole('super_admin', 'takmir')
+    if (!prayerOverrides.some((o) => o.id === id))
+      fail(404, 'NOT_FOUND', 'jadwal khusus tidak ditemukan')
+    prayerOverrides = prayerOverrides.filter((o) => o.id !== id)
+    return { message: 'jadwal khusus dihapus' }
+  },
+  getPublicPrayerConfig: async () => ({ settings: prayerSettings, overrides: prayerOverrides }),
 }
 
 /** How far the fake server's clock runs ahead of the (fake) device clock, in ms. */
@@ -280,15 +381,6 @@ export const fakeTimeService = {
 }
 
 export const fakeTvService = {
-  getTodaySchedule: async (): Promise<ScheduleItem[]> => [
-    { key: 'imsak', name: 'Imsak', time: '04:32' },
-    { key: 'subuh', name: 'Subuh', time: '04:42' },
-    { key: 'terbit', name: 'Terbit', time: '05:56' },
-    { key: 'dzuhur', name: 'Dzuhur', time: '12:09' },
-    { key: 'ashar', name: 'Ashar', time: '15:24' },
-    { key: 'maghrib', name: 'Maghrib', time: '18:15' },
-    { key: 'isya', name: 'Isya', time: '19:25' },
-  ],
   getCashSummary: async () => ({
     as_of: '2026-10-28',
     opening_balance: 91_934_781,
