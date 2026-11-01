@@ -1,8 +1,8 @@
 import { Plus, X } from 'lucide-react'
 import { Badge, Button, Callout, Card, IconButton, SectionHeader, Skeleton } from '@/components'
 import type { PrayerTimeOverride } from '@/types/prayer'
+import { formatLongDay } from '@/utils/format/day'
 import { SCHEDULE_NAMES } from '@/utils/prayer/calculate'
-import { formatLongDay } from '../utils'
 
 type DateOverridesCardProps = {
   overrides: PrayerTimeOverride[] | undefined

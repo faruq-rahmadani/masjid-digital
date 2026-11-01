@@ -72,7 +72,17 @@ func newTestRouter(t *testing.T) *echo.Echo {
 	runningText.EXPECT().UpdateSetting(gomock.Any(), gomock.Any()).Return(domain.RunningTextSetting{}, nil).AnyTimes()
 	runningText.EXPECT().GetDisplay(gomock.Any()).Return(domain.RunningTextDisplay{}, nil).AnyTimes()
 
-	return newEcho(controller.NewController(users, auth, mosqueProfile, prayerTime, runningText), middleware.NewAuth(authenticator))
+	iqamah := mock.NewMockIqamahUsecaseItf(ctrl)
+	iqamah.EXPECT().GetSettings(gomock.Any()).Return(domain.IqamahSettings{}, nil).AnyTimes()
+	iqamah.EXPECT().UpdateSettings(gomock.Any(), gomock.Any()).Return(domain.IqamahSettings{}, nil).AnyTimes()
+
+	fridayDuty := mock.NewMockFridayDutyUsecaseItf(ctrl)
+	fridayDuty.EXPECT().List(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	fridayDuty.EXPECT().ListUpcoming(gomock.Any()).Return(nil, nil).AnyTimes()
+	fridayDuty.EXPECT().Save(gomock.Any(), gomock.Any()).Return(domain.FridayDuty{}, nil).AnyTimes()
+	fridayDuty.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+	return newEcho(controller.NewController(users, auth, mosqueProfile, prayerTime, runningText, iqamah, fridayDuty), middleware.NewAuth(authenticator))
 }
 
 // TestRouteAccess pins who may call each route, so a route added without its
@@ -102,6 +112,8 @@ func TestRouteAccess(t *testing.T) {
 		{http.MethodGet, "/api/public/v1/mosque-profile/logo", "", public, ""},
 		{http.MethodGet, "/api/public/v1/prayer-time/config", "", public, ""},
 		{http.MethodGet, "/api/public/v1/running-texts", "", public, ""},
+		{http.MethodGet, "/api/public/v1/iqamah/config", "", public, ""},
+		{http.MethodGet, "/api/public/v1/friday-duties", "", public, ""},
 		{http.MethodPost, "/api/v1/auth/login", `{}`, public, ""},
 		{http.MethodPost, "/api/v1/auth/logout", "", anyUser, ""},
 		{http.MethodGet, "/api/v1/auth/profile", "", anyUser, ""},
@@ -128,6 +140,11 @@ func TestRouteAccess(t *testing.T) {
 		{http.MethodDelete, "/api/v1/running-texts/1", "", superTakmir, ""},
 		{http.MethodGet, "/api/v1/running-text/setting", "", anyUser, ""},
 		{http.MethodPut, "/api/v1/running-text/setting", `{}`, superTakmir, ""},
+		{http.MethodGet, "/api/v1/iqamah/config", "", anyUser, ""},
+		{http.MethodPut, "/api/v1/iqamah/config", `{}`, superTakmir, ""},
+		{http.MethodGet, "/api/v1/friday-duties?from=2026-11-01&to=2026-11-30", "", anyUser, ""},
+		{http.MethodPut, "/api/v1/friday-duties/2026-11-06", `{}`, superTakmir, ""},
+		{http.MethodDelete, "/api/v1/friday-duties/2026-11-06", "", superTakmir, ""},
 	}
 
 	callers := []struct {

@@ -1,5 +1,5 @@
 import '@fontsource/amiri/arabic-700.css'
-import type { IqamahSettings } from '@/types/tv'
+import type { IqamahSettings } from '@/types/iqamah'
 import { formatClock, formatLongDate } from '../clock'
 import { TopBar } from '../components/TopBar'
 import type { DisplayState } from '../displayMode'
@@ -17,7 +17,7 @@ export function AdzanMode({ tv, state, settings }: AdzanModeProps) {
     'Dengarkan dan jawab adzan',
     state.jumat
       ? 'Khutbah segera dimulai'
-      : `Iqamah dalam ${settings.iqamah_minutes[state.prayer.key]} menit`,
+      : `Iqamah dalam ${settings.iqamah_min[state.prayer.key]} menit`,
     'Matikan nada dering HP',
   ]
 

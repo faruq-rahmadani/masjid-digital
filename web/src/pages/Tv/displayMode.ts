@@ -1,4 +1,5 @@
-import type { IqamahSettings, PrayerKey, ScheduleItem } from '@/types/tv'
+import type { IqamahSettings } from '@/types/iqamah'
+import type { PrayerKey, ScheduleItem } from '@/types/tv'
 import { parseTime, type WallClock } from './clock'
 
 /*
@@ -33,30 +34,33 @@ export function displayMode(
   for (const prayer of prayers) {
     const start = parseTime(prayer.time)
     const jumat = clock.weekday === FRIDAY && prayer.key === 'dzuhur'
-    const adzanEnd = start + settings.adzan_minutes * min
+    const adzanEnd = start + settings.adzan_display_min * min
 
     if (jumat) {
-      const khutbahEnd = adzanEnd + settings.khutbah_minutes * min
-      if (now >= start - settings.jumat_before_minutes * min && now < start) {
+      const khutbahEnd = adzanEnd + settings.khutbah_min * min
+      if (now >= start - settings.jumat_before_min * min && now < start) {
         return { mode: 'jumat', prayer, phase: 'before', secondsLeft: start - now }
       }
       if (now >= start && now < adzanEnd) return { mode: 'adzan', prayer, jumat }
       if (now >= adzanEnd && now < khutbahEnd) {
         return { mode: 'jumat', prayer, phase: 'khutbah', secondsLeft: 0 }
       }
-      if (now >= khutbahEnd && now < khutbahEnd + settings.prayer_minutes * min) {
+      if (now >= khutbahEnd && now < khutbahEnd + settings.sholat_min.jumat * min) {
         return { mode: 'sholat', prayer, jumat }
       }
       continue
     }
 
-    const iqamahMinutes = settings.iqamah_minutes[prayer.key]
+    const iqamahMinutes = settings.iqamah_min[prayer.key]
     const iqamahAt = start + iqamahMinutes * min
     if (now >= start && now < adzanEnd) return { mode: 'adzan', prayer, jumat }
     if (now >= adzanEnd && now < iqamahAt) {
       return { mode: 'iqamah', prayer, secondsLeft: iqamahAt - now, totalMinutes: iqamahMinutes }
     }
-    if (now >= Math.max(adzanEnd, iqamahAt) && now < iqamahAt + settings.prayer_minutes * min) {
+    if (
+      now >= Math.max(adzanEnd, iqamahAt) &&
+      now < iqamahAt + settings.sholat_min[prayer.key] * min
+    ) {
       return { mode: 'sholat', prayer, jumat }
     }
   }

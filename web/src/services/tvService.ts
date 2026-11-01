@@ -1,11 +1,12 @@
-import type { CashSummary, DutyRoster, IqamahSettings, Quote, Slide } from '@/types/tv'
+import type { CashSummary, Quote, Slide } from '@/types/tv'
 
 /*
  * Content for the TV display that has no endpoint yet. Each function returns mock data in the
  * shape the API will return; swap in the real call when its task lands (noted per function).
  * The mosque name, address, time zone and logo are live (mosqueProfileService), and so are
- * the prayer times (computed on the TV from prayerTimeService's config) and the running text
- * (runningTextService).
+ * the prayer times (computed on the TV from prayerTimeService's config), the running text
+ * (runningTextService), the iqamah settings (iqamahService) and the petugas Jumat
+ * (fridayDutyService).
  */
 
 /** E7: the latest period's cash report. */
@@ -21,16 +22,6 @@ export async function listSlides(): Promise<Slide[]> {
 /** Quotes rotating under the clock. */
 export async function listQuotes(): Promise<Quote[]> {
   return MOCK_QUOTES
-}
-
-/** E5-04 */
-export async function getIqamahSettings(): Promise<IqamahSettings> {
-  return MOCK_IQAMAH
-}
-
-/** E5-05 */
-export async function getDutyRoster(): Promise<DutyRoster> {
-  return MOCK_DUTY
 }
 
 // --- Mock ----------------------------------------------------------------------------------
@@ -75,18 +66,3 @@ const MOCK_QUOTES: Quote[] = [
     source: 'HR. Ahmad',
   },
 ]
-
-const MOCK_IQAMAH: IqamahSettings = {
-  iqamah_minutes: { subuh: 10, dzuhur: 7, ashar: 7, maghrib: 7, isya: 7 },
-  adzan_minutes: 1,
-  prayer_minutes: 10,
-  jumat_before_minutes: 60,
-  khutbah_minutes: 30,
-}
-
-const MOCK_DUTY: DutyRoster = {
-  imam: 'Ustadz Hasan',
-  muadzin: 'Bilal Ahmad',
-  khatib: 'Ustadz Abdullah',
-  khutbah_theme: 'Menjaga amanah di tengah keluarga',
-}

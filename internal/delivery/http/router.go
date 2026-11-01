@@ -33,6 +33,8 @@ func registerRouters(e *echo.Echo, ctrl *controller.Controller, auth *middleware
 	public.GET("/mosque-profile/logo", ctrl.GetMosqueLogo)
 	public.GET("/prayer-time/config", ctrl.GetPrayerConfig)
 	public.GET("/running-texts", ctrl.GetRunningTextDisplay)
+	public.GET("/iqamah/config", ctrl.GetIqamahSettings)
+	public.GET("/friday-duties", ctrl.ListUpcomingFridayDuties)
 
 	v1 := e.Group("/api/v1")
 	v1.POST("/auth/login", ctrl.Login)
@@ -72,6 +74,15 @@ func registerRouters(e *echo.Echo, ctrl *controller.Controller, auth *middleware
 	v1WithAuth.DELETE("/running-texts/:id", ctrl.DeleteRunningText, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
 	v1WithAuth.GET("/running-text/setting", ctrl.GetRunningTextSetting)
 	v1WithAuth.PUT("/running-text/setting", ctrl.UpdateRunningTextSetting, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
+
+	// iqamah, mode sholat and alarm: read by anyone logged in, changed by super admins and takmir
+	v1WithAuth.GET("/iqamah/config", ctrl.GetIqamahSettings)
+	v1WithAuth.PUT("/iqamah/config", ctrl.UpdateIqamahSettings, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
+
+	// petugas Jumat: read by anyone logged in, changed by super admins and takmir
+	v1WithAuth.GET("/friday-duties", ctrl.ListFridayDuties)
+	v1WithAuth.PUT("/friday-duties/:date", ctrl.SaveFridayDuty, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
+	v1WithAuth.DELETE("/friday-duties/:date", ctrl.DeleteFridayDuty, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
 }
 
 func healthcheckHandler(c echo.Context) error {

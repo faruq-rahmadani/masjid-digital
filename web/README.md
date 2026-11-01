@@ -139,9 +139,11 @@ doesn't touch the page.
 | `mosqueProfileService` | Live                                        |
 | `geocodingService`     | Live, OpenStreetMap Nominatim (not our API) |
 | `prayerTimeService`    | Live (times computed on device, see below)  |
+| `iqamahService`        | Live                                        |
+| `fridayDutyService`    | Live                                        |
 | `screenService`        | Mock (`GET /screens`, E9-02)                |
 | `activityService`      | Mock (activity log, E2-05)                  |
-| `tvService`            | Mock (TV content: E5, E6, E7)               |
+| `tvService`            | Mock (TV content: E6, E7)                   |
 
 Prayer times (E4) never come from the API: `utils/prayer` computes them on the device with
 `adhan` and Kemenag RI parameters (Subuh 20°, Isya 18°, 2 min ihtiyat), pinned by tests against
