@@ -16,6 +16,10 @@ HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement) {
   this.dispatchEvent(new Event('close'))
 }
 
+// jsdom has no object URLs; the new-slide sheet previews the picked file with one.
+URL.createObjectURL = () => 'blob:preview'
+URL.revokeObjectURL = () => {}
+
 // jsdom hides [popover] elements but has no Popover API to show them (Select's list uses it).
 HTMLElement.prototype.showPopover = function showPopover(this: HTMLElement) {
   this.style.display = 'block'
@@ -41,6 +45,7 @@ vi.mock(
   '@/services/runningTextService',
   async () => (await import('./fakeApi')).fakeRunningTextService,
 )
+vi.mock('@/services/slideService', async () => (await import('./fakeApi')).fakeSlideService)
 vi.mock('@/services/geocodingService', async () => (await import('./fakeApi')).fakeGeocodingService)
 vi.mock('@/services/timeService', async () => (await import('./fakeApi')).fakeTimeService)
 vi.mock('@/services/tvService', async () => (await import('./fakeApi')).fakeTvService)

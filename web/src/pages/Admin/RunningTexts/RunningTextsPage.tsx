@@ -16,11 +16,12 @@ import {
   useRunningTexts,
 } from '@/hooks/useRunningTexts'
 import type { RunningText } from '@/types/runningText'
+import { type ActiveFilter, matchesFilter } from '@/utils/listOrder'
 import { AddTextCard } from './components/AddTextCard'
 import { SpeedCard } from './components/SpeedCard'
 import { TextListCard } from './components/TextListCard'
 import { EditTextDrawer } from './drawers/EditTextDrawer'
-import { matchesFilter, type TextFilter, TV_DELAY } from './utils'
+import { TV_DELAY } from './utils'
 
 // Running text (E6-05). Super admin and takmir; the route is guarded by RequireAccess.
 export function RunningTextsPage() {
@@ -38,7 +39,7 @@ function RunningTextsContent() {
   const [editing, setEditing] = useState<RunningText | null>(null)
   const [deleting, setDeleting] = useState<RunningText | null>(null)
   // Old, switched-off texts pile up; the list opens on what is on the TV now.
-  const [filter, setFilter] = useState<TextFilter>('active')
+  const [filter, setFilter] = useState<ActiveFilter>('active')
   const remove = useDeleteRunningText()
   const toast = useToast()
   const failed = texts.error ?? setting.error
@@ -136,7 +137,7 @@ function RunningTextsContent() {
 }
 
 function filterOptions(texts: RunningText[]) {
-  const count = (filter: TextFilter) => texts.filter((t) => matchesFilter(t, filter)).length
+  const count = (filter: ActiveFilter) => texts.filter((t) => matchesFilter(t, filter)).length
   return [
     { value: 'active', label: `Aktif (${count('active')})` },
     { value: 'inactive', label: `Nonaktif (${count('inactive')})` },

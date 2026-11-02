@@ -1,6 +1,6 @@
 // ۞ is in Amiri's Arabic subset; unicode-range keeps the font file from loading until it shows.
 import '@fontsource/amiri/arabic-700.css'
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { ScrollSpeed } from '@/types/runningText'
 import { cn } from '@/utils/cn'
 
@@ -12,6 +12,14 @@ const CHARS_PER_SECOND: Record<ScrollSpeed, number> = { slow: 5, medium: 8, fast
 /** Seconds for one loop of `line` (all texts, then the loop mark). */
 export function scrollSeconds(line: string, speed: ScrollSpeed) {
   return (line.length + SEPARATOR.length) / CHARS_PER_SECOND[speed]
+}
+
+/** How often a synced ticker corrects its position (the animation runs on the device's clock). */
+const RESYNC_MS = 60_000
+
+/** Where in its loop a ticker is at `epochMs`, in ms: the same on every screen at that moment. */
+export function loopPosition(epochMs: number, loopSeconds: number) {
+  return epochMs % (loopSeconds * 1000)
 }
 
 const sizes = {
@@ -32,6 +40,11 @@ type TickerProps = {
   speed: ScrollSpeed
   /** `tv` on the 1920×1080 stage, `preview` in the admin's Running Text screen. */
   size?: keyof typeof sizes
+  /**
+   * The server's time in ms, to scroll in step with every other screen: each is at the same
+   * point of the loop at the same moment, whenever it was opened. Left out, it starts at the top.
+   */
+  syncTo?: () => number
   className?: string
 }
 
@@ -40,9 +53,10 @@ type TickerProps = {
  * marks the return to the first text. Enough copies are laid out to cover the bar plus one, and
  * the strip slides by exactly one copy, so the loop has no seam or gap however short the texts.
  */
-export function Ticker({ texts, speed, size = 'tv', className }: TickerProps) {
+export function Ticker({ texts, speed, size = 'tv', syncTo, className }: TickerProps) {
   const viewportRef = useRef<HTMLDivElement>(null)
   const copyRef = useRef<HTMLDivElement>(null)
+  const stripRef = useRef<HTMLDivElement>(null)
   // Unmeasured (first paint, jsdom): two copies sliding by half, which is one copy.
   const [layout, setLayout] = useState({ copies: 2, shift: '-50%' })
 
@@ -67,6 +81,22 @@ export function Ticker({ texts, speed, size = 'tv', className }: TickerProps) {
     return () => observer.disconnect()
   }, [line])
 
+  // Jump the CSS animation to where the server's clock says the loop is, and again every minute
+  // since the animation itself runs on the device's clock. Older browsers without
+  // getAnimations() just scroll unsynced.
+  const loopSeconds = scrollSeconds(line, speed)
+  useEffect(() => {
+    const strip = stripRef.current
+    if (!syncTo || !line || !strip?.getAnimations) return
+    const sync = () => {
+      const [animation] = strip.getAnimations()
+      if (animation) animation.currentTime = loopPosition(syncTo(), loopSeconds)
+    }
+    sync()
+    const timer = setInterval(sync, RESYNC_MS)
+    return () => clearInterval(timer)
+  }, [syncTo, line, loopSeconds])
+
   if (texts.length === 0) return null
   const s = sizes[size]
 
@@ -81,10 +111,11 @@ export function Ticker({ texts, speed, size = 'tv', className }: TickerProps) {
       <div className={cn('bg-on-gold text-on-brand shrink-0 font-extrabold', s.badge)}>INFO</div>
       <div ref={viewportRef} className="min-w-0 flex-1 overflow-hidden">
         <div
+          ref={stripRef}
           className={cn('animate-marquee flex w-max font-semibold whitespace-pre', s.text)}
           style={
             {
-              animationDuration: `${scrollSeconds(line, speed)}s`,
+              animationDuration: `${loopSeconds}s`,
               '--marquee-shift': layout.shift,
             } as React.CSSProperties
           }

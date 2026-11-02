@@ -1,4 +1,5 @@
-import { type QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { optimistic } from '@/hooks/optimistic'
 import * as runningTextService from '@/services/runningTextService'
 import type { RunningText, RunningTextSetting, UpdateRunningTextRequest } from '@/types/runningText'
 
@@ -29,18 +30,6 @@ export function useCreateRunningText() {
         created,
       ]),
   })
-}
-
-/** Swap the cached list for `next` and return a rollback for onError. */
-async function optimistic<T>(
-  queryClient: QueryClient,
-  key: readonly unknown[],
-  next: (old: T) => T,
-) {
-  await queryClient.cancelQueries({ queryKey: key })
-  const previous = queryClient.getQueryData<T>(key)
-  if (previous !== undefined) queryClient.setQueryData<T>(key, next(previous))
-  return { rollback: () => queryClient.setQueryData(key, previous) }
 }
 
 // Toggling active saves on tap, so the checkbox flips at once and rolls back on failure.
@@ -100,13 +89,10 @@ export function useUpdateRunningTextSetting() {
   })
 }
 
-// Same refresh as the other public reads: the TV runs for days and keeps the last data offline.
-const TV_REFRESH = { refetchInterval: 5 * 60_000, refetchIntervalInBackground: true } as const
-
+// The TV reloads it on the server clock's 5-minute marks (useAlignedRefresh).
 export function usePublicRunningTexts() {
   return useQuery({
     queryKey: runningTextKeys.public,
     queryFn: runningTextService.getPublicRunningTexts,
-    ...TV_REFRESH,
   })
 }

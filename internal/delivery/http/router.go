@@ -15,12 +15,15 @@ const (
 	defaultBodyLimit = "1M"
 	// uploadBodyLimit fits a logo of domain.MaxMosqueLogoSize plus the multipart framing
 	uploadBodyLimit = "3M"
+	// slideUploadBodyLimit fits an image of domain.MaxSlideImageSize plus the multipart framing
+	slideUploadBodyLimit = "6M"
 )
 
 // largeBodyRoutes are the routes (as registered, with the /api/v1 prefix) that
 // set their own body limit, so the default one skips them
 var largeBodyRoutes = map[string]bool{
 	"/api/v1/mosque-profile/logo": true,
+	"/api/v1/slides":              true,
 }
 
 func registerRouters(e *echo.Echo, ctrl *controller.Controller, auth *middleware.Auth) {
@@ -35,6 +38,8 @@ func registerRouters(e *echo.Echo, ctrl *controller.Controller, auth *middleware
 	public.GET("/running-texts", ctrl.GetRunningTextDisplay)
 	public.GET("/iqamah/config", ctrl.GetIqamahSettings)
 	public.GET("/friday-duties", ctrl.ListUpcomingFridayDuties)
+	public.GET("/slides", ctrl.GetSlideDisplay)
+	public.GET("/slides/:id/image", ctrl.GetSlideImage) // any slide, so the admin list's <img> needs no token
 
 	v1 := e.Group("/api/v1")
 	v1.POST("/auth/login", ctrl.Login)
@@ -83,6 +88,12 @@ func registerRouters(e *echo.Echo, ctrl *controller.Controller, auth *middleware
 	v1WithAuth.GET("/friday-duties", ctrl.ListFridayDuties)
 	v1WithAuth.PUT("/friday-duties/:date", ctrl.SaveFridayDuty, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
 	v1WithAuth.DELETE("/friday-duties/:date", ctrl.DeleteFridayDuty, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
+	// slides: the same on every screen
+	v1WithAuth.GET("/slides", ctrl.ListSlides)
+	v1WithAuth.POST("/slides", ctrl.CreateSlide, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir), echomiddleware.BodyLimit(slideUploadBodyLimit))
+	v1WithAuth.PUT("/slides/order", ctrl.ReorderSlides, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
+	v1WithAuth.PUT("/slides/:id", ctrl.UpdateSlide, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
+	v1WithAuth.DELETE("/slides/:id", ctrl.DeleteSlide, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
 }
 
 func healthcheckHandler(c echo.Context) error {

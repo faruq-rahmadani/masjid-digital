@@ -82,7 +82,16 @@ func newTestRouter(t *testing.T) *echo.Echo {
 	fridayDuty.EXPECT().Save(gomock.Any(), gomock.Any()).Return(domain.FridayDuty{}, nil).AnyTimes()
 	fridayDuty.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
-	return newEcho(controller.NewController(users, auth, mosqueProfile, prayerTime, runningText, iqamah, fridayDuty), middleware.NewAuth(authenticator))
+	slide := mock.NewMockSlideUsecaseItf(ctrl)
+	slide.EXPECT().List(gomock.Any()).Return(nil, nil).AnyTimes()
+	slide.EXPECT().Create(gomock.Any(), gomock.Any()).Return(domain.Slide{}, nil).AnyTimes()
+	slide.EXPECT().Update(gomock.Any(), gomock.Any()).Return(domain.Slide{}, nil).AnyTimes()
+	slide.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	slide.EXPECT().Reorder(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	slide.EXPECT().GetImage(gomock.Any(), gomock.Any()).Return(domain.SlideImage{ContentType: "image/png"}, nil).AnyTimes()
+	slide.EXPECT().ListDisplay(gomock.Any()).Return(nil, nil).AnyTimes()
+
+	return newEcho(controller.NewController(users, auth, mosqueProfile, prayerTime, runningText, iqamah, fridayDuty, slide), middleware.NewAuth(authenticator))
 }
 
 // TestRouteAccess pins who may call each route, so a route added without its
@@ -114,6 +123,8 @@ func TestRouteAccess(t *testing.T) {
 		{http.MethodGet, "/api/public/v1/running-texts", "", public, ""},
 		{http.MethodGet, "/api/public/v1/iqamah/config", "", public, ""},
 		{http.MethodGet, "/api/public/v1/friday-duties", "", public, ""},
+		{http.MethodGet, "/api/public/v1/slides", "", public, ""},
+		{http.MethodGet, "/api/public/v1/slides/1/image", "", public, ""},
 		{http.MethodPost, "/api/v1/auth/login", `{}`, public, ""},
 		{http.MethodPost, "/api/v1/auth/logout", "", anyUser, ""},
 		{http.MethodGet, "/api/v1/auth/profile", "", anyUser, ""},
@@ -145,6 +156,11 @@ func TestRouteAccess(t *testing.T) {
 		{http.MethodGet, "/api/v1/friday-duties?from=2026-11-01&to=2026-11-30", "", anyUser, ""},
 		{http.MethodPut, "/api/v1/friday-duties/2026-11-06", `{}`, superTakmir, ""},
 		{http.MethodDelete, "/api/v1/friday-duties/2026-11-06", "", superTakmir, ""},
+		{http.MethodGet, "/api/v1/slides", "", anyUser, ""},
+		{http.MethodPost, "/api/v1/slides", upload.String(), superTakmir, form.FormDataContentType()},
+		{http.MethodPut, "/api/v1/slides/order", `{}`, superTakmir, ""},
+		{http.MethodPut, "/api/v1/slides/1", `{}`, superTakmir, ""},
+		{http.MethodDelete, "/api/v1/slides/1", "", superTakmir, ""},
 	}
 
 	callers := []struct {
@@ -215,21 +231,25 @@ func TestBodyLimits(t *testing.T) {
 
 	logo2MB, logoType := upload(2 << 20)
 	logo4MB, _ := upload(4 << 20)
+	slide5MB, slideType := upload(5 << 20)
+	slide7MB, _ := upload(7 << 20)
 
 	tests := []struct {
-		name, path, body, contentType string
-		want                          int
+		name, method, path, body, contentType string
+		want                                  int
 	}{
-		{"JSON over the default limit", "/api/v1/mosque-profile", `{"name":"` + strings.Repeat("a", 2<<20) + `"}`, echo.MIMEApplicationJSON, http.StatusRequestEntityTooLarge},
-		{"logo of 2 MB", "/api/v1/mosque-profile/logo", logo2MB, logoType, http.StatusOK},
-		{"logo over the upload limit", "/api/v1/mosque-profile/logo", logo4MB, logoType, http.StatusRequestEntityTooLarge},
+		{"JSON over the default limit", http.MethodPut, "/api/v1/mosque-profile", `{"name":"` + strings.Repeat("a", 2<<20) + `"}`, echo.MIMEApplicationJSON, http.StatusRequestEntityTooLarge},
+		{"logo of 2 MB", http.MethodPut, "/api/v1/mosque-profile/logo", logo2MB, logoType, http.StatusOK},
+		{"logo over the upload limit", http.MethodPut, "/api/v1/mosque-profile/logo", logo4MB, logoType, http.StatusRequestEntityTooLarge},
+		{"slide of 5 MB", http.MethodPost, "/api/v1/slides", slide5MB, slideType, http.StatusCreated},
+		{"slide over the upload limit", http.MethodPost, "/api/v1/slides", slide7MB, slideType, http.StatusRequestEntityTooLarge},
 	}
 
 	e := newTestRouter(t)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req := httptest.NewRequest(http.MethodPut, tt.path, strings.NewReader(tt.body))
+			req := httptest.NewRequest(tt.method, tt.path, strings.NewReader(tt.body))
 			req.Header.Set(echo.HeaderContentType, tt.contentType)
 			req.Header.Set(echo.HeaderAuthorization, "Bearer takmir")
 			rec := httptest.NewRecorder()

@@ -19,7 +19,7 @@ and has a back button in `PageHeader`. There is no tab bar.
 | Layar TV         | `admin-layar.html`        | E9-06   | super admin, takmir                  | `Card brand` + `CopyField`, `Badge` (Online/Offline/BARU), `Callout danger`, `Select`, `Button`                                                     |
 | Waktu sholat     | `admin-waktu.html`        | E4-05   | super admin, takmir                  | Context card, 7-day preview (today highlighted), `Stepper sm` corrections, Pengaturan khusus (mingguan, Hijri, jadwal khusus), `ConfirmDialog` on every save/delete, `LeaveGuard` |
 | Iqamah & alarm   | `admin-iqamah.html`       | E5-04   | super admin, takmir                  | Brand "Alur di layar" card, iqamah & mode sholat `Stepper sm` table, Jumat group (settings + `NavCard` to Petugas Jumat), Layar & alarm (`RadioCard`, `Checkbox`, `Select`, `Slider`), `ConfirmDialog`, `LeaveGuard` |
-| Slide            | `admin-slide.html`        | E6-04   | super admin, takmir                  | `UploadTile`, `List` + `Thumbnail`, `Sheet` (edit), `Checkbox`, `Select`                                                                            |
+| Slide ✓          | `admin-slide.html`        | E6-04   | super admin, takmir                  | `UploadTile` (one file, PNG/JPG/WebP ≤ 20 MB, checked client-side) opens a "Slide baru" `Sheet` with a mandatory crop to the TV panel's shape (1312:582, react-easy-crop: drag, pinch, zoom `Slider`, caption bar laid over it; only the framed part is uploaded, as JPEG ≤ 2624 px wide), then `Checkbox` tampilkan judul & keterangan, judul from the file name, keterangan, `Select` durasi 5–30 dtk); nothing is uploaded until Simpan. `SegmentedControl pill` filter, drag to reorder, `Thumbnail` + meta (durasi · sedang tampil/nonaktif), `Button sm` Matikan / Tampilkan, edit `Sheet` (same fields) + `ConfirmDialog`. No "Tampil di": every screen shows the same slides; the image can't be replaced |
 | Running text ✓   | `admin-running-text.html` | E6-05   | super admin, takmir                  | `Textarea showCount`, `SegmentedControl pill` filter (Aktif default · Nonaktif · Semua), drag to reorder (dnd-kit), `Button sm` Matikan / Tampilkan per row (action, not a checkbox), meta line (pembuat · sedang/terakhir tampil), `Sheet` (edit) + `ConfirmDialog`, `SegmentedControl split`, `Ticker preview`. No "penting" flag: order decides |
 | Keuangan         | `admin-keuangan.html`     | E7-06   | super admin, bendahara (takmir view) | `Card brand` + `Stat`, `Button income/expense`, `SearchInput`, `SegmentedControl pill`, `Select pill`, `List` + `Money`, `Callout`, `ConfirmDialog` |
 | Tambah transaksi | `admin-transaksi.html`    | E7-07   | super admin, bendahara               | `SegmentedControl track`, `MoneyInput`, `Field`, `UploadTile tile`, `Callout`, `ActionBar`                                                          |
@@ -35,8 +35,14 @@ resynced every 10 min) shown in the mosque's time zone, so a TV with a wrong clo
 switches modes on the minute. Prayer times are computed on the TV from
 `GET /api/public/v1/prayer-time/config` (settings plus 30 days of date overrides), the INFO bar
 from `GET /api/public/v1/running-texts` (active texts plus scroll speed), the iqamah settings from
-`GET /api/public/v1/iqamah/config` and petugas Jumat from `GET /api/public/v1/friday-duties`
-(the next 30 days). Mocked in `tvService`: kas, slides, quotes.
+`GET /api/public/v1/iqamah/config`, petugas Jumat from `GET /api/public/v1/friday-duties`
+(the next 30 days), and the slides from `GET /api/public/v1/slides` (each on for its own duration,
+timed off the clock so every TV shows the same one; images at `/slides/{id}/image`, cached for
+good; the image fills the panel (`object-cover`) with the title and caption on a frosted-glass bar
+over its bottom, or no bar when the slide's `show_caption` is off; the admin preview shows the same). Mocked in `tvService`: kas, quotes.
+Every TV shows the same thing at the same moment: data reloads on the server clock's 5-minute
+marks (`useAlignedRefresh`), the slide comes from the server clock (`slideIndexAt`), slide images
+are preloaded, and the INFO bar's scroll is set from the server clock (`Ticker syncTo`).
 
 | Mode   | Mockup           | Task  | Content                                                                                                                                                                                 |
 | ------ | ---------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

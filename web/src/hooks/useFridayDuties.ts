@@ -36,13 +36,10 @@ export function useDeleteFridayDuty() {
   })
 }
 
-// The TV runs for days: refetch on a timer and keep the last data when offline.
-const TV_REFRESH = { refetchInterval: 5 * 60_000, refetchIntervalInBackground: true } as const
-
+// The TV reloads it on the server clock's 5-minute marks (useAlignedRefresh).
 export function useUpcomingFridayDuties() {
   return useQuery({
     queryKey: fridayDutyKeys.upcoming,
     queryFn: fridayDutyService.listUpcomingFridayDuties,
-    ...TV_REFRESH,
   })
 }

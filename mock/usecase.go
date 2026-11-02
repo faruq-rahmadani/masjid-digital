@@ -720,3 +720,115 @@ func (mr *MockFridayDutyRepositoryItfMockRecorder) Save(ctx, duty any) *gomock.C
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockFridayDutyRepositoryItf)(nil).Save), ctx, duty)
 }
+
+// MockSlideRepositoryItf is a mock of SlideRepositoryItf interface.
+type MockSlideRepositoryItf struct {
+	ctrl     *gomock.Controller
+	recorder *MockSlideRepositoryItfMockRecorder
+	isgomock struct{}
+}
+
+// MockSlideRepositoryItfMockRecorder is the mock recorder for MockSlideRepositoryItf.
+type MockSlideRepositoryItfMockRecorder struct {
+	mock *MockSlideRepositoryItf
+}
+
+// NewMockSlideRepositoryItf creates a new mock instance.
+func NewMockSlideRepositoryItf(ctrl *gomock.Controller) *MockSlideRepositoryItf {
+	mock := &MockSlideRepositoryItf{ctrl: ctrl}
+	mock.recorder = &MockSlideRepositoryItfMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockSlideRepositoryItf) EXPECT() *MockSlideRepositoryItfMockRecorder {
+	return m.recorder
+}
+
+// Create mocks base method.
+func (m *MockSlideRepositoryItf) Create(ctx context.Context, slide domain.Slide, image domain.SlideImage) (domain.Slide, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, slide, image)
+	ret0, _ := ret[0].(domain.Slide)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockSlideRepositoryItfMockRecorder) Create(ctx, slide, image any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockSlideRepositoryItf)(nil).Create), ctx, slide, image)
+}
+
+// Delete mocks base method.
+func (m *MockSlideRepositoryItf) Delete(ctx context.Context, id int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockSlideRepositoryItfMockRecorder) Delete(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockSlideRepositoryItf)(nil).Delete), ctx, id)
+}
+
+// FindAll mocks base method.
+func (m *MockSlideRepositoryItf) FindAll(ctx context.Context) ([]domain.Slide, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindAll", ctx)
+	ret0, _ := ret[0].([]domain.Slide)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindAll indicates an expected call of FindAll.
+func (mr *MockSlideRepositoryItfMockRecorder) FindAll(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAll", reflect.TypeOf((*MockSlideRepositoryItf)(nil).FindAll), ctx)
+}
+
+// GetImage mocks base method.
+func (m *MockSlideRepositoryItf) GetImage(ctx context.Context, id int64) (domain.SlideImage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetImage", ctx, id)
+	ret0, _ := ret[0].(domain.SlideImage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetImage indicates an expected call of GetImage.
+func (mr *MockSlideRepositoryItfMockRecorder) GetImage(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetImage", reflect.TypeOf((*MockSlideRepositoryItf)(nil).GetImage), ctx, id)
+}
+
+// Reorder mocks base method.
+func (m *MockSlideRepositoryItf) Reorder(ctx context.Context, ids []int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Reorder", ctx, ids)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Reorder indicates an expected call of Reorder.
+func (mr *MockSlideRepositoryItfMockRecorder) Reorder(ctx, ids any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Reorder", reflect.TypeOf((*MockSlideRepositoryItf)(nil).Reorder), ctx, ids)
+}
+
+// Update mocks base method.
+func (m *MockSlideRepositoryItf) Update(ctx context.Context, slide domain.Slide) (domain.Slide, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, slide)
+	ret0, _ := ret[0].(domain.Slide)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockSlideRepositoryItfMockRecorder) Update(ctx, slide any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockSlideRepositoryItf)(nil).Update), ctx, slide)
+}
