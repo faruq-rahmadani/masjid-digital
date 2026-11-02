@@ -17,6 +17,7 @@ import {
   THead,
   Th,
   Thumbnail,
+  Ticker,
   Tr,
 } from '@/components'
 import { Group, Row, Specimen } from '@/pages/Kit/Specimen'
@@ -213,6 +214,18 @@ export function DataDisplaySection() {
         </Row>
         <Divider label="atau" />
         <Divider />
+      </Specimen>
+
+      <Specimen
+        name="Ticker"
+        usage="The TV's INFO bar: running texts scrolling in a loop. preview is its admin miniature."
+        surface="card"
+      >
+        <Ticker
+          size="preview"
+          speed="medium"
+          texts={['Mohon matikan nada dering HP selama di dalam masjid', 'Infaq via QRIS tersedia']}
+        />
       </Specimen>
     </Group>
   )

@@ -37,6 +37,10 @@ vi.mock(
   '@/services/prayerTimeService',
   async () => (await import('./fakeApi')).fakePrayerTimeService,
 )
+vi.mock(
+  '@/services/runningTextService',
+  async () => (await import('./fakeApi')).fakeRunningTextService,
+)
 vi.mock('@/services/geocodingService', async () => (await import('./fakeApi')).fakeGeocodingService)
 vi.mock('@/services/timeService', async () => (await import('./fakeApi')).fakeTimeService)
 vi.mock('@/services/tvService', async () => (await import('./fakeApi')).fakeTvService)

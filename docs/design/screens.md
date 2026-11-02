@@ -20,7 +20,7 @@ and has a back button in `PageHeader`. There is no tab bar.
 | Waktu sholat     | `admin-waktu.html`        | E4-05   | super admin, takmir                  | Context card, 7-day preview (today highlighted), `Stepper sm` corrections, Pengaturan khusus (mingguan, Hijri, jadwal khusus), `ConfirmDialog` on every save/delete, `LeaveGuard` |
 | Iqamah & alarm   | `admin-iqamah.html`       | E5-04   | super admin, takmir                  | `Stepper md`, `RadioCard`, `Checkbox`, `Select`, `Slider`, `ActionBar`                                                                              |
 | Slide            | `admin-slide.html`        | E6-04   | super admin, takmir                  | `UploadTile`, `List` + `Thumbnail`, `Sheet` (edit), `Checkbox`, `Select`                                                                            |
-| Running text     | `admin-running-text.html` | E6-05   | super admin, takmir                  | `Textarea showCount`, `Checkbox`, `Badge caps`, `SegmentedControl split`                                                                            |
+| Running text ✓   | `admin-running-text.html` | E6-05   | super admin, takmir                  | `Textarea showCount`, `SegmentedControl pill` filter (Aktif default · Nonaktif · Semua), drag to reorder (dnd-kit), `Button sm` Matikan / Tampilkan per row (action, not a checkbox), meta line (pembuat · sedang/terakhir tampil), `Sheet` (edit) + `ConfirmDialog`, `SegmentedControl split`, `Ticker preview`. No "penting" flag: order decides |
 | Keuangan         | `admin-keuangan.html`     | E7-06   | super admin, bendahara (takmir view) | `Card brand` + `Stat`, `Button income/expense`, `SearchInput`, `SegmentedControl pill`, `Select pill`, `List` + `Money`, `Callout`, `ConfirmDialog` |
 | Tambah transaksi | `admin-transaksi.html`    | E7-07   | super admin, bendahara               | `SegmentedControl track`, `MoneyInput`, `Field`, `UploadTile tile`, `Callout`, `ActionBar`                                                          |
 | Kategori         | `admin-kategori.html`     | E7-08   | super admin, bendahara               | `Tabs`, `Input`, `List`, `Button danger`, `ConfirmDialog`                                                                                           |
@@ -33,8 +33,8 @@ Public, no login: it reads `/api/public/v1/*` (read-only twins of the admin endp
 mosque name, address, time zone, logo. The clock runs on server time (`GET /api/public/v1/time`,
 resynced every 10 min) shown in the mosque's time zone, so a TV with a wrong clock or zone still
 switches modes on the minute. Prayer times are computed on the TV from `GET /api/public/v1/prayer-time/config` (settings plus 30 days
-of date overrides). Mocked in `tvService`: kas, slides, running text, quotes, iqamah settings,
-petugas.
+of date overrides), and the INFO bar from `GET /api/public/v1/running-texts` (active texts plus
+scroll speed). Mocked in `tvService`: kas, slides, quotes, iqamah settings, petugas.
 
 | Mode   | Mockup           | Task  | Content                                                                                                                                                                                 |
 | ------ | ---------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

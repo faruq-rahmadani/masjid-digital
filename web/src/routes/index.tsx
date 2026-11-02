@@ -74,6 +74,19 @@ export const routes: RouteObject[] = [
               },
             ],
           },
+          {
+            path: ROUTES.runningTexts,
+            element: <RequireAccess module="content" />,
+            children: [
+              {
+                index: true,
+                lazy: async () => ({
+                  Component: (await import('@/pages/Admin/RunningTexts/RunningTextsPage'))
+                    .RunningTextsPage,
+                }),
+              },
+            ],
+          },
           // Menu items without a screen yet, each still guarded by its role permission.
           ...MENU.filter((item) => !item.ready).map((item) => ({
             path: item.path,

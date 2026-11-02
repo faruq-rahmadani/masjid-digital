@@ -151,7 +151,8 @@
       transform: translateX(0);
     }
     to {
-      transform: translateX(-50%);
+      /* Ticker sets the width of one copy; half of two copies otherwise */
+      transform: translateX(var(--marquee-shift, -50%));
     }
   }
   @keyframes toast-in {

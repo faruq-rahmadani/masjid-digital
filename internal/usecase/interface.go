@@ -65,3 +65,19 @@ type PrayerTimeRepositoryItf interface {
 	FindOverridesBetween(ctx context.Context, from, to string) ([]domain.PrayerTimeOverride, error)
 	DeleteOverride(ctx context.Context, id int64) error
 }
+
+type RunningTextRepositoryItf interface {
+	// FindAll returns every running text in display order
+	FindAll(ctx context.Context) ([]domain.RunningText, error)
+	// Create inserts an active running text after the last one
+	Create(ctx context.Context, text domain.RunningText) (domain.RunningText, error)
+	// Update saves text and active, or returns domain.ErrRunningTextNotFound
+	Update(ctx context.Context, text domain.RunningText) (domain.RunningText, error)
+	// Delete returns domain.ErrRunningTextNotFound when no running text has the ID
+	Delete(ctx context.Context, id int64) error
+	// Reorder sets each ID's position to its index in ids
+	Reorder(ctx context.Context, ids []int64) error
+	// GetSetting returns domain.ErrRunningTextSettingNotFound until the setting is first saved
+	GetSetting(ctx context.Context) (domain.RunningTextSetting, error)
+	UpdateSetting(ctx context.Context, setting domain.RunningTextSetting, updatedBy int64) error
+}

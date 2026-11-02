@@ -10,7 +10,7 @@ export const MENU: readonly MenuItem[] = [
     path: ROUTES.runningTexts,
     icon: AlignLeft,
     module: 'content',
-    ready: false,
+    ready: true,
   },
   { label: 'Keuangan', path: ROUTES.finance, icon: CreditCard, module: 'finance', ready: false },
   {

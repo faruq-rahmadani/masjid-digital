@@ -473,3 +473,129 @@ func (mr *MockPrayerTimeRepositoryItfMockRecorder) UpdateSettings(ctx, settings,
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSettings", reflect.TypeOf((*MockPrayerTimeRepositoryItf)(nil).UpdateSettings), ctx, settings, updatedBy)
 }
+
+// MockRunningTextRepositoryItf is a mock of RunningTextRepositoryItf interface.
+type MockRunningTextRepositoryItf struct {
+	ctrl     *gomock.Controller
+	recorder *MockRunningTextRepositoryItfMockRecorder
+	isgomock struct{}
+}
+
+// MockRunningTextRepositoryItfMockRecorder is the mock recorder for MockRunningTextRepositoryItf.
+type MockRunningTextRepositoryItfMockRecorder struct {
+	mock *MockRunningTextRepositoryItf
+}
+
+// NewMockRunningTextRepositoryItf creates a new mock instance.
+func NewMockRunningTextRepositoryItf(ctrl *gomock.Controller) *MockRunningTextRepositoryItf {
+	mock := &MockRunningTextRepositoryItf{ctrl: ctrl}
+	mock.recorder = &MockRunningTextRepositoryItfMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockRunningTextRepositoryItf) EXPECT() *MockRunningTextRepositoryItfMockRecorder {
+	return m.recorder
+}
+
+// Create mocks base method.
+func (m *MockRunningTextRepositoryItf) Create(ctx context.Context, text domain.RunningText) (domain.RunningText, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, text)
+	ret0, _ := ret[0].(domain.RunningText)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockRunningTextRepositoryItfMockRecorder) Create(ctx, text any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockRunningTextRepositoryItf)(nil).Create), ctx, text)
+}
+
+// Delete mocks base method.
+func (m *MockRunningTextRepositoryItf) Delete(ctx context.Context, id int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockRunningTextRepositoryItfMockRecorder) Delete(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockRunningTextRepositoryItf)(nil).Delete), ctx, id)
+}
+
+// FindAll mocks base method.
+func (m *MockRunningTextRepositoryItf) FindAll(ctx context.Context) ([]domain.RunningText, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindAll", ctx)
+	ret0, _ := ret[0].([]domain.RunningText)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindAll indicates an expected call of FindAll.
+func (mr *MockRunningTextRepositoryItfMockRecorder) FindAll(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAll", reflect.TypeOf((*MockRunningTextRepositoryItf)(nil).FindAll), ctx)
+}
+
+// GetSetting mocks base method.
+func (m *MockRunningTextRepositoryItf) GetSetting(ctx context.Context) (domain.RunningTextSetting, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSetting", ctx)
+	ret0, _ := ret[0].(domain.RunningTextSetting)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSetting indicates an expected call of GetSetting.
+func (mr *MockRunningTextRepositoryItfMockRecorder) GetSetting(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSetting", reflect.TypeOf((*MockRunningTextRepositoryItf)(nil).GetSetting), ctx)
+}
+
+// Reorder mocks base method.
+func (m *MockRunningTextRepositoryItf) Reorder(ctx context.Context, ids []int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Reorder", ctx, ids)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Reorder indicates an expected call of Reorder.
+func (mr *MockRunningTextRepositoryItfMockRecorder) Reorder(ctx, ids any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Reorder", reflect.TypeOf((*MockRunningTextRepositoryItf)(nil).Reorder), ctx, ids)
+}
+
+// Update mocks base method.
+func (m *MockRunningTextRepositoryItf) Update(ctx context.Context, text domain.RunningText) (domain.RunningText, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, text)
+	ret0, _ := ret[0].(domain.RunningText)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockRunningTextRepositoryItfMockRecorder) Update(ctx, text any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockRunningTextRepositoryItf)(nil).Update), ctx, text)
+}
+
+// UpdateSetting mocks base method.
+func (m *MockRunningTextRepositoryItf) UpdateSetting(ctx context.Context, setting domain.RunningTextSetting, updatedBy int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateSetting", ctx, setting, updatedBy)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateSetting indicates an expected call of UpdateSetting.
+func (mr *MockRunningTextRepositoryItfMockRecorder) UpdateSetting(ctx, setting, updatedBy any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSetting", reflect.TypeOf((*MockRunningTextRepositoryItf)(nil).UpdateSetting), ctx, setting, updatedBy)
+}

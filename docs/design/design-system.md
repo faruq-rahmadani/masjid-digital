@@ -208,8 +208,13 @@ what to do ("Format email atau nomor HP tidak dikenali"), in rust, under the con
 | `InfoTile`                                     | Read-only label/value, two per row.                    | `label`, `value`.                                                                                                 |
 | `StatusDot`                                    | Compact status next to text.                           | `tone`: success · danger · warning · neutral; `label` for screen readers.                                         |
 | `Thumbnail`                                    | Image preview.                                         | `src`, `alt`, `shape`: slide (72×40) · square (72), `muted`.                                                      |
+| `Ticker`                                       | The TV's INFO bar of running texts.                    | `texts`, `speed`: slow 5 · medium 8 · fast 12 characters/s, `size`: tv · preview. One unbroken stream: texts joined by •, ۞ marks the return to the first.                |
 | `SectionHeader`                                | Title over a group, with an optional link.             | `title`, `description`, `action`.                                                                                 |
 | `Divider`                                      | Separate content; "atau" between alternatives.         | `label`.                                                                                                          |
+
+**Drag to reorder.** `@dnd-kit/sortable` (Running text sets the pattern; Slide follows). Drag
+only by a grip handle (`GripVertical`, `touch-none`) so the rest of the row still scrolls and
+taps; keyboard users lift with space, move with arrows. The new order saves on drop.
 
 **List or Table?** One record per row with a title (transactions, users, slides) → `List`.
 Values compared across columns (times per day) → `Table`.
@@ -380,7 +385,6 @@ last. Tapping a row opens its edit `Sheet`.
 
 ### Not in the system yet
 
-- **Drag to reorder** for slides and running text (E6): needs a drag-and-drop library decision.
 - **Map pin** for Profil masjid (E3-03): Leaflet, per the backlog.
 - **QR code** for Layar TV (E9-06).
 - **Dark mode**: not in the mockup; the TV has its own dark ground.

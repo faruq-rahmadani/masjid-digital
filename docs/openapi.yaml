@@ -60,6 +60,10 @@ tags:
       only stores how the mosque adjusts them. From the most general layer:
       computed time, then `corrections`, then a weekly override (e.g. every
       Friday Dzuhur), then a date override. The most specific one wins.
+  - name: Running Text
+    description: |
+      Short texts scrolling in the TV's INFO bar. Only active texts show, in
+      `position` order; one scroll speed applies to all of them.
   - name: Public
     description: Read only, no login, for screens anyone can see (the TV display).
 
@@ -877,6 +881,268 @@ paths:
         "500":
           $ref: "#/components/responses/Internal"
 
+  /api/public/v1/running-texts:
+    get:
+      tags: [Public, Running Text]
+      summary: Get what the TV's INFO bar shows
+      operationId: getRunningTextDisplay
+      security: []
+      description: The active texts in display order and the scroll speed (`medium` until first saved).
+      responses:
+        "200":
+          description: The running text display.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    required: [speed, texts]
+                    properties:
+                      speed:
+                        $ref: "#/components/schemas/ScrollSpeed"
+                      texts:
+                        type: array
+                        items:
+                          type: string
+                        example: ["Kajian Tafsir setiap Kamis ba'da Maghrib"]
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/running-texts:
+    get:
+      tags: [Running Text]
+      summary: List every running text
+      operationId: listRunningTexts
+      description: Any role. Active and inactive, in display order.
+      responses:
+        "200":
+          description: The running texts.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/RunningText"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "500":
+          $ref: "#/components/responses/Internal"
+    post:
+      tags: [Running Text]
+      summary: Add a running text
+      operationId: createRunningText
+      description: "`super_admin` and `takmir`. The text is active and goes last."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RunningTextInput"
+      responses:
+        "201":
+          description: The created running text.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/RunningText"
+        "400":
+          $ref: "#/components/responses/InvalidRunningText"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/running-texts/order:
+    put:
+      tags: [Running Text]
+      summary: Reorder the running texts
+      operationId: reorderRunningTexts
+      description: |
+        `super_admin` and `takmir`. `ids` must list every running text exactly
+        once; otherwise the list changed meanwhile and the client should reload.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ids]
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  example: [3, 1, 2]
+      responses:
+        "200":
+          description: Every running text in the new order.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/RunningText"
+        "400":
+          description: "`ids` does not match the saved running texts."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: INVALID_INPUT
+                message: daftar running text sudah berubah, muat ulang halaman lalu urutkan lagi
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/running-texts/{id}:
+    put:
+      tags: [Running Text]
+      summary: Edit a running text or turn it on or off
+      operationId: updateRunningText
+      description: "`super_admin` and `takmir`."
+      parameters:
+        - $ref: "#/components/parameters/UserID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/RunningTextInput"
+                - type: object
+                  required: [active]
+                  properties:
+                    active:
+                      type: boolean
+      responses:
+        "200":
+          description: The saved running text.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/RunningText"
+        "400":
+          $ref: "#/components/responses/InvalidRunningText"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/RunningTextNotFound"
+        "500":
+          $ref: "#/components/responses/Internal"
+    delete:
+      tags: [Running Text]
+      summary: Delete a running text
+      operationId: deleteRunningText
+      description: "`super_admin` and `takmir`."
+      parameters:
+        - $ref: "#/components/parameters/UserID"
+      responses:
+        "200":
+          description: Running text deleted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: running text dihapus
+        "400":
+          $ref: "#/components/responses/InvalidUserID"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/RunningTextNotFound"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/running-text/setting:
+    get:
+      tags: [Running Text]
+      summary: Get the scroll speed
+      operationId: getRunningTextSetting
+      description: Any role. `medium` until first saved.
+      responses:
+        "200":
+          description: The setting.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/RunningTextSetting"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "500":
+          $ref: "#/components/responses/Internal"
+    put:
+      tags: [Running Text]
+      summary: Save the scroll speed
+      operationId: updateRunningTextSetting
+      description: "`super_admin` and `takmir`."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RunningTextSetting"
+      responses:
+        "200":
+          description: The saved setting.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/RunningTextSetting"
+        "400":
+          description: Unknown speed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: INVALID_INPUT
+                message: kecepatan gulir tidak valid
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/Internal"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -1179,7 +1445,87 @@ components:
           type: string
           format: date-time
 
+    ScrollSpeed:
+      type: string
+      enum: [slow, medium, fast]
+      description: How fast the INFO bar scrolls; the TV reads about 5, 8 or 12 characters a second.
+      example: medium
+    RunningTextSetting:
+      type: object
+      required: [speed]
+      properties:
+        speed:
+          $ref: "#/components/schemas/ScrollSpeed"
+    RunningTextInput:
+      type: object
+      required: [text]
+      properties:
+        text:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Trimmed; counted in characters.
+          example: Kerja bakti bersih masjid Ahad 2 Nov, kumpul pukul 07.00
+    RunningText:
+      type: object
+      required: [id, text, active, position, created_by, created_by_name, deactivated_at, created_at, updated_at]
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 4
+        text:
+          type: string
+          example: Kajian Tafsir setiap Kamis ba'da Maghrib
+        active:
+          type: boolean
+          description: Only active texts show on the TV.
+        position:
+          type: integer
+          description: Display order, ascending; may have gaps after a delete.
+          example: 0
+        created_by:
+          type: integer
+          format: int64
+          description: 0 when nobody created it, e.g. seeded.
+          example: 7
+        created_by_name:
+          type: string
+          description: The creator's name; empty when nobody created it.
+          example: Ahmad Fauzi
+        deactivated_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: |
+            When the text was last turned off, i.e. last shown on the TV. Null while
+            active and for texts never turned off. Editing an inactive text keeps it.
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
   responses:
+    InvalidRunningText:
+      description: "`teks wajib diisi` or `teks maksimal 200 karakter`."
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: INVALID_INPUT
+            message: teks maksimal 200 karakter
+    RunningTextNotFound:
+      description: No running text with this ID.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: NOT_FOUND
+            message: running text tidak ditemukan
     InvalidInput:
       description: The request is malformed or a field is invalid; `message` says which.
       content:

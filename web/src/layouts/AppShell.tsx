@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { Outlet, ScrollRestoration } from 'react-router'
+import { useDocumentBranding } from '@/hooks/useDocumentBranding'
 import { useSessionStore } from '@/stores/sessionStore'
 
 /*
@@ -9,6 +10,7 @@ import { useSessionStore } from '@/stores/sessionStore'
  */
 export function AppShell() {
   useSessionLifecycle()
+  useDocumentBranding()
 
   return (
     <div className="px-safe bg-canvas md:border-line-soft max-w-app mx-auto flex min-h-dvh flex-col md:border-x">

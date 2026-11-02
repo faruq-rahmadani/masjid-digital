@@ -1,7 +1,7 @@
 import { screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ROUTES } from '@/route'
-import { fakeMosque, fakeServerClock } from '@/test/fakeApi'
+import { fakeMosque, fakeRunningText, fakeServerClock } from '@/test/fakeApi'
 import { renderRoute } from '@/test/render'
 
 // Only Date is faked, so the page's own 1 s timer and React Query still run normally.
@@ -28,6 +28,25 @@ describe('TvPage', () => {
     expect(screen.getByText('00:47:45')).toBeInTheDocument()
     expect(screen.getByText('BERIKUTNYA').parentElement).toHaveTextContent('Maghrib18:15')
     expect(await screen.findByText(/92\.058\.114/)).toBeInTheDocument()
+  })
+
+  it('scrolls the active running texts at the saved speed', async () => {
+    fakeRunningText.texts = fakeRunningText.texts.map((t) => ({ ...t, active: t.id !== 1 }))
+    at('2026-10-28T10:27:15Z')
+    renderRoute(ROUTES.tv)
+
+    // the moving strip next to the INFO badge
+    const strip = (await screen.findByText('INFO')).nextElementSibling!.firstElementChild!
+    expect(strip).toHaveTextContent("Kajian Tafsir setiap Kamis ba'da Maghrib")
+    expect(strip).toHaveTextContent('Infaq via QRIS')
+    expect(strip).not.toHaveTextContent('Mohon matikan nada dering')
+    // one loop: the joined line plus the ۞ mark's spacing, at medium speed (8 characters a second)
+    const line = fakeRunningText.texts
+      .filter((t) => t.active)
+      .map((t) => t.text)
+      .join('   •   ')
+    expect(strip).toHaveStyle({ animationDuration: `${(line.length + 7) / 8}s` })
+    expect(strip).toHaveTextContent('۞')
   })
 
   it('shows the uploaded logo', async () => {

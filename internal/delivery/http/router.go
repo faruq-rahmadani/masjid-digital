@@ -32,6 +32,7 @@ func registerRouters(e *echo.Echo, ctrl *controller.Controller, auth *middleware
 	public.GET("/mosque-profile", ctrl.GetMosqueProfile)
 	public.GET("/mosque-profile/logo", ctrl.GetMosqueLogo)
 	public.GET("/prayer-time/config", ctrl.GetPrayerConfig)
+	public.GET("/running-texts", ctrl.GetRunningTextDisplay)
 
 	v1 := e.Group("/api/v1")
 	v1.POST("/auth/login", ctrl.Login)
@@ -62,6 +63,15 @@ func registerRouters(e *echo.Echo, ctrl *controller.Controller, auth *middleware
 	v1WithAuth.GET("/prayer-time/overrides", ctrl.ListPrayerOverrides)
 	v1WithAuth.POST("/prayer-time/overrides", ctrl.CreatePrayerOverride, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
 	v1WithAuth.DELETE("/prayer-time/overrides/:id", ctrl.DeletePrayerOverride, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
+
+	// running text
+	v1WithAuth.GET("/running-texts", ctrl.ListRunningTexts)
+	v1WithAuth.POST("/running-texts", ctrl.CreateRunningText, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
+	v1WithAuth.PUT("/running-texts/order", ctrl.ReorderRunningTexts, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
+	v1WithAuth.PUT("/running-texts/:id", ctrl.UpdateRunningText, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
+	v1WithAuth.DELETE("/running-texts/:id", ctrl.DeleteRunningText, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
+	v1WithAuth.GET("/running-text/setting", ctrl.GetRunningTextSetting)
+	v1WithAuth.PUT("/running-text/setting", ctrl.UpdateRunningTextSetting, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
 }
 
 func healthcheckHandler(c echo.Context) error {

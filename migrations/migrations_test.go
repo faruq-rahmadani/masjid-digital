@@ -80,6 +80,12 @@ func TestMigrations(t *testing.T) {
 				t.Errorf("duplicate override: err = %v, want ErrUniqueViolation", err)
 			}
 
+			// 00007: a running text is active unless told otherwise
+			var active bool
+			if err := db.Get(ctx, &active, "INSERT INTO running_texts (text, position, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?) RETURNING active", "Kajian Tafsir", 0, id, now, now); err != nil || !active {
+				t.Errorf("insert running text: active = %v, %v; want true", active, err)
+			}
+
 			for {
 				version, err := m.Version(ctx)
 				if err != nil {

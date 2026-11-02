@@ -19,11 +19,8 @@ yarn-error.log*
 pnpm-debug.log*
 
 # Environment
-# The repo root ignores every .env*; these files hold public VITE_* defaults and are committed.
-# Personal overrides (*.local, e.g. .env.development.local) stay ignored. See .env.example.
-!.env
-!.env.development
-!.env.production
+# The repo root ignores every .env*; only .env.example is committed. Copy it to .env (or
+# .env.development / .env.production / *.local) on each machine.
 !.env.example
 *.local
 
