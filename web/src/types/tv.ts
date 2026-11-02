@@ -20,12 +20,4 @@ export type CashSummary = {
   closing_balance: number
 }
 
-/** Slide (E6-04). image_url is empty until uploads exist; the TV shows a placeholder then. */
-export type Slide = {
-  id: number
-  title: string
-  caption: string
-  image_url: string
-}
-
 export type Quote = { text: string; source: string }

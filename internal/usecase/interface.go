@@ -99,3 +99,18 @@ type FridayDutyRepositoryItf interface {
 	// Delete returns domain.ErrFridayDutyNotFound when that Friday has no petugas
 	Delete(ctx context.Context, date string) error
 }
+
+type SlideRepositoryItf interface {
+	// FindAll returns every slide in display order, without images
+	FindAll(ctx context.Context) ([]domain.Slide, error)
+	// Create inserts an active slide with its image after the last one
+	Create(ctx context.Context, slide domain.Slide, image domain.SlideImage) (domain.Slide, error)
+	// Update saves title, caption, duration, show caption and active, or returns domain.ErrSlideNotFound
+	Update(ctx context.Context, slide domain.Slide) (domain.Slide, error)
+	// GetImage returns domain.ErrSlideNotFound when no slide has the ID
+	GetImage(ctx context.Context, id int64) (domain.SlideImage, error)
+	// Delete returns domain.ErrSlideNotFound when no slide has the ID
+	Delete(ctx context.Context, id int64) error
+	// Reorder sets each ID's position to its index in ids
+	Reorder(ctx context.Context, ids []int64) error
+}

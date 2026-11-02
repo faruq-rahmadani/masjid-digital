@@ -10,6 +10,7 @@ import { wallClock } from './clock'
 import { TvScreen } from './components/TvScreen'
 import { TvStage } from './components/TvStage'
 import type { TvContext } from './types'
+import { useAlignedRefresh } from './useAlignedRefresh'
 import { useWakeLock } from './useWakeLock'
 
 // TV display (E8), /tv. Public and read-only; switches between its modes on its own from the prayer times.
@@ -18,6 +19,7 @@ export function TvPage() {
   useDocumentBranding()
   // The server's clock, not the TV's: a TV is often unset or drifting.
   const now = useServerNow()
+  useAlignedRefresh(now)
   const profile = usePublicMosqueProfile()
   const logo = usePublicMosqueLogo()
   const iqamah = usePublicIqamahSettings()

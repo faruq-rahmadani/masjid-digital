@@ -63,10 +63,15 @@ export function Select<T extends string>({
     const below = window.innerHeight - rect.bottom
     const above = rect.top
     const flip = below < Math.min(LIST_MAX_HEIGHT, options.length * 44 + 8) && above > below
+    // [popover] gets `inset: 0` from the browser: reset the sides we don't place, or a flipped
+    // list keeps top: 0 and is pulled to the top of the screen
     setPosition({
       left: rect.left,
+      right: 'auto',
       width: rect.width,
-      ...(flip ? { bottom: window.innerHeight - rect.top + 4 } : { top: rect.bottom + 4 }),
+      ...(flip
+        ? { top: 'auto', bottom: window.innerHeight - rect.top + 4 }
+        : { top: rect.bottom + 4, bottom: 'auto' }),
     })
   }
 

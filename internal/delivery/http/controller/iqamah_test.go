@@ -16,7 +16,7 @@ func TestGetIqamahSettings(t *testing.T) {
 	iqamah := mock.NewMockIqamahUsecaseItf(gomock.NewController(t))
 	iqamah.EXPECT().GetSettings(gomock.Any()).Return(domain.DefaultIqamahSettings(), nil)
 
-	rec, err := serve(authenticated(t, NewController(nil, nil, nil, nil, nil, iqamah, nil).GetIqamahSettings), http.MethodGet, "/api/v1/iqamah/config", "", "Bearer valid-token")
+	rec, err := serve(authenticated(t, NewController(nil, nil, nil, nil, nil, iqamah, nil, nil).GetIqamahSettings), http.MethodGet, "/api/v1/iqamah/config", "", "Bearer valid-token")
 	if err != nil {
 		t.Fatalf("handler: %v", err)
 	}
@@ -35,7 +35,7 @@ func TestUpdateIqamahSettingsTakesUpdaterFromSession(t *testing.T) {
 			return req.IqamahSettings, nil
 		})
 
-	rec, err := serve(authenticated(t, NewController(nil, nil, nil, nil, nil, iqamah, nil).UpdateIqamahSettings), http.MethodPut, "/api/v1/iqamah/config", defaultIqamahJSON, "Bearer valid-token")
+	rec, err := serve(authenticated(t, NewController(nil, nil, nil, nil, nil, iqamah, nil, nil).UpdateIqamahSettings), http.MethodPut, "/api/v1/iqamah/config", defaultIqamahJSON, "Bearer valid-token")
 	if err != nil || rec.Code != http.StatusOK {
 		t.Fatalf("handler: %d, %v", rec.Code, err)
 	}
@@ -45,7 +45,7 @@ func TestGetIqamahSettingsIsPublic(t *testing.T) {
 	iqamah := mock.NewMockIqamahUsecaseItf(gomock.NewController(t))
 	iqamah.EXPECT().GetSettings(gomock.Any()).Return(domain.DefaultIqamahSettings(), nil)
 
-	rec, err := serve(NewController(nil, nil, nil, nil, nil, iqamah, nil).GetIqamahSettings, http.MethodGet, "/api/public/v1/iqamah/config", "", "")
+	rec, err := serve(NewController(nil, nil, nil, nil, nil, iqamah, nil, nil).GetIqamahSettings, http.MethodGet, "/api/public/v1/iqamah/config", "", "")
 	if err != nil {
 		t.Fatalf("handler: %v", err)
 	}

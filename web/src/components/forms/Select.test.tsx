@@ -57,4 +57,28 @@ describe('Select', () => {
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
     expect(screen.getByRole('combobox', { name: 'Peran' })).toHaveTextContent('Takmir')
   })
+
+  it('opens right above the field when there is no room below', async () => {
+    render(<Harness />)
+    const trigger = screen.getByRole('combobox', { name: 'Peran' })
+    // a field near the bottom of a 768px-high screen
+    trigger.getBoundingClientRect = () => new DOMRect(16, 700, 300, 44)
+
+    await userEvent.click(trigger)
+    const list = screen.getByRole('listbox')
+    // top must be reset, or the browser's `inset: 0` for [popover] pulls it to the top of the screen
+    expect(list.style.top).toBe('auto')
+    expect(list.style.bottom).toBe(`${window.innerHeight - 700 + 4}px`)
+  })
+
+  it('opens below the field when there is room', async () => {
+    render(<Harness />)
+    const trigger = screen.getByRole('combobox', { name: 'Peran' })
+    trigger.getBoundingClientRect = () => new DOMRect(16, 100, 300, 44)
+
+    await userEvent.click(trigger)
+    const list = screen.getByRole('listbox')
+    expect(list.style.top).toBe('148px')
+    expect(list.style.bottom).toBe('auto')
+  })
 })

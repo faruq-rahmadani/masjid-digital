@@ -1,6 +1,8 @@
-import { Image } from 'lucide-react'
-import { MosqueLogo } from '@/components'
-import { useCashSummary, useQuotes, useSlides } from '@/hooks/useTvData'
+import { useEffect } from 'react'
+import { MosqueLogo, SlideFrame } from '@/components'
+import { usePublicSlides } from '@/hooks/useSlides'
+import { useCashSummary, useQuotes } from '@/hooks/useTvData'
+import { slideImageUrl } from '@/services/slideService'
 import type { IqamahSettings } from '@/types/iqamah'
 import type { ScheduleItem } from '@/types/tv'
 import { cn } from '@/utils/cn'
@@ -8,9 +10,9 @@ import { formatRupiah } from '@/utils/format/money'
 import { formatClock, formatHijriDate, formatHms, formatLongDate, formatShortDate } from '../clock'
 import { RunningText } from '../components/RunningText'
 import type { DisplayState } from '../displayMode'
+import { slideIndexAt } from '../slideShow'
 import type { TvContext } from '../types'
 
-const SLIDE_SECONDS = 10
 const QUOTE_SECONDS = 60
 
 type NormalModeProps = {
@@ -184,40 +186,50 @@ function QuoteCard({ seconds }: { seconds: number }) {
 }
 
 function SlideShow({ seconds }: { seconds: number }) {
-  const slides = useSlides().data ?? []
-  const index = Math.floor(seconds / SLIDE_SECONDS) % Math.max(1, slides.length)
+  const slides = usePublicSlides().data ?? []
+  const index = slideIndexAt(
+    slides.map((s) => s.duration_seconds),
+    seconds,
+  )
   const slide = slides[index]
+  usePreloadSlides(slides)
 
   return (
-    <div className="bg-tv-media rounded-tv-lg relative min-w-0 flex-1 overflow-hidden">
-      <div className="text-on-brand-muted absolute inset-x-0 top-0 bottom-35 flex items-center justify-center">
-        {slide?.image_url ? (
-          <img src={slide.image_url} alt="" className="size-full object-cover" />
-        ) : (
-          <Image aria-hidden className="size-24" strokeWidth={1.5} />
-        )}
-      </div>
-      {slide && (
-        <div className="bg-tv-caption absolute inset-x-0 bottom-0 flex h-35 items-center justify-between gap-6 px-10">
-          <div className="min-w-0">
-            <div className="text-tv-34 truncate font-bold">{slide.title}</div>
-            <div className="text-tv-22 text-on-brand-muted mt-1.5 truncate">{slide.caption}</div>
+    <SlideFrame
+      className="min-w-0 flex-1"
+      src={slide && slideImageUrl(slide.id)}
+      title={slide?.title ?? ''}
+      caption={slide?.caption ?? ''}
+      showCaption={slide?.show_caption ?? false}
+      aside={
+        slides.length > 1 && (
+          <div className="flex shrink-0 items-center gap-2.5" aria-hidden>
+            {slides.map((s, i) => (
+              <div
+                key={s.id}
+                className={cn(
+                  'h-2.5 rounded-full',
+                  i === index ? 'bg-gold w-9' : 'bg-tv-dot w-2.5',
+                )}
+              />
+            ))}
           </div>
-          {slides.length > 1 && (
-            <div className="flex shrink-0 items-center gap-2.5" aria-hidden>
-              {slides.map((s, i) => (
-                <div
-                  key={s.id}
-                  className={cn(
-                    'h-2.5 rounded-full',
-                    i === index ? 'bg-gold w-9' : 'bg-tv-dot w-2.5',
-                  )}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+        )
+      }
+    />
   )
+}
+
+/**
+ * Fetch every slide's image as soon as the list arrives, so each one is in the browser's cache
+ * (kept for good: the images are immutable) before its turn and every TV switches at the same
+ * second without a blank frame on a slow connection.
+ */
+function usePreloadSlides(slides: readonly { id: number }[]) {
+  const ids = slides.map((s) => s.id).join()
+  useEffect(() => {
+    for (const id of ids ? ids.split(',') : []) {
+      new Image().src = slideImageUrl(Number(id))
+    }
+  }, [ids])
 }

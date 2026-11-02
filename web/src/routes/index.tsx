@@ -100,6 +100,18 @@ export const routes: RouteObject[] = [
             ],
           },
           {
+            path: ROUTES.slides,
+            element: <RequireAccess module="content" />,
+            children: [
+              {
+                index: true,
+                lazy: async () => ({
+                  Component: (await import('@/pages/Admin/Slides/SlidesPage')).SlidesPage,
+                }),
+              },
+            ],
+          },
+          {
             path: ROUTES.iqamah,
             element: <RequireAccess module="iqamah" />,
             children: [

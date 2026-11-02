@@ -18,11 +18,17 @@ export { InfoTile } from '@/components/data-display/InfoTile'
 export { List, ListRow } from '@/components/data-display/List'
 export { Money } from '@/components/data-display/Money'
 export { SectionHeader } from '@/components/data-display/SectionHeader'
+export {
+  SLIDE_ASPECT,
+  SLIDE_PANEL,
+  SlideCaptionBar,
+  SlideFrame,
+} from '@/components/data-display/SlideFrame'
 export { Stat } from '@/components/data-display/Stat'
 export { StatusDot } from '@/components/data-display/StatusDot'
 export { Table, TBody, Td, THead, Th, Tr } from '@/components/data-display/Table'
 export { Thumbnail } from '@/components/data-display/Thumbnail'
-export { scrollSeconds, Ticker } from '@/components/data-display/Ticker'
+export { loopPosition, scrollSeconds, Ticker } from '@/components/data-display/Ticker'
 // Feedback
 export { Banner } from '@/components/feedback/Banner'
 export { Callout } from '@/components/feedback/Callout'

@@ -14,7 +14,7 @@ import type { MenuItem } from './types'
 
 // Home "Kelola" grid, in mockup order. Labels are UI copy; each role sees only what it may open.
 export const MENU: readonly MenuItem[] = [
-  { label: 'Slide', path: ROUTES.slides, icon: Image, module: 'content', ready: false },
+  { label: 'Slide', path: ROUTES.slides, icon: Image, module: 'content', ready: true },
   {
     label: 'Running text',
     path: ROUTES.runningTexts,

@@ -57,14 +57,11 @@ export function useDeletePrayerOverride() {
   })
 }
 
-// Same refresh as the other public reads: the TV runs for days and keeps the last data offline.
-const TV_REFRESH = { refetchInterval: 5 * 60_000, refetchIntervalInBackground: true } as const
-
+// The TV reloads it on the server clock's 5-minute marks (useAlignedRefresh).
 export function usePublicPrayerConfig() {
   return useQuery({
     queryKey: prayerKeys.publicConfig,
     queryFn: prayerTimeService.getPublicPrayerConfig,
-    ...TV_REFRESH,
   })
 }
 

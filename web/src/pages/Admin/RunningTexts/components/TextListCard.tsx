@@ -22,15 +22,15 @@ import { useReorderRunningTexts, useUpdateRunningText } from '@/hooks/useRunning
 import type { RunningText } from '@/types/runningText'
 import { cn } from '@/utils/cn'
 import { formatTimeAgo } from '@/utils/format/date'
-import { matchesFilter, mergeOrder, type TextFilter } from '../utils'
+import { type ActiveFilter, matchesFilter, mergeOrder } from '@/utils/listOrder'
 
 type TextListCardProps = {
   texts: RunningText[]
-  filter: TextFilter
+  filter: ActiveFilter
   onEdit: (text: RunningText) => void
 }
 
-const EMPTY: Record<TextFilter, { title: string; description: string }> = {
+const EMPTY: Record<ActiveFilter, { title: string; description: string }> = {
   active: {
     title: 'Tidak ada teks aktif',
     description:

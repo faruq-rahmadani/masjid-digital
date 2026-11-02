@@ -9,8 +9,8 @@ const DEFAULT_TITLE = 'Masjid Digital'
  * browser's default icon until the profile or logo is saved.
  */
 export function useDocumentBranding() {
-  const name = usePublicMosqueProfile({ live: false }).data?.name
-  const logo = usePublicMosqueLogo({ live: false }).data
+  const name = usePublicMosqueProfile().data?.name
+  const logo = usePublicMosqueLogo().data
 
   useEffect(() => {
     document.title = name || DEFAULT_TITLE

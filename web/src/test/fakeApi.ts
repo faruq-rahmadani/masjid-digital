@@ -14,6 +14,7 @@ import type {
   PrayerTimeOverride,
 } from '@/types/prayer'
 import type { RunningText, RunningTextSetting, UpdateRunningTextRequest } from '@/types/runningText'
+import type { CreateSlideRequest, Slide, UpdateSlideRequest } from '@/types/slide'
 import type { CreateUserRequest, UpdateUserRequest, User } from '@/types/user'
 import { loadSession } from '@/utils/auth/token'
 import { normalizePhone } from '@/utils/format/phone'
@@ -83,6 +84,7 @@ export function resetFakeApi() {
   runningTextSetting = { speed: 'medium' }
   iqamahSettings = SEED_IQAMAH_SETTINGS()
   fridayDuties = SEED_FRIDAY_DUTIES()
+  slides = SEED_SLIDES()
 }
 
 const fail = (status: number, code: string, message: string): never => {
@@ -498,6 +500,116 @@ export const fakeRunningTextService = {
   }),
 }
 
+const SEED_SLIDES = (): Slide[] =>
+  (
+    [
+      ['Kajian Rutin Ahad Pagi', 'Ahad, 08.00 WIB · Ustadz Abdullah', 10, true],
+      ['Infaq Renovasi Atap', 'Transfer ke BSI 7123456789 a.n. Masjid Al-Ikhlas', 15, true],
+      ['Foto Kegiatan Santri TPA', '', 10, true],
+      ['Poster Idul Adha 1447', '', 10, false],
+    ] as const
+  ).map(([title, caption, duration_seconds, active], i) => ({
+    id: i + 1,
+    title,
+    caption,
+    duration_seconds,
+    show_caption: true,
+    active,
+    position: i,
+    created_by: 1,
+    created_by_name: 'Ahmad Fauzi',
+    created_at: SEED_TIME,
+    updated_at: SEED_TIME,
+  }))
+
+let slides = SEED_SLIDES()
+
+/** Read or replace the fake's stored slides, in display order. */
+export const fakeSlide = {
+  get slides() {
+    return slides
+  },
+  set slides(value: Slide[]) {
+    slides = value
+  },
+}
+
+const findSlide = (id: number) =>
+  slides.find((s) => s.id === id) ?? fail(404, 'NOT_FOUND', 'slide tidak ditemukan')
+
+export const fakeSlideService = {
+  slideImageUrl: (id: number) => `/fake/slides/${id}/image`,
+  listSlides: async () => {
+    requireRole('super_admin', 'takmir', 'bendahara')
+    return slides
+  },
+  createSlide: async (file: File, body: CreateSlideRequest) => {
+    const session = requireRole('super_admin', 'takmir')
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type))
+      fail(400, 'INVALID_INPUT', 'format gambar harus PNG, JPG, atau WebP')
+    if (file.size > 5 * 1024 * 1024) fail(400, 'INVALID_INPUT', 'ukuran gambar maksimal 5 MB')
+    const now = new Date().toISOString()
+    const created: Slide = {
+      id: Math.max(0, ...slides.map((s) => s.id)) + 1,
+      title: body.title.trim() || file.name.replace(/\.[^.]*$/, '').slice(0, 100),
+      caption: body.caption.trim(),
+      duration_seconds: body.duration_seconds,
+      show_caption: body.show_caption,
+      active: true,
+      position: Math.max(-1, ...slides.map((s) => s.position)) + 1,
+      created_by: session.userId,
+      created_by_name: findUser(session.userId).name,
+      created_at: now,
+      updated_at: now,
+    }
+    slides = [...slides, created]
+    return created
+  },
+  updateSlide: async (id: number, body: UpdateSlideRequest) => {
+    requireRole('super_admin', 'takmir')
+    const title = body.title.trim()
+    if (title === '') fail(400, 'INVALID_INPUT', 'judul wajib diisi')
+    if (![5, 10, 15, 20, 30].includes(body.duration_seconds))
+      fail(400, 'INVALID_INPUT', 'durasi harus 5, 10, 15, 20, atau 30 detik')
+    const saved = {
+      ...findSlide(id),
+      ...body,
+      title,
+      caption: body.caption.trim(),
+      updated_at: new Date().toISOString(),
+    }
+    slides = slides.map((s) => (s.id === id ? saved : s))
+    return saved
+  },
+  deleteSlide: async (id: number) => {
+    requireRole('super_admin', 'takmir')
+    findSlide(id)
+    slides = slides.filter((s) => s.id !== id)
+    return { message: 'slide dihapus' }
+  },
+  reorderSlides: async (ids: number[]) => {
+    requireRole('super_admin', 'takmir')
+    const sameSet =
+      ids.length === slides.length &&
+      new Set(ids).size === ids.length &&
+      ids.every((id) => slides.some((s) => s.id === id))
+    if (!sameSet)
+      fail(400, 'INVALID_INPUT', 'daftar slide sudah berubah, muat ulang halaman lalu urutkan lagi')
+    slides = ids.map((id, position) => ({ ...findSlide(id), position }))
+    return slides
+  },
+  getPublicSlides: async () =>
+    slides
+      .filter((s) => s.active)
+      .map(({ id, title, caption, duration_seconds, show_caption }) => ({
+        id,
+        title,
+        caption,
+        duration_seconds,
+        show_caption,
+      })),
+}
+
 /** How far the fake server's clock runs ahead of the (fake) device clock, in ms. */
 export const fakeServerClock = { aheadMs: 0 }
 
@@ -513,10 +625,6 @@ export const fakeTvService = {
     expense: 1_126_667,
     closing_balance: 92_058_114,
   }),
-  listSlides: async () => [
-    { id: 1, title: 'Kajian Rutin Ahad Pagi', caption: 'Ahad, 08.00 WIB', image_url: '' },
-    { id: 2, title: 'Kajian Tafsir', caption: "Kamis ba'da Maghrib", image_url: '' },
-  ],
   listQuotes: async () => [
     { text: 'Maka sesungguhnya bersama kesulitan ada kemudahan.', source: 'QS. Al-Insyirah: 5' },
   ],

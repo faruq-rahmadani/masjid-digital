@@ -15,6 +15,7 @@ import (
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/mosqueprofiles"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/prayertimes"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/runningtexts"
+	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/slides"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/users"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/authentication"
@@ -23,6 +24,7 @@ import (
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/mosqueprofile"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/prayertime"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/runningtext"
+	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/slide"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/user"
 	"github.com/faruq-rahmadani/masjid-digital/migrations"
 	"github.com/faruq-rahmadani/masjid-digital/pkg/cache"
@@ -39,6 +41,7 @@ type repositories struct {
 	runningTexts   usecase.RunningTextRepositoryItf
 	iqamah         usecase.IqamahRepositoryItf
 	fridayDuties   usecase.FridayDutyRepositoryItf
+	slides         usecase.SlideRepositoryItf
 }
 
 type usecases struct {
@@ -49,6 +52,7 @@ type usecases struct {
 	runningText   controller.RunningTextUsecaseItf
 	iqamah        controller.IqamahUsecaseItf
 	fridayDuty    controller.FridayDutyUsecaseItf
+	slide         controller.SlideUsecaseItf
 }
 
 // handlers is what the HTTP server serves
@@ -89,7 +93,7 @@ func newHandlers(ctx context.Context, cfg *config.Schema) (h handlers, cleanup f
 	}
 
 	return handlers{
-		controller: controller.NewController(ucs.user, ucs.auth, ucs.mosqueProfile, ucs.prayerTime, ucs.runningText, ucs.iqamah, ucs.fridayDuty),
+		controller: controller.NewController(ucs.user, ucs.auth, ucs.mosqueProfile, ucs.prayerTime, ucs.runningText, ucs.iqamah, ucs.fridayDuty, ucs.slide),
 		auth:       middleware.NewAuth(ucs.auth),
 	}, cleanup, nil
 }
@@ -105,6 +109,7 @@ func newRepositories(db *database.DB, c cache.Cache) repositories {
 		runningTexts:   runningtexts.New(dbClient),
 		iqamah:         iqamahsettings.NewIqamahDBRepository(dbClient),
 		fridayDuties:   fridayduties.NewFridayDutyDBRepository(dbClient),
+		slides:         slides.New(dbClient),
 	}
 }
 
@@ -124,6 +129,7 @@ func newUsecases(cfg *config.Schema, repos repositories) (usecases, error) {
 		runningText:   runningtext.New(repos.runningTexts),
 		iqamah:        iqamah.NewIqamahUsecase(repos.iqamah),
 		fridayDuty:    fridayduty.NewFridayDutyUsecase(repos.fridayDuties),
+		slide:         slide.New(repos.slides),
 	}, nil
 }
 

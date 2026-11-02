@@ -1,6 +1,7 @@
 package migrations_test
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"os"
@@ -93,6 +94,23 @@ func TestMigrations(t *testing.T) {
 			var active bool
 			if err := db.Get(ctx, &active, "INSERT INTO running_texts (text, position, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?) RETURNING active", "Kajian Tafsir", 0, id, now, now); err != nil || !active {
 				t.Errorf("insert running text: active = %v, %v; want true", active, err)
+			}
+
+			// 00009: a slide keeps its image bytes as is
+			image := []byte{0x89, 'P', 'N', 'G', 0x00, 0xff}
+			var slideID int64
+			if err := db.Get(ctx, &slideID, "INSERT INTO slides (title, duration_seconds, position, created_by, created_at, updated_at, image_type, image_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id", "Kajian", 10, 0, id, now, now, "image/png", image); err != nil {
+				t.Fatalf("insert slide: %v", err)
+			}
+			var stored []byte
+			if err := db.Get(ctx, &stored, "SELECT image_data FROM slides WHERE id = ?", slideID); err != nil || !bytes.Equal(stored, image) {
+				t.Errorf("slide image = %v, %v; want %v", stored, err, image)
+			}
+
+			// 00010: slides saved before it keep showing their caption
+			var showCaption bool
+			if err := db.Get(ctx, &showCaption, "SELECT show_caption FROM slides WHERE id = ?", slideID); err != nil || !showCaption {
+				t.Errorf("show_caption = %v, %v; want true", showCaption, err)
 			}
 
 			for {

@@ -31,8 +31,8 @@ function safeNext(next: string | null) {
 // Login (E2-06). OTP WhatsApp from the mockup is P1 (E14-01) and left out for now.
 export function LoginPage() {
   const { session, login } = useAuth()
-  const mosque = usePublicMosqueProfile({ live: false })
-  const logo = usePublicMosqueLogo({ live: false })
+  const mosque = usePublicMosqueProfile()
+  const logo = usePublicMosqueLogo()
   const mosqueName = mosque.data?.name ?? 'Masjid Digital'
   const navigate = useNavigate()
   const [params] = useSearchParams()
