@@ -141,7 +141,7 @@ doesn't touch the page.
 | `prayerTimeService`    | Live (times computed on device, see below)  |
 | `iqamahService`        | Live                                        |
 | `fridayDutyService`    | Live                                        |
-| `screenService`        | Mock (`GET /screens`, E9-02)                |
+| `screenService`        | Live                                        |
 | `activityService`      | Mock (activity log, E2-05)                  |
 | `tvService`            | Mock (TV content: E6, E7)                   |
 

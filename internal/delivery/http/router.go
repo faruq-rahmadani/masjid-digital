@@ -26,6 +26,16 @@ var largeBodyRoutes = map[string]bool{
 	"/api/v1/slides":              true,
 }
 
+// screenContentRoutes are the route prefixes whose changes show on the TV
+var screenContentRoutes = []string{
+	"/api/v1/mosque-profile",
+	"/api/v1/prayer-time",
+	"/api/v1/iqamah",
+	"/api/v1/friday-duties",
+	"/api/v1/running-text", // running-texts and running-text/setting
+	"/api/v1/slides",
+}
+
 func registerRouters(e *echo.Echo, ctrl *controller.Controller, auth *middleware.Auth) {
 	e.GET("/health", healthcheckHandler)
 
@@ -39,13 +49,16 @@ func registerRouters(e *echo.Echo, ctrl *controller.Controller, auth *middleware
 	public.GET("/iqamah/config", ctrl.GetIqamahSettings)
 	public.GET("/friday-duties", ctrl.ListUpcomingFridayDuties)
 	public.GET("/slides", ctrl.GetSlideDisplay)
-	public.GET("/slides/:id/image", ctrl.GetSlideImage) // any slide, so the admin list's <img> needs no token
+	public.GET("/slides/:id/image", ctrl.GetSlideImage)               // any slide, so the admin list's <img> needs no token
+	public.GET("/screens/:device_id/events", ctrl.StreamScreenEvents) // the TV's live connection (SSE)
 
 	v1 := e.Group("/api/v1")
 	v1.POST("/auth/login", ctrl.Login)
 
 	// any logged in user
 	v1WithAuth := v1.Group("", auth.RequireAuth)
+	// a saved change to anything the TV shows reaches every TV within seconds
+	v1WithAuth.Use(middleware.NotifyScreens(ctrl.NotifyScreensContentChanged, screenContentRoutes...))
 	v1WithAuth.POST("/auth/logout", ctrl.Logout)
 	v1WithAuth.GET("/auth/profile", ctrl.GetProfile)
 	v1WithAuth.PUT("/auth/password", ctrl.ChangePassword)
@@ -94,6 +107,14 @@ func registerRouters(e *echo.Echo, ctrl *controller.Controller, auth *middleware
 	v1WithAuth.PUT("/slides/order", ctrl.ReorderSlides, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
 	v1WithAuth.PUT("/slides/:id", ctrl.UpdateSlide, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
 	v1WithAuth.DELETE("/slides/:id", ctrl.DeleteSlide, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
+
+	// screens (layar TV): super admins and takmir
+	v1WithAuth.GET("/screens", ctrl.ListScreens, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
+	v1WithAuth.POST("/screens/commands", ctrl.SendScreenCommand, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
+	v1WithAuth.PUT("/screens/:id", ctrl.UpdateScreen, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
+	v1WithAuth.POST("/screens/:id/block", ctrl.BlockScreen, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
+	v1WithAuth.DELETE("/screens/:id/block", ctrl.UnblockScreen, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
+	v1WithAuth.POST("/screens/:id/commands", ctrl.SendScreenCommand, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
 }
 
 func healthcheckHandler(c echo.Context) error {

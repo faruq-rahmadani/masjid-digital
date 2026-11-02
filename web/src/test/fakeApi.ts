@@ -14,6 +14,7 @@ import type {
   PrayerTimeOverride,
 } from '@/types/prayer'
 import type { RunningText, RunningTextSetting, UpdateRunningTextRequest } from '@/types/runningText'
+import type { Screen, ScreenCommand, UpdateScreenRequest } from '@/types/screen'
 import type { CreateSlideRequest, Slide, UpdateSlideRequest } from '@/types/slide'
 import type { CreateUserRequest, UpdateUserRequest, User } from '@/types/user'
 import { loadSession } from '@/utils/auth/token'
@@ -70,7 +71,11 @@ function seed(): User[] {
 let users = seed()
 
 /** How often each fake was called, to assert what refetches. */
-export const fakeCalls = { listUsers: 0 }
+export const fakeCalls = {
+  listUsers: 0,
+  /** Commands sent to the TVs, e.g. ['reload:1', 'test_sound:all']. */
+  screenCommands: [] as string[],
+}
 
 export function resetFakeApi() {
   users = seed()
@@ -85,6 +90,8 @@ export function resetFakeApi() {
   iqamahSettings = SEED_IQAMAH_SETTINGS()
   fridayDuties = SEED_FRIDAY_DUTIES()
   slides = SEED_SLIDES()
+  screens = SEED_SCREENS()
+  fakeCalls.screenCommands = []
 }
 
 const fail = (status: number, code: string, message: string): never => {
@@ -737,11 +744,88 @@ export const fakeFridayDutyService = {
   listUpcomingFridayDuties: async () => fridayDuties,
 }
 
+// One screen of each kind the Layar TV page shows: online, offline, new (BARU) and blocked.
+const SEED_SCREENS = (): Screen[] => {
+  const screen = (patch: Partial<Screen> & Pick<Screen, 'id'>): Screen => ({
+    device_id: `device-000${patch.id}`,
+    name: '',
+    name_hint: '',
+    user_agent: 'Mozilla/5.0 (Linux; Android 11; TV Box) Chrome/120.0 Safari/537.36',
+    forced_mode: 'auto',
+    forced_until: null,
+    blocked_at: null,
+    first_seen_at: SEED_TIME,
+    updated_at: SEED_TIME,
+    status: 'offline',
+    last_seen_at: null,
+    app_version: '1.4.0',
+    ...patch,
+  })
+  return [
+    screen({ id: 1, name: 'TV Ruang Utama', status: 'online', last_seen_at: minutesAgo(1) }),
+    screen({ id: 2, name: 'TV Teras', last_seen_at: minutesAgo(125), app_version: '1.1.4' }),
+    screen({ id: 3, name_hint: 'aula', first_seen_at: minutesAgo(5), status: 'online' }),
+    screen({ id: 4, name: 'TV Lama', blocked_at: minutesAgo(60 * 24) }),
+  ]
+}
+
+let screens = SEED_SCREENS()
+
+/** Read or replace the fake's stored screens. */
+export const fakeScreens = {
+  get list() {
+    return screens
+  },
+  set list(value: Screen[]) {
+    screens = value
+  },
+}
+
+const findScreen = (id: number) =>
+  screens.find((s) => s.id === id) ?? fail(404, 'NOT_FOUND', 'layar tidak ditemukan')
+
+const saveScreen = (id: number, patch: Partial<Screen>) => {
+  const saved = { ...findScreen(id), ...patch, updated_at: new Date().toISOString() }
+  screens = screens.map((s) => (s.id === id ? saved : s))
+  return saved
+}
+
+/** The mosque's next midnight in WIB, as the API sets it for a forced mode. */
+const nextWibMidnight = () => {
+  const wib = new Date(Date.now() + 7 * 3600_000)
+  wib.setUTCHours(24, 0, 0, 0)
+  return new Date(wib.getTime() - 7 * 3600_000).toISOString()
+}
+
 export const fakeScreenService = {
-  listScreens: async () => [
-    { id: 1, name: 'TV Ruang Utama', status: 'online' as const, last_seen_at: minutesAgo(1) },
-    { id: 2, name: 'TV Teras', status: 'offline' as const, last_seen_at: minutesAgo(125) },
-  ],
+  listScreens: async () => {
+    requireRole('super_admin', 'takmir')
+    return screens
+  },
+  updateScreen: async (id: number, body: UpdateScreenRequest) => {
+    requireRole('super_admin', 'takmir')
+    if (!body.name.trim()) fail(400, 'INVALID_INPUT', 'nama layar wajib diisi')
+    return saveScreen(id, {
+      name: body.name.trim(),
+      forced_mode: body.forced_mode,
+      forced_until: body.forced_mode === 'auto' ? null : nextWibMidnight(),
+    })
+  },
+  blockScreen: async (id: number) => {
+    requireRole('super_admin', 'takmir')
+    return saveScreen(id, { blocked_at: findScreen(id).blocked_at ?? new Date().toISOString() })
+  },
+  unblockScreen: async (id: number) => {
+    requireRole('super_admin', 'takmir')
+    return saveScreen(id, { blocked_at: null })
+  },
+  sendScreenCommand: async (command: ScreenCommand, id?: number) => {
+    requireRole('super_admin', 'takmir')
+    if (id !== undefined) findScreen(id)
+    fakeCalls.screenCommands.push(`${command}:${id ?? 'all'}`)
+    return { message: 'perintah dikirim ke layar' }
+  },
+  screenEventsUrl: (deviceId: string) => `/fake/screens/${deviceId}/events`,
 }
 
 export const fakeActivityService = {

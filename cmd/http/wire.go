@@ -8,6 +8,7 @@ import (
 	"github.com/faruq-rahmadani/masjid-digital/internal/config"
 	"github.com/faruq-rahmadani/masjid-digital/internal/delivery/http/controller"
 	"github.com/faruq-rahmadani/masjid-digital/internal/delivery/http/middleware"
+	"github.com/faruq-rahmadani/masjid-digital/internal/repository/cache/screenpresence"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/cache/sessions"
 	repodb "github.com/faruq-rahmadani/masjid-digital/internal/repository/database"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/fridayduties"
@@ -15,8 +16,10 @@ import (
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/mosqueprofiles"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/prayertimes"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/runningtexts"
+	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/screens"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/slides"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/users"
+	"github.com/faruq-rahmadani/masjid-digital/internal/repository/realtime/screenhub"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/authentication"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/fridayduty"
@@ -24,6 +27,7 @@ import (
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/mosqueprofile"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/prayertime"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/runningtext"
+	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/screen"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/slide"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/user"
 	"github.com/faruq-rahmadani/masjid-digital/migrations"
@@ -42,6 +46,9 @@ type repositories struct {
 	iqamah         usecase.IqamahRepositoryItf
 	fridayDuties   usecase.FridayDutyRepositoryItf
 	slides         usecase.SlideRepositoryItf
+	screens        usecase.ScreenRepositoryItf
+	screenPresence usecase.ScreenPresenceRepositoryItf
+	screenHub      usecase.ScreenHubItf
 }
 
 type usecases struct {
@@ -53,6 +60,7 @@ type usecases struct {
 	iqamah        controller.IqamahUsecaseItf
 	fridayDuty    controller.FridayDutyUsecaseItf
 	slide         controller.SlideUsecaseItf
+	screen        controller.ScreenUsecaseItf
 }
 
 // handlers is what the HTTP server serves
@@ -93,7 +101,7 @@ func newHandlers(ctx context.Context, cfg *config.Schema) (h handlers, cleanup f
 	}
 
 	return handlers{
-		controller: controller.NewController(ucs.user, ucs.auth, ucs.mosqueProfile, ucs.prayerTime, ucs.runningText, ucs.iqamah, ucs.fridayDuty, ucs.slide),
+		controller: controller.NewController(ucs.user, ucs.auth, ucs.mosqueProfile, ucs.prayerTime, ucs.runningText, ucs.iqamah, ucs.fridayDuty, ucs.slide, ucs.screen),
 		auth:       middleware.NewAuth(ucs.auth),
 	}, cleanup, nil
 }
@@ -110,6 +118,9 @@ func newRepositories(db *database.DB, c cache.Cache) repositories {
 		iqamah:         iqamahsettings.NewIqamahDBRepository(dbClient),
 		fridayDuties:   fridayduties.NewFridayDutyDBRepository(dbClient),
 		slides:         slides.New(dbClient),
+		screens:        screens.New(dbClient),
+		screenPresence: screenpresence.New(c),
+		screenHub:      screenhub.New(),
 	}
 }
 
@@ -130,6 +141,7 @@ func newUsecases(cfg *config.Schema, repos repositories) (usecases, error) {
 		iqamah:        iqamah.NewIqamahUsecase(repos.iqamah),
 		fridayDuty:    fridayduty.NewFridayDutyUsecase(repos.fridayDuties),
 		slide:         slide.New(repos.slides),
+		screen:        screen.New(repos.screens, repos.screenPresence, repos.screenHub, repos.mosqueProfiles),
 	}, nil
 }
 

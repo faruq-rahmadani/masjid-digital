@@ -19,7 +19,7 @@ import (
 func newSlideController(t *testing.T) (*Controller, *mock.MockSlideUsecaseItf) {
 	t.Helper()
 	slides := mock.NewMockSlideUsecaseItf(gomock.NewController(t))
-	return NewController(nil, nil, nil, nil, nil, nil, nil, slides), slides
+	return NewController(nil, nil, nil, nil, nil, nil, nil, slides, nil), slides
 }
 
 // serveSlideUpload posts a multipart form with the image as "file" (left out when data is nil)

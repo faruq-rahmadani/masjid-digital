@@ -113,6 +113,19 @@ func TestMigrations(t *testing.T) {
 				t.Errorf("show_caption = %v, %v; want true", showCaption, err)
 			}
 
+			// 00011: one screen row per device, in automatic mode until an admin forces one
+			insertScreen := "INSERT INTO screens (device_id, first_seen_at, updated_at) VALUES (?, ?, ?)"
+			if _, err := db.Exec(ctx, insertScreen, "tv-1", now, now); err != nil {
+				t.Fatalf("insert screen: %v", err)
+			}
+			if _, err := db.Exec(ctx, insertScreen, "tv-1", now, now); !errors.Is(err, database.ErrUniqueViolation) {
+				t.Errorf("duplicate device: err = %v, want ErrUniqueViolation", err)
+			}
+			var forcedMode string
+			if err := db.Get(ctx, &forcedMode, "SELECT forced_mode FROM screens WHERE device_id = ?", "tv-1"); err != nil || forcedMode != "auto" {
+				t.Errorf("forced_mode = %q, %v; want auto", forcedMode, err)
+			}
+
 			for {
 				version, err := m.Version(ctx)
 				if err != nil {

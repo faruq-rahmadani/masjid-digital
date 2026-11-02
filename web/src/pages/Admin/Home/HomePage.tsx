@@ -13,15 +13,16 @@ import {
   Stat,
   StatusDot,
 } from '@/components'
-import { useRecentActivity, useScreens } from '@/hooks/useHomeData'
+import { useRecentActivity } from '@/hooks/useHomeData'
 import { useMosqueProfile } from '@/hooks/useMosqueProfile'
 import { useNow } from '@/hooks/useNow'
 import { useDaySchedule } from '@/hooks/usePrayerTimes'
 import { useProfile } from '@/hooks/useProfile'
+import { useScreens } from '@/hooks/useScreens'
 import { ROUTES } from '@/route'
 import { MENU } from '@/routes/menu'
 import { useSession } from '@/stores/sessionStore'
-import type { Screen } from '@/types/home'
+import type { Screen } from '@/types/screen'
 import { canOpen } from '@/utils/auth/permissions'
 import { roleLabels } from '@/utils/auth/roles'
 import { formatActivityTime, formatTimeAgo } from '@/utils/format/date'
@@ -43,7 +44,9 @@ export function HomePage() {
   const next = prayers?.length ? nextPrayer(now, prayers, timezone) : null
   // no location saved yet: nothing to compute the times from
   const noLocation = schedule.data === null
-  const screens = useScreens()
+  const screens = useScreens(canOpen(session.role, 'screens'))
+  // blocked screens are not ours; the Layar TV page lists them apart
+  const validScreens = screens.data?.filter((s) => s.blocked_at === null)
   const activity = useRecentActivity()
   const role = roleLabels[session.role]
 
@@ -92,10 +95,10 @@ export function HomePage() {
           <NavCard
             to={ROUTES.screens}
             title="Layar TV"
-            description={screens.data ? screenSummary(screens.data, now) : 'Memuat…'}
+            description={validScreens ? screenSummary(validScreens, now) : 'Memuat…'}
             trailing={
               <span className="flex gap-1.5">
-                {screens.data?.map((s) => (
+                {validScreens?.map((s) => (
                   <StatusDot key={s.id} tone={s.status === 'online' ? 'success' : 'danger'} />
                 ))}
               </span>
@@ -149,11 +152,20 @@ export function HomePage() {
 
 function screenSummary(screens: Screen[], now: Date) {
   if (screens.length === 0) return 'Belum ada layar terpasang'
+  const fresh = screens.filter((s) => s.name === '').length
   const online = screens.filter((s) => s.status === 'online').length
   const offline = screens.filter((s) => s.status === 'offline')
-  if (offline.length === 0) return `${online} online`
-  const oldest = offline.reduce((a, b) => (a.last_seen_at < b.last_seen_at ? a : b))
-  return `${online} online · ${offline.length} offline sejak ${formatTimeAgo(oldest.last_seen_at, now)}`
+  const summary = [`${online} online`, offlineSummary(offline, now), fresh > 0 && `${fresh} baru`]
+  return summary.filter(Boolean).join(' · ')
+}
+
+function offlineSummary(offline: Screen[], now: Date) {
+  if (offline.length === 0) return ''
+  const seen = offline.flatMap((s) => (s.last_seen_at ? [s.last_seen_at] : []))
+  if (seen.length === 0) return `${offline.length} offline`
+  // ISO times sort by time
+  const [oldest = ''] = [...seen].sort()
+  return `${offline.length} offline sejak ${formatTimeAgo(oldest, now)}`
 }
 
 type NextPrayerProps = {

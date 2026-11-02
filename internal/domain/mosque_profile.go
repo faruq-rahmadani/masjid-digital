@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	"github.com/faruq-rahmadani/masjid-digital/pkg/apperror"
@@ -34,6 +35,29 @@ func (tz MosqueTimezone) IsValid() bool {
 	default:
 		return false
 	}
+}
+
+// mosqueTimezoneOffsets are fixed: Indonesia has no daylight saving time, so the server needs no
+// tzdata to know the mosque's clock
+var mosqueTimezoneOffsets = map[MosqueTimezone]int{
+	MosqueTimezoneWIB:  7 * 3600,
+	MosqueTimezoneWITA: 8 * 3600,
+	MosqueTimezoneWIT:  9 * 3600,
+}
+
+// Location is the mosque's clock; WIB for an unknown zone
+func (tz MosqueTimezone) Location() *time.Location {
+	offset, ok := mosqueTimezoneOffsets[tz]
+	if !ok {
+		return time.FixedZone(string(MosqueTimezoneWIB), mosqueTimezoneOffsets[MosqueTimezoneWIB])
+	}
+	return time.FixedZone(string(tz), offset)
+}
+
+// NextMidnight is the first midnight after t on the mosque's clock
+func (tz MosqueTimezone) NextMidnight(t time.Time) time.Time {
+	local := t.In(tz.Location())
+	return time.Date(local.Year(), local.Month(), local.Day()+1, 0, 0, 0, 0, local.Location())
 }
 
 // MosqueProfile is who and where the mosque is. Prayer times are computed from

@@ -2,6 +2,7 @@ import type { RouteObject } from 'react-router'
 import { AppShell } from '@/layouts/AppShell'
 import { ComingSoonPage } from '@/pages/ComingSoonPage'
 import { RouteError } from '@/pages/RouteError'
+import { TvError } from '@/pages/Tv/TvError'
 import { ROUTES } from '@/route'
 import { RequireAccess, RequireAuth } from './guards'
 import { MENU } from './menu'
@@ -11,7 +12,8 @@ export const routes: RouteObject[] = [
   // TV display: public (no login) and full screen, outside the admin column.
   {
     path: ROUTES.tv,
-    errorElement: <RouteError />,
+    // reloads by itself once online: nobody is at the TV to press a button
+    errorElement: <TvError />,
     lazy: async () => ({ Component: (await import('@/pages/Tv/TvPage')).TvPage }),
   },
   // TV preview on mock data and a simulated clock, to watch every mode switch; not shipped.
@@ -119,6 +121,18 @@ export const routes: RouteObject[] = [
                 index: true,
                 lazy: async () => ({
                   Component: (await import('@/pages/Admin/Iqamah/IqamahPage')).IqamahPage,
+                }),
+              },
+            ],
+          },
+          {
+            path: ROUTES.screens,
+            element: <RequireAccess module="screens" />,
+            children: [
+              {
+                index: true,
+                lazy: async () => ({
+                  Component: (await import('@/pages/Admin/Screens/ScreensPage')).ScreensPage,
                 }),
               },
             ],
