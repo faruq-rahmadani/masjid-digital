@@ -1,10 +1,81 @@
 # masjid-digital
 
-Admin panel and backend for running a mosque: users and roles, the mosque profile, and next
-prayer times, TV display slides, announcements and kas (treasury) records.
+A digital notice board and admin panel for a mosque. Pengurus (the mosque's board) manage
+prayer times, iqamah, slides, running text and the Friday duty roster from their phone; every
+TV in the mosque shows it full screen and updates within seconds of a change.
 
 Each deployment serves **one mosque** (single tenant): there is no mosque table or `mosque_id`;
 the mosque's profile and logo are stored once.
+
+![TV display](docs/screenshots/tv.png)
+
+## Features
+
+### TV display (`/tv`)
+
+A public 1920×1080 page for any TV with a browser (smart TV, set-top box, mini PC). No login.
+
+- **Main screen:** clock and Gregorian + Hijri date, today's six prayer times with the next one
+  highlighted, countdown to the next prayer, slideshow, running text, a Qur'an quote and the
+  kas (treasury) summary.
+- **Prayer flow:** switches by itself to an adzan screen, an iqamah countdown, then a dimmed or
+  black screen while the prayer is on, and back to normal.
+- **Jumat:** before Dzuhur on Friday, a Jumat screen with khatib, imam, muadzin and the khutbah
+  theme, then adzan, khutbah and sholat.
+- **Alarm:** a beep or bell at adzan and in the last seconds before iqamah (tap the screen once to
+  allow sound).
+- **Live:** every TV keeps a server-sent events connection, so a saved change reaches all of them
+  within seconds; the clock follows the server's time, not the device's.
+
+| Adzan | Iqamah countdown |
+| :---: | :---: |
+| ![Adzan](docs/screenshots/tv-adzan.png) | ![Iqamah countdown](docs/screenshots/tv-iqamah.png) |
+| **Jumat** | **Sholat in progress** |
+| ![Jumat](docs/screenshots/tv-jumat.png) | ![Sholat in progress](docs/screenshots/tv-sholat.png) |
+
+`/tv-preview` shows the same screen with sample data and a panel to jump to any mode (adzan,
+iqamah, Jumat, sholat) and speed up time, so you can check the flow without waiting for a prayer.
+
+### Admin panel
+
+A mobile-first web app for pengurus. Each role sees only the menus it may use (see
+[Auth and roles](#auth-and-roles)).
+
+| | | |
+| :---: | :---: | :---: |
+| ![Login](docs/screenshots/login.png) | ![Home](docs/screenshots/home.png) | ![Users](docs/screenshots/users.png) |
+| **Login** | **Home** | **Users** |
+| ![Slides](docs/screenshots/slides.png) | ![Running text](docs/screenshots/running-texts.png) | ![Prayer times](docs/screenshots/prayer-times.png) |
+| **Slides** | **Running text** | **Prayer times** |
+| ![Iqamah](docs/screenshots/iqamah.png) | ![Friday duties](docs/screenshots/friday-duties.png) | ![Mosque profile](docs/screenshots/profile.png) |
+| **Iqamah & alarm** | **Friday duties** | **Mosque profile** |
+| ![TV screens](docs/screenshots/screens.png) | | |
+| **TV screens** | | |
+
+- **Home:** next prayer with a countdown, TV status at a glance, the menu, and recent activity
+  (who changed what).
+- **Users** (super admin): add, edit, disable or re-enable users, reset a password, filter by role
+  and search. Users are never deleted. Anyone can change their own password.
+- **Slides:** upload JPG/PNG/WebP images (max 5 MB, 16:9 suggested), set how long each shows and
+  whether the title and caption appear, turn slides on or off, drag to reorder.
+- **Running text:** short announcements (max 200 characters) that scroll along the bottom of the
+  TV; turn on or off, drag to reorder, one scroll speed for all.
+- **Prayer times:** computed with the Kemenag RI method (Subuh 20°, Isya 18°) from the mosque's
+  location, with a 7-day preview. Correct each prayer by ±10 minutes, set the imsak offset, fix a
+  time every week (e.g. Dzuhur at 12:00 on Fridays) or on one date, and shift the Hijri date.
+- **Iqamah & alarm:** minutes from adzan to iqamah and length of each prayer, how long the adzan
+  screen shows, dimmed or black screen during sholat, Jumat and khutbah timings, alarm sound and
+  volume. The page shows the resulting timeline for the next prayer.
+- **Friday duties:** khatib, imam, muadzin and khutbah theme per Friday; the next one shows on the
+  TV's Jumat screen.
+- **Mosque profile:** name, address, contact number, logo, location picked on a map (search or
+  "use my location") and timezone (WIB, WITA, WIT).
+- **TV screens:** a TV registers itself the first time it opens `/tv` (with a QR code to open the
+  link from a phone). Name it, see whether it is online and which version it runs, force a mode
+  (auto, normal, Jumat, black), reload it remotely, or block a screen that isn't yours.
+
+**Not built yet:** kas (treasury) records. The TV's kas summary and Qur'an quote are sample data
+for now, and the Keuangan menu is a placeholder.
 
 ## Repository layout
 
@@ -22,7 +93,7 @@ migrations/      # goose SQL migrations, one folder per driver (sqlite, postgres
 mock/            # gomock mocks, generated
 pkg/             # reusable packages: apperror, cache, database, hasher, token, env
 web/             # React client (see web/README.md)
-docs/            # API spec (openapi.yaml)
+docs/            # API spec (openapi.yaml), design notes, README screenshots
 ```
 
 `internal/domain/README.md` and `internal/repository/README.md` describe the rules of each layer.
