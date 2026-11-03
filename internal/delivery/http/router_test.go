@@ -91,7 +91,19 @@ func newTestRouter(t *testing.T) *echo.Echo {
 	slide.EXPECT().GetImage(gomock.Any(), gomock.Any()).Return(domain.SlideImage{ContentType: "image/png"}, nil).AnyTimes()
 	slide.EXPECT().ListDisplay(gomock.Any()).Return(nil, nil).AnyTimes()
 
-	return newEcho(controller.NewController(users, auth, mosqueProfile, prayerTime, runningText, iqamah, fridayDuty, slide), middleware.NewAuth(authenticator))
+	screen := mock.NewMockScreenUsecaseItf(ctrl)
+	screen.EXPECT().List(gomock.Any()).Return(nil, nil).AnyTimes()
+	// a closed event channel ends the stream right away
+	closedEvents := make(chan domain.ScreenEvent)
+	close(closedEvents)
+	screen.EXPECT().Connect(gomock.Any(), gomock.Any()).Return(domain.ScreenConnection{Events: closedEvents, Close: func() {}}, nil).AnyTimes()
+	screen.EXPECT().Update(gomock.Any(), gomock.Any()).Return(domain.Screen{}, nil).AnyTimes()
+	screen.EXPECT().Block(gomock.Any(), gomock.Any()).Return(domain.Screen{}, nil).AnyTimes()
+	screen.EXPECT().Unblock(gomock.Any(), gomock.Any()).Return(domain.Screen{}, nil).AnyTimes()
+	screen.EXPECT().SendCommand(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	screen.EXPECT().NotifyContentChanged().AnyTimes()
+
+	return newEcho(controller.NewController(users, auth, mosqueProfile, prayerTime, runningText, iqamah, fridayDuty, slide, screen), middleware.NewAuth(authenticator))
 }
 
 // TestRouteAccess pins who may call each route, so a route added without its
@@ -125,6 +137,7 @@ func TestRouteAccess(t *testing.T) {
 		{http.MethodGet, "/api/public/v1/friday-duties", "", public, ""},
 		{http.MethodGet, "/api/public/v1/slides", "", public, ""},
 		{http.MethodGet, "/api/public/v1/slides/1/image", "", public, ""},
+		{http.MethodGet, "/api/public/v1/screens/device-0001/events", "", public, ""},
 		{http.MethodPost, "/api/v1/auth/login", `{}`, public, ""},
 		{http.MethodPost, "/api/v1/auth/logout", "", anyUser, ""},
 		{http.MethodGet, "/api/v1/auth/profile", "", anyUser, ""},
@@ -161,6 +174,12 @@ func TestRouteAccess(t *testing.T) {
 		{http.MethodPut, "/api/v1/slides/order", `{}`, superTakmir, ""},
 		{http.MethodPut, "/api/v1/slides/1", `{}`, superTakmir, ""},
 		{http.MethodDelete, "/api/v1/slides/1", "", superTakmir, ""},
+		{http.MethodGet, "/api/v1/screens", "", superTakmir, ""},
+		{http.MethodPost, "/api/v1/screens/commands", `{}`, superTakmir, ""},
+		{http.MethodPut, "/api/v1/screens/1", `{}`, superTakmir, ""},
+		{http.MethodPost, "/api/v1/screens/1/block", "", superTakmir, ""},
+		{http.MethodDelete, "/api/v1/screens/1/block", "", superTakmir, ""},
+		{http.MethodPost, "/api/v1/screens/1/commands", `{}`, superTakmir, ""},
 	}
 
 	callers := []struct {

@@ -832,3 +832,232 @@ func (mr *MockSlideRepositoryItfMockRecorder) Update(ctx, slide any) *gomock.Cal
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockSlideRepositoryItf)(nil).Update), ctx, slide)
 }
+
+// MockScreenRepositoryItf is a mock of ScreenRepositoryItf interface.
+type MockScreenRepositoryItf struct {
+	ctrl     *gomock.Controller
+	recorder *MockScreenRepositoryItfMockRecorder
+	isgomock struct{}
+}
+
+// MockScreenRepositoryItfMockRecorder is the mock recorder for MockScreenRepositoryItf.
+type MockScreenRepositoryItfMockRecorder struct {
+	mock *MockScreenRepositoryItf
+}
+
+// NewMockScreenRepositoryItf creates a new mock instance.
+func NewMockScreenRepositoryItf(ctrl *gomock.Controller) *MockScreenRepositoryItf {
+	mock := &MockScreenRepositoryItf{ctrl: ctrl}
+	mock.recorder = &MockScreenRepositoryItfMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockScreenRepositoryItf) EXPECT() *MockScreenRepositoryItfMockRecorder {
+	return m.recorder
+}
+
+// FindAll mocks base method.
+func (m *MockScreenRepositoryItf) FindAll(ctx context.Context) ([]domain.Screen, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindAll", ctx)
+	ret0, _ := ret[0].([]domain.Screen)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindAll indicates an expected call of FindAll.
+func (mr *MockScreenRepositoryItfMockRecorder) FindAll(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAll", reflect.TypeOf((*MockScreenRepositoryItf)(nil).FindAll), ctx)
+}
+
+// FindByDeviceID mocks base method.
+func (m *MockScreenRepositoryItf) FindByDeviceID(ctx context.Context, deviceID string) (domain.Screen, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindByDeviceID", ctx, deviceID)
+	ret0, _ := ret[0].(domain.Screen)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindByDeviceID indicates an expected call of FindByDeviceID.
+func (mr *MockScreenRepositoryItfMockRecorder) FindByDeviceID(ctx, deviceID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByDeviceID", reflect.TypeOf((*MockScreenRepositoryItf)(nil).FindByDeviceID), ctx, deviceID)
+}
+
+// FindByID mocks base method.
+func (m *MockScreenRepositoryItf) FindByID(ctx context.Context, id int64) (domain.Screen, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindByID", ctx, id)
+	ret0, _ := ret[0].(domain.Screen)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindByID indicates an expected call of FindByID.
+func (mr *MockScreenRepositoryItfMockRecorder) FindByID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByID", reflect.TypeOf((*MockScreenRepositoryItf)(nil).FindByID), ctx, id)
+}
+
+// Register mocks base method.
+func (m *MockScreenRepositoryItf) Register(ctx context.Context, screen domain.Screen) (domain.Screen, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Register", ctx, screen)
+	ret0, _ := ret[0].(domain.Screen)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Register indicates an expected call of Register.
+func (mr *MockScreenRepositoryItfMockRecorder) Register(ctx, screen any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockScreenRepositoryItf)(nil).Register), ctx, screen)
+}
+
+// Update mocks base method.
+func (m *MockScreenRepositoryItf) Update(ctx context.Context, screen domain.Screen) (domain.Screen, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, screen)
+	ret0, _ := ret[0].(domain.Screen)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockScreenRepositoryItfMockRecorder) Update(ctx, screen any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockScreenRepositoryItf)(nil).Update), ctx, screen)
+}
+
+// MockScreenPresenceRepositoryItf is a mock of ScreenPresenceRepositoryItf interface.
+type MockScreenPresenceRepositoryItf struct {
+	ctrl     *gomock.Controller
+	recorder *MockScreenPresenceRepositoryItfMockRecorder
+	isgomock struct{}
+}
+
+// MockScreenPresenceRepositoryItfMockRecorder is the mock recorder for MockScreenPresenceRepositoryItf.
+type MockScreenPresenceRepositoryItfMockRecorder struct {
+	mock *MockScreenPresenceRepositoryItf
+}
+
+// NewMockScreenPresenceRepositoryItf creates a new mock instance.
+func NewMockScreenPresenceRepositoryItf(ctrl *gomock.Controller) *MockScreenPresenceRepositoryItf {
+	mock := &MockScreenPresenceRepositoryItf{ctrl: ctrl}
+	mock.recorder = &MockScreenPresenceRepositoryItfMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockScreenPresenceRepositoryItf) EXPECT() *MockScreenPresenceRepositoryItfMockRecorder {
+	return m.recorder
+}
+
+// Get mocks base method.
+func (m *MockScreenPresenceRepositoryItf) Get(ctx context.Context, deviceID string) (domain.ScreenPresence, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", ctx, deviceID)
+	ret0, _ := ret[0].(domain.ScreenPresence)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockScreenPresenceRepositoryItfMockRecorder) Get(ctx, deviceID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockScreenPresenceRepositoryItf)(nil).Get), ctx, deviceID)
+}
+
+// Set mocks base method.
+func (m *MockScreenPresenceRepositoryItf) Set(ctx context.Context, deviceID string, presence domain.ScreenPresence) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Set", ctx, deviceID, presence)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Set indicates an expected call of Set.
+func (mr *MockScreenPresenceRepositoryItfMockRecorder) Set(ctx, deviceID, presence any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockScreenPresenceRepositoryItf)(nil).Set), ctx, deviceID, presence)
+}
+
+// MockScreenHubItf is a mock of ScreenHubItf interface.
+type MockScreenHubItf struct {
+	ctrl     *gomock.Controller
+	recorder *MockScreenHubItfMockRecorder
+	isgomock struct{}
+}
+
+// MockScreenHubItfMockRecorder is the mock recorder for MockScreenHubItf.
+type MockScreenHubItfMockRecorder struct {
+	mock *MockScreenHubItf
+}
+
+// NewMockScreenHubItf creates a new mock instance.
+func NewMockScreenHubItf(ctrl *gomock.Controller) *MockScreenHubItf {
+	mock := &MockScreenHubItf{ctrl: ctrl}
+	mock.recorder = &MockScreenHubItfMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockScreenHubItf) EXPECT() *MockScreenHubItfMockRecorder {
+	return m.recorder
+}
+
+// Broadcast mocks base method.
+func (m *MockScreenHubItf) Broadcast(event domain.ScreenEvent) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Broadcast", event)
+}
+
+// Broadcast indicates an expected call of Broadcast.
+func (mr *MockScreenHubItfMockRecorder) Broadcast(event any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Broadcast", reflect.TypeOf((*MockScreenHubItf)(nil).Broadcast), event)
+}
+
+// IsConnected mocks base method.
+func (m *MockScreenHubItf) IsConnected(deviceID string) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsConnected", deviceID)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// IsConnected indicates an expected call of IsConnected.
+func (mr *MockScreenHubItfMockRecorder) IsConnected(deviceID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsConnected", reflect.TypeOf((*MockScreenHubItf)(nil).IsConnected), deviceID)
+}
+
+// Send mocks base method.
+func (m *MockScreenHubItf) Send(deviceID string, event domain.ScreenEvent) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Send", deviceID, event)
+}
+
+// Send indicates an expected call of Send.
+func (mr *MockScreenHubItfMockRecorder) Send(deviceID, event any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockScreenHubItf)(nil).Send), deviceID, event)
+}
+
+// Subscribe mocks base method.
+func (m *MockScreenHubItf) Subscribe(deviceID string) (<-chan domain.ScreenEvent, func()) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Subscribe", deviceID)
+	ret0, _ := ret[0].(<-chan domain.ScreenEvent)
+	ret1, _ := ret[1].(func())
+	return ret0, ret1
+}
+
+// Subscribe indicates an expected call of Subscribe.
+func (mr *MockScreenHubItfMockRecorder) Subscribe(deviceID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Subscribe", reflect.TypeOf((*MockScreenHubItf)(nil).Subscribe), deviceID)
+}

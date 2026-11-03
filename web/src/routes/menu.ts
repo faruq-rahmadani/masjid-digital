@@ -40,5 +40,5 @@ export const MENU: readonly MenuItem[] = [
   },
   { label: 'Profil masjid', path: ROUTES.profile, icon: House, module: 'profile', ready: true },
   { label: 'Pengguna', path: ROUTES.users, icon: Users, module: 'users', ready: true },
-  { label: 'Layar TV', path: ROUTES.screens, icon: Monitor, module: 'screens', ready: false },
+  { label: 'Layar TV', path: ROUTES.screens, icon: Monitor, module: 'screens', ready: true },
 ]

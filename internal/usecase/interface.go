@@ -114,3 +114,37 @@ type SlideRepositoryItf interface {
 	// Reorder sets each ID's position to its index in ids
 	Reorder(ctx context.Context, ids []int64) error
 }
+
+// ScreenRepositoryItf stores the TVs, one row per device. Rows are written when a device first
+// connects and when an admin changes one, never per heartbeat.
+type ScreenRepositoryItf interface {
+	// FindAll returns every screen, blocked ones too, oldest first
+	FindAll(ctx context.Context) ([]domain.Screen, error)
+	// FindByID returns domain.ErrScreenNotFound when no screen has the ID
+	FindByID(ctx context.Context, id int64) (domain.Screen, error)
+	// FindByDeviceID returns domain.ErrScreenNotFound for an unknown device
+	FindByDeviceID(ctx context.Context, deviceID string) (domain.Screen, error)
+	// Register inserts the device unless it already has a row, and returns its row either way
+	Register(ctx context.Context, screen domain.Screen) (domain.Screen, error)
+	// Update saves the name, forced mode and until, and blocked_at, or returns domain.ErrScreenNotFound
+	Update(ctx context.Context, screen domain.Screen) (domain.Screen, error)
+}
+
+// ScreenPresenceRepositoryItf keeps when each device was last seen and on which app version,
+// in the cache (Redis in production) rather than the database
+type ScreenPresenceRepositoryItf interface {
+	// Get returns domain.ErrScreenPresenceNotFound for a device not seen since the cache was emptied
+	Get(ctx context.Context, deviceID string) (domain.ScreenPresence, error)
+	Set(ctx context.Context, deviceID string, presence domain.ScreenPresence) error
+}
+
+// ScreenHubItf holds the live TV connections of this API instance
+type ScreenHubItf interface {
+	// Subscribe registers one connection of the device; call unsubscribe when it ends
+	Subscribe(deviceID string) (events <-chan domain.ScreenEvent, unsubscribe func())
+	// Send delivers the event to every connection of the device; a missing device is ignored
+	Send(deviceID string, event domain.ScreenEvent)
+	// Broadcast delivers the event to every connection
+	Broadcast(event domain.ScreenEvent)
+	IsConnected(deviceID string) bool
+}

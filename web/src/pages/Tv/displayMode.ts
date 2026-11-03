@@ -1,4 +1,5 @@
 import type { IqamahSettings } from '@/types/iqamah'
+import type { ScreenMode } from '@/types/screen'
 import type { PrayerKey, ScheduleItem } from '@/types/tv'
 import { parseTime, type WallClock } from './clock'
 
@@ -65,7 +66,12 @@ export function displayMode(
     }
   }
 
-  // Normal: count down to the next adzan; after Isya that is tomorrow's Subuh.
+  return normalState(clock, prayers)
+}
+
+// Normal: count down to the next adzan; after Isya that is tomorrow's Subuh.
+function normalState(clock: WallClock, prayers: readonly Prayer[]): DisplayState {
+  const now = clock.seconds
   const upcoming = prayers.find((p) => parseTime(p.time) > now)
   const next = upcoming ?? prayers[0]
   if (!next) throw new Error('displayMode needs at least one prayer time')
@@ -77,4 +83,29 @@ export function displayMode(
     secondsLeft: target - now,
     jumat: weekday === FRIDAY && next.key === 'dzuhur',
   }
+}
+
+/**
+ * What a mode forced from the Layar TV page shows (E9): the normal layout even at prayer time, or
+ * the Jumat screen counting down to Dzuhur. `auto` (and `dark`, which shows no mode) give null.
+ */
+export function forcedDisplayMode(
+  mode: ScreenMode,
+  clock: WallClock,
+  schedule: readonly ScheduleItem[],
+): DisplayState | null {
+  const prayers = schedule.filter(isPrayer)
+  return FORCED[mode]?.(clock, prayers) ?? null
+}
+
+const FORCED: Partial<
+  Record<ScreenMode, (clock: WallClock, prayers: readonly Prayer[]) => DisplayState | null>
+> = {
+  normal: (clock, prayers) => (prayers.length > 0 ? normalState(clock, prayers) : null),
+  jumat: (clock, prayers) => {
+    const dzuhur = prayers.find((p) => p.key === 'dzuhur')
+    if (!dzuhur) return null
+    const secondsLeft = Math.max(0, parseTime(dzuhur.time) - clock.seconds)
+    return { mode: 'jumat', prayer: dzuhur, phase: 'before', secondsLeft }
+  },
 }

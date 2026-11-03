@@ -34,6 +34,7 @@ app:
 
   # driver: memory | redis
   #   memory: no extra service; keys are lost on restart and not shared between instances
+  #           (sessions log out and TVs show no "last seen" until they reconnect)
   #   redis:  dsn: redis://:password@localhost:6379/0 (also Valkey, Dragonfly, KeyDB)
   cache:
     driver: memory

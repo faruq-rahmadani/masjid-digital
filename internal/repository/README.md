@@ -14,7 +14,7 @@ One subfolder per data source / client, for example:
 
 - Each subpackage exposes a `NewRepository(...)` constructor that returns a type satisfying a `usecase.*RepositoryItf`
 - Accept and return `domain` types; convert DB rows / API payloads inside this layer
-- No business logic: that belongs in `internal/usecase`
+- No business logic: that belongs in `internal/usecase`. That includes calculations: queries filter, order and page, but never sum or total (`SUM`, `CASE`); the usecase computes balances from the rows
 - Client config lives in `internal/config/schema_client.go` and is passed in from `cmd/http/main.go`
 
 ## Database repositories

@@ -3,6 +3,7 @@ import { cleanup } from '@testing-library/react'
 import { afterEach, vi } from 'vitest'
 import { useSessionStore } from '@/stores/sessionStore'
 import { resetFakeApi } from './fakeApi'
+import { FakeEventSource } from './fakeEventSource'
 
 // jsdom has no layout engine; ScrollRestoration calls this on every navigation.
 window.scrollTo = () => {}
@@ -27,6 +28,9 @@ HTMLElement.prototype.showPopover = function showPopover(this: HTMLElement) {
 HTMLElement.prototype.hidePopover = function hidePopover(this: HTMLElement) {
   this.style.display = 'none'
 }
+
+// jsdom has no EventSource; the TV's live connection (E9) talks to this one instead.
+window.EventSource = FakeEventSource as unknown as typeof EventSource
 
 // Tests run against the strict fakes in ./fakeApi, never the network or the quick mocks
 // inside src/services, so they pass whether a service is mocked or live.
@@ -63,4 +67,5 @@ afterEach(() => {
   localStorage.clear()
   sessionStorage.clear()
   useSessionStore.setState({ session: null })
+  FakeEventSource.instances = []
 })

@@ -37,7 +37,7 @@ describe('HomePage', () => {
     expect(within(kelola()).getAllByRole('link')).toHaveLength(9)
     // Status card plus menu tile; screens and activity come from their services.
     expect(
-      await screen.findByRole('link', { name: /1 online · 1 offline sejak 2 jam lalu/ }),
+      await screen.findByRole('link', { name: /2 online · 1 offline sejak 2 jam lalu · 1 baru/ }),
     ).toBeInTheDocument()
     expect(await screen.findByText('menambah pemasukan Rp 750.000')).toBeInTheDocument()
   })

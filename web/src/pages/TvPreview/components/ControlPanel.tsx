@@ -49,8 +49,8 @@ type ControlPanelProps = {
 const modeLabel = (state: DisplayState) =>
   state.mode === 'jumat' ? JUMAT_LABELS[state.phase] : MODE_LABELS[state.mode]
 
-// Floats over the TV stage. The stage hides the cursor and toggles fullscreen on double-click,
-// so the panel shows the cursor again and keeps its double-clicks to itself.
+// Floats over the TV stage. The stage hides the cursor and goes fullscreen on a tap,
+// so the panel shows the cursor again and is marked so its clicks don't go fullscreen.
 export function ControlPanel(props: ControlPanelProps) {
   const [open, setOpen] = useState(true)
 
@@ -67,7 +67,7 @@ export function ControlPanel(props: ControlPanelProps) {
   return (
     <aside
       aria-label="Panel pratinjau TV"
-      onDoubleClick={(e) => e.stopPropagation()}
+      data-tv-controls
       className="bg-card text-ink border-line fixed right-4 bottom-4 z-10 flex max-h-[calc(100vh-2rem)] w-90 cursor-auto flex-col gap-4 overflow-y-auto rounded-xl border p-4 shadow-lg select-text"
     >
       <div className="flex items-start justify-between gap-3">

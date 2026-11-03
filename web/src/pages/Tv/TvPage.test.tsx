@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react'
+import { act, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ROUTES } from '@/route'
 import {
@@ -8,6 +8,7 @@ import {
   fakeRunningText,
   fakeServerClock,
 } from '@/test/fakeApi'
+import { FakeEventSource } from '@/test/fakeEventSource'
 import { renderRoute } from '@/test/render'
 
 // Only Date is faked, so the page's own 1 s timer and React Query still run normally.
@@ -133,5 +134,95 @@ describe('TvPage', () => {
     expect(await screen.findByText('SHOLAT JUMAT')).toBeInTheDocument()
     expect(screen.getByText('Adzan dalam 00:17:12')).toBeInTheDocument()
     expect(await screen.findByText('Ustadz Abdullah')).toBeInTheDocument()
+  })
+
+  describe('live connection (E9)', () => {
+    it('registers with the ?layar= name and app version, and keeps its device ID', async () => {
+      at('2026-10-28T10:27:15Z')
+      renderRoute(`${ROUTES.tv}?layar=teras`)
+      await screen.findByText('Masjid Nur Husen')
+
+      const url = new URL(FakeEventSource.latest!.url, 'http://tv')
+      expect(url.pathname).toMatch(/^\/fake\/screens\/[0-9a-f-]{32,36}\/events$/)
+      expect(localStorage.getItem('masjid-digital:device-id')).toBe(url.pathname.split('/')[3])
+    })
+
+    it('goes dark when an admin forces it, until forced_until', async () => {
+      at('2026-10-28T10:27:15Z')
+      renderRoute(ROUTES.tv)
+      await screen.findByText('Menuju Maghrib')
+
+      act(() => {
+        FakeEventSource.latest!.open()
+        FakeEventSource.latest!.emit('state', {
+          name: 'TV Teras',
+          forced_mode: 'dark',
+          forced_until: '2026-10-28T17:00:00Z',
+        })
+      })
+      expect(await screen.findByRole('img', { name: 'Layar gelap' })).toBeInTheDocument()
+      expect(screen.queryByText('Menuju Maghrib')).not.toBeInTheDocument()
+
+      // a forced mode that already ended is ignored
+      act(() =>
+        FakeEventSource.latest!.emit('state', {
+          name: 'TV Teras',
+          forced_mode: 'dark',
+          forced_until: '2026-10-28T10:00:00Z',
+        }),
+      )
+      expect(await screen.findByText('Menuju Maghrib')).toBeInTheDocument()
+    })
+
+    it('shows the Jumat screen when forced, on any day', async () => {
+      at('2026-10-28T03:00:00Z') // Wednesday 10:00 WIB
+      renderRoute(ROUTES.tv)
+      await screen.findByText('Masjid Nur Husen')
+
+      act(() =>
+        FakeEventSource.latest!.emit('state', {
+          name: '',
+          forced_mode: 'jumat',
+          forced_until: '2026-10-28T17:00:00Z',
+        }),
+      )
+      expect(await screen.findByText('SHOLAT JUMAT')).toBeInTheDocument()
+    })
+
+    it('shows when it is blocked, and comes back once unblocked', async () => {
+      at('2026-10-28T10:27:15Z')
+      renderRoute(ROUTES.tv)
+      await screen.findByText('Menuju Maghrib')
+
+      act(() => FakeEventSource.latest!.emit('blocked'))
+      expect(await screen.findByText('Layar ini diblokir')).toBeInTheDocument()
+
+      act(() =>
+        FakeEventSource.latest!.emit('state', {
+          name: '',
+          forced_mode: 'auto',
+          forced_until: null,
+        }),
+      )
+      expect(await screen.findByText('Menuju Maghrib')).toBeInTheDocument()
+    })
+
+    it('says it is offline after 2 minutes without the connection', async () => {
+      at('2026-10-28T10:27:15Z')
+      renderRoute(ROUTES.tv)
+      await screen.findByText('Menuju Maghrib')
+
+      act(() => {
+        FakeEventSource.latest!.open()
+        FakeEventSource.latest!.drop()
+      })
+      expect(screen.queryByText(/Offline/)).not.toBeInTheDocument()
+
+      act(() => vi.setSystemTime(new Date('2026-10-28T10:29:20Z')))
+      expect(await screen.findByText('Offline · menampilkan data tersimpan')).toBeInTheDocument()
+
+      act(() => FakeEventSource.latest!.open())
+      expect(screen.queryByText(/Offline/)).not.toBeInTheDocument()
+    })
   })
 })

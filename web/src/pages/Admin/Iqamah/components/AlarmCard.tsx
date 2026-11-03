@@ -1,4 +1,15 @@
-import { Card, Checkbox, Field, SectionHeader, Select, Slider, Stack } from '@/components'
+import {
+  Button,
+  Card,
+  Checkbox,
+  Field,
+  SectionHeader,
+  Select,
+  Slider,
+  Stack,
+  useToast,
+} from '@/components'
+import { useSendScreenCommand } from '@/hooks/useScreens'
 import type { AlarmSettings, AlarmSound, IqamahSettings } from '@/types/iqamah'
 
 type AlarmCardProps = {
@@ -16,6 +27,17 @@ export function AlarmCard({ settings, onChange }: AlarmCardProps) {
   const alarm = settings.alarm
   const set = (changes: Partial<AlarmSettings>) =>
     onChange({ ...settings, alarm: { ...alarm, ...changes } })
+  const command = useSendScreenCommand()
+  const toast = useToast()
+  // E5-02: every online TV plays its saved sound once
+  const testSound = () =>
+    command.mutate(
+      { command: 'test_sound' },
+      {
+        onSuccess: () => toast({ message: 'Bunyi diputar di layar yang online' }),
+        onError: (error) => toast({ tone: 'danger', message: error.message }),
+      },
+    )
 
   return (
     <Card padding="md" className="flex flex-col gap-3">
@@ -61,6 +83,12 @@ export function AlarmCard({ settings, onChange }: AlarmCardProps) {
           </Field>
           <p className="text-ink-muted text-xs">
             Layar TV perlu disentuh sekali setelah menyala agar bunyi bisa diputar.
+          </p>
+          <Button size="md" variant="secondary" loading={command.isPending} onClick={testSound}>
+            Uji bunyi di layar
+          </Button>
+          <p className="text-ink-muted text-xs">
+            Uji bunyi memakai pengaturan yang sudah disimpan.
           </p>
         </Stack>
       )}

@@ -76,6 +76,13 @@ tags:
       Images rotating in the TV's main panel. Only active slides show, in
       `position` order, each for its own `duration_seconds`. Every screen
       shows the same slides.
+  - name: Screens
+    description: |
+      The TVs that opened `/tv` (layar TV). A TV makes a random device ID once and holds one
+      server-sent events connection: connected is online, and its state, content refreshes and
+      commands come down that connection. A device gets its row the first time it connects; last
+      seen and the app version live in the cache. A blocked device is hidden from the admin and
+      refused on connect.
   - name: Public
     description: Read only, no login, for screens anyone can see (the TV display).
 
@@ -1659,6 +1666,234 @@ paths:
         "500":
           $ref: "#/components/responses/Internal"
 
+  /api/public/v1/screens/{device_id}/events:
+    get:
+      tags: [Public, Screens]
+      summary: The TV's live connection
+      operationId: streamScreenEvents
+      security: []
+      description: |
+        Server-sent events (`text/event-stream`), kept open with a `: ping` comment every 25 s.
+        Registers the device the first time (at most 50 screens). Events, each with JSON `data`:
+
+        - `state`: the screen's `ScreenState`, first on connect and again when an admin changes it
+        - `refresh`: content shown on the TV changed; reload the data now
+        - `reload`: reload the page
+        - `test_sound`: play the alarm sound once
+        - `blocked`: an admin blocked this device; the stream ends. A blocked device that connects
+          gets only this event, with `retry: 300000`, so it checks back every 5 minutes.
+      parameters:
+        - name: device_id
+          in: path
+          required: true
+          description: 8-64 letters, digits or dashes, e.g. a UUID kept in the TV's localStorage.
+          schema: { type: string, example: 2f1c9a7e-5b8d-4c3a-9e21-7d6f0b4a8c11 }
+        - name: name
+          in: query
+          description: From `/tv?layar=…`, suggested to the admin when naming the screen.
+          schema: { type: string, maxLength: 50, example: teras }
+        - name: v
+          in: query
+          description: The TV app's version.
+          schema: { type: string, maxLength: 30, example: 1.4.0 }
+      responses:
+        "200":
+          description: The event stream.
+          content:
+            text/event-stream:
+              schema:
+                type: string
+              example: |
+                retry: 5000
+                event: state
+                data: {"name":"TV Teras","forced_mode":"auto","forced_until":null}
+
+                event: refresh
+                data: null
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "422":
+          description: "A new device when 50 screens are registered: `jumlah layar sudah mencapai batas 50`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/screens:
+    get:
+      tags: [Screens]
+      summary: List the screens
+      operationId: listScreens
+      description: "`super_admin` and `takmir`. Every screen, blocked ones too (the admin shows them apart), oldest first."
+      responses:
+        "200":
+          description: The screens.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Screen"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/screens/commands:
+    post:
+      tags: [Screens]
+      summary: Send a command to every connected screen
+      operationId: broadcastScreenCommand
+      description: "`super_admin` and `takmir`."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScreenCommandRequest"
+      responses:
+        "200":
+          description: Sent.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: perintah dikirim ke layar
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /api/v1/screens/{id}:
+    put:
+      tags: [Screens]
+      summary: Name a screen and set its mode
+      operationId: updateScreen
+      description: |
+        `super_admin` and `takmir`. A forced mode lasts until the mosque's next midnight
+        (`forced_until`), then the screen follows its schedule again. The TV gets its new state at once.
+      parameters:
+        - $ref: "#/components/parameters/UserID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, forced_mode]
+              properties:
+                name: { type: string, minLength: 1, maxLength: 50, example: TV Teras }
+                forced_mode:
+                  $ref: "#/components/schemas/ScreenMode"
+      responses:
+        "200":
+          description: The saved screen.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Screen"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ScreenNotFound"
+
+  /api/v1/screens/{id}/block:
+    parameters:
+      - $ref: "#/components/parameters/UserID"
+    post:
+      tags: [Screens]
+      summary: Block a screen
+      operationId: blockScreen
+      description: "`super_admin` and `takmir`. Hides it and closes its connection; it is refused until unblocked."
+      responses:
+        "200":
+          description: The blocked screen.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Screen"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ScreenNotFound"
+    delete:
+      tags: [Screens]
+      summary: Unblock a screen
+      operationId: unblockScreen
+      description: "`super_admin` and `takmir`. The TV reconnects within 5 minutes."
+      responses:
+        "200":
+          description: The unblocked screen.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Screen"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ScreenNotFound"
+
+  /api/v1/screens/{id}/commands:
+    post:
+      tags: [Screens]
+      summary: Send a command to one screen
+      operationId: sendScreenCommand
+      description: "`super_admin` and `takmir`. Lost when the screen is not connected."
+      parameters:
+        - $ref: "#/components/parameters/UserID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScreenCommandRequest"
+      responses:
+        "200":
+          description: Sent.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ScreenNotFound"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -2176,7 +2411,53 @@ components:
           example: 15
         show_caption:
           type: boolean
+    ScreenMode:
+      type: string
+      enum: [auto, normal, jumat, dark]
+      description: "`auto` follows the schedule; the others force the normal layout, the Jumat screen or a black screen."
+    ScreenState:
+      type: object
+      required: [name, forced_mode, forced_until]
+      properties:
+        name: { type: string }
+        forced_mode:
+          $ref: "#/components/schemas/ScreenMode"
+        forced_until: { type: string, format: date-time, nullable: true, description: The forced mode ends here. }
+    ScreenCommandRequest:
+      type: object
+      required: [command]
+      properties:
+        command:
+          type: string
+          enum: [reload, test_sound]
+    Screen:
+      type: object
+      required: [id, device_id, name, name_hint, user_agent, forced_mode, forced_until, blocked_at, first_seen_at, updated_at, status, last_seen_at, app_version]
+      properties:
+        id: { type: integer, format: int64 }
+        device_id: { type: string }
+        name: { type: string, description: "Empty until an admin names it (shown as BARU)." }
+        name_hint: { type: string, description: "From `/tv?layar=…`." }
+        user_agent: { type: string }
+        forced_mode:
+          $ref: "#/components/schemas/ScreenMode"
+        forced_until: { type: string, format: date-time, nullable: true }
+        blocked_at: { type: string, format: date-time, nullable: true }
+        first_seen_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+        status: { type: string, enum: [online, offline], description: "Online while connected and for 2 minutes after." }
+        last_seen_at: { type: string, format: date-time, nullable: true, description: "Null when the cache has no record, e.g. after it was emptied." }
+        app_version: { type: string }
   responses:
+    ScreenNotFound:
+      description: No screen has this ID.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: NOT_FOUND
+            message: layar tidak ditemukan
     InvalidRunningText:
       description: "`teks wajib diisi` or `teks maksimal 200 karakter`."
       content:
