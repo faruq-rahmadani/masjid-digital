@@ -63,6 +63,9 @@ func registerRouters(e *echo.Echo, ctrl *controller.Controller, auth *middleware
 	v1WithAuth.GET("/auth/profile", ctrl.GetProfile)
 	v1WithAuth.PUT("/auth/password", ctrl.ChangePassword)
 
+	// activity log: who changed what, read by anyone logged in
+	v1WithAuth.GET("/activity-logs", ctrl.ListActivityLogs)
+
 	// user management: super admins only
 	v1WithAuth.POST("/users", ctrl.CreateUser, middleware.RequireRole(domain.UserRoleSuperAdmin))
 	v1WithAuth.GET("/users", ctrl.FindAllUsers, middleware.RequireRole(domain.UserRoleSuperAdmin))

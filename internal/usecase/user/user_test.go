@@ -20,19 +20,30 @@ var (
 )
 
 type testDeps struct {
-	users  *mock.MockUserRepositoryItf
-	hasher *mock.MockPasswordHasher
+	users       *mock.MockUserRepositoryItf
+	hasher      *mock.MockPasswordHasher
+	activityLog *mock.MockActivityLogPublisherItf
 }
 
+// newTestUsecase is for tests not about the activity log: any log may be published
 func newTestUsecase(t *testing.T) (*UserUsecase, testDeps) {
+	t.Helper()
+
+	uc, deps := newTestUsecaseWithActivityLog(t)
+	deps.activityLog.EXPECT().Publish(gomock.Any(), gomock.Any()).AnyTimes()
+	return uc, deps
+}
+
+func newTestUsecaseWithActivityLog(t *testing.T) (*UserUsecase, testDeps) {
 	t.Helper()
 
 	ctrl := gomock.NewController(t)
 	deps := testDeps{
-		users:  mock.NewMockUserRepositoryItf(ctrl),
-		hasher: mock.NewMockPasswordHasher(ctrl),
+		users:       mock.NewMockUserRepositoryItf(ctrl),
+		hasher:      mock.NewMockPasswordHasher(ctrl),
+		activityLog: mock.NewMockActivityLogPublisherItf(ctrl),
 	}
-	return NewUserUsecase(deps.users, deps.hasher), deps
+	return NewUserUsecase(deps.users, deps.hasher, deps.activityLog), deps
 }
 
 func validRequest() domain.CreateUserRequest {

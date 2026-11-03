@@ -161,3 +161,7 @@ func allBetween(values []int, lo, hi int) bool {
 func invalid(internal, message string) *apperror.AppError {
 	return apperror.New(apperror.CodeInvalidInput, errors.New(internal), message)
 }
+
+func (r *UpdateIqamahSettingsRequest) ToActivityLog() ActivityLog {
+	return ActivityLog{Action: ActivityIqamahSettingsUpdated, Summary: "mengubah pengaturan iqamah"}
+}

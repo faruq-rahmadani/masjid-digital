@@ -21,11 +21,22 @@ var (
 // pngHeader is enough of a PNG for content sniffing
 var pngHeader = []byte("\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR")
 
+// newTestUsecase is for tests not about the activity log: any log may be published
 func newTestUsecase(t *testing.T) (*UseCase, *mock.MockMosqueProfileRepositoryItf) {
 	t.Helper()
 
-	repo := mock.NewMockMosqueProfileRepositoryItf(gomock.NewController(t))
-	return NewMosqueProfileUsecase(repo), repo
+	uc, repo, activityLog := newTestUsecaseWithActivityLog(t)
+	activityLog.EXPECT().Publish(gomock.Any(), gomock.Any()).AnyTimes()
+	return uc, repo
+}
+
+func newTestUsecaseWithActivityLog(t *testing.T) (*UseCase, *mock.MockMosqueProfileRepositoryItf, *mock.MockActivityLogPublisherItf) {
+	t.Helper()
+
+	ctrl := gomock.NewController(t)
+	repo := mock.NewMockMosqueProfileRepositoryItf(ctrl)
+	activityLog := mock.NewMockActivityLogPublisherItf(ctrl)
+	return NewMosqueProfileUsecase(repo, activityLog), repo, activityLog
 }
 
 func validProfileRequest() domain.UpdateMosqueProfileRequest {

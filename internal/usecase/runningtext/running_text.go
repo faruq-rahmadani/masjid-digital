@@ -12,10 +12,11 @@ import (
 
 type useCase struct {
 	runningTexts usecase.RunningTextRepositoryItf
+	activityLog  usecase.ActivityLogPublisherItf
 }
 
-func New(runningTexts usecase.RunningTextRepositoryItf) *useCase {
-	return &useCase{runningTexts: runningTexts}
+func New(runningTexts usecase.RunningTextRepositoryItf, activityLog usecase.ActivityLogPublisherItf) *useCase {
+	return &useCase{runningTexts: runningTexts, activityLog: activityLog}
 }
 
 func (u *useCase) List(ctx context.Context) ([]domain.RunningText, error) {
@@ -26,18 +27,32 @@ func (u *useCase) Create(ctx context.Context, req domain.CreateRunningTextReques
 	if err := req.ValidateAndNormalize(); err != nil {
 		return domain.RunningText{}, err
 	}
-	return u.runningTexts.Create(ctx, domain.RunningText{Text: req.Text, CreatedBy: req.CreatedBy})
+	text, err := u.runningTexts.Create(ctx, domain.RunningText{Text: req.Text, CreatedBy: req.CreatedBy})
+	if err != nil {
+		return domain.RunningText{}, err
+	}
+	u.activityLog.Publish(ctx, req.ToActivityLog(text.ID))
+	return text, nil
 }
 
 func (u *useCase) Update(ctx context.Context, req domain.UpdateRunningTextRequest) (domain.RunningText, error) {
 	if err := req.ValidateAndNormalize(); err != nil {
 		return domain.RunningText{}, err
 	}
-	return u.runningTexts.Update(ctx, domain.RunningText{ID: req.ID, Text: req.Text, Active: req.Active})
+	text, err := u.runningTexts.Update(ctx, domain.RunningText{ID: req.ID, Text: req.Text, Active: req.Active})
+	if err != nil {
+		return domain.RunningText{}, err
+	}
+	u.activityLog.Publish(ctx, req.ToActivityLog())
+	return text, nil
 }
 
 func (u *useCase) Delete(ctx context.Context, id int64) error {
-	return u.runningTexts.Delete(ctx, id)
+	if err := u.runningTexts.Delete(ctx, id); err != nil {
+		return err
+	}
+	u.activityLog.Publish(ctx, domain.RunningTextDeletedActivityLog(id))
+	return nil
 }
 
 // Reorder saves a new display order. ids must hold every running text exactly once, so an admin
@@ -65,6 +80,7 @@ func (u *useCase) Reorder(ctx context.Context, req domain.ReorderRunningTextsReq
 	if err := u.runningTexts.Reorder(ctx, req.IDs); err != nil {
 		return nil, err
 	}
+	u.activityLog.Publish(ctx, req.ToActivityLog())
 	return u.runningTexts.FindAll(ctx)
 }
 
@@ -84,6 +100,7 @@ func (u *useCase) UpdateSetting(ctx context.Context, req domain.UpdateRunningTex
 	if err := u.runningTexts.UpdateSetting(ctx, req.RunningTextSetting, req.UpdatedBy); err != nil {
 		return domain.RunningTextSetting{}, err
 	}
+	u.activityLog.Publish(ctx, req.ToActivityLog())
 	return req.RunningTextSetting, nil
 }
 

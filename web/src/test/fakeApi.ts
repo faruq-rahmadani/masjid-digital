@@ -832,8 +832,11 @@ export const fakeActivityService = {
   listRecentActivity: async () => [
     {
       id: 1,
+      actor_id: 3,
       actor_name: 'Siti Aminah',
-      summary: 'menambah pemasukan Rp 750.000',
+      action: 'iqamah_settings.updated',
+      entity_id: 0,
+      summary: 'mengubah pengaturan iqamah',
       created_at: minutesAgo(5),
     },
   ],

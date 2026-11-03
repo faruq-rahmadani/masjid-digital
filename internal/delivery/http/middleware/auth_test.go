@@ -51,6 +51,24 @@ func TestRequireAuth(t *testing.T) {
 	}
 }
 
+func TestRequireAuthPutsActorInRequestContext(t *testing.T) {
+	auth := mock.NewMockAuthenticatorItf(gomock.NewController(t))
+	auth.EXPECT().Authenticate(gomock.Any(), "valid-token").Return(&domain.AuthSession{ID: "abc", UserID: 7, Role: domain.UserRoleTakmir}, nil)
+
+	req := httptest.NewRequest(http.MethodGet, "/protected", nil)
+	req.Header.Set(echo.HeaderAuthorization, "Bearer valid-token")
+	c := echo.New().NewContext(req, httptest.NewRecorder())
+
+	var actor int64
+	err := NewAuth(auth).RequireAuth(func(c echo.Context) error {
+		actor = domain.ActorFrom(c.Request().Context())
+		return nil
+	})(c)
+	if err != nil || actor != 7 {
+		t.Errorf("actor = %d, %v; want 7", actor, err)
+	}
+}
+
 func TestRequireAuthRejectsMissingToken(t *testing.T) {
 	tests := map[string]string{
 		"no header":         "",

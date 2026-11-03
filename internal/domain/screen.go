@@ -204,3 +204,28 @@ type ScreenConnection struct {
 	Events <-chan ScreenEvent
 	Close  func()
 }
+
+// Label names the screen to people: its name, else the name it suggested, else "baru"
+func (s *Screen) Label() string {
+	switch {
+	case s.Name != "":
+		return s.Name
+	case s.NameHint != "":
+		return s.NameHint
+	default:
+		return "baru"
+	}
+}
+
+func (s *Screen) BlockedActivityLog() ActivityLog {
+	return ActivityLog{Action: ActivityScreenBlocked, EntityID: s.ID, Summary: "memblokir layar " + s.Label()}
+}
+
+func (s *Screen) UnblockedActivityLog() ActivityLog {
+	return ActivityLog{Action: ActivityScreenUnblocked, EntityID: s.ID, Summary: "membuka blokir layar " + s.Label()}
+}
+
+// ToActivityLog is the log of this update; call after ValidateAndNormalize (the name is required)
+func (r *UpdateScreenRequest) ToActivityLog() ActivityLog {
+	return ActivityLog{Action: ActivityScreenUpdated, EntityID: r.ID, Summary: "mengubah layar " + r.Name}
+}

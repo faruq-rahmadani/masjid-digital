@@ -117,3 +117,25 @@ func validateRunningText(s string) (string, error) {
 	}
 	return trimmed, nil
 }
+
+// ToActivityLog is the log of creating the running text that got id; call after ValidateAndNormalize
+func (r *CreateRunningTextRequest) ToActivityLog(id int64) ActivityLog {
+	return ActivityLog{Action: ActivityRunningTextCreated, EntityID: id, Summary: "menambah running text " + quoteForSummary(r.Text)}
+}
+
+// ToActivityLog is the log of this update; call after ValidateAndNormalize
+func (r *UpdateRunningTextRequest) ToActivityLog() ActivityLog {
+	return ActivityLog{Action: ActivityRunningTextUpdated, EntityID: r.ID, Summary: "mengubah running text " + quoteForSummary(r.Text)}
+}
+
+func (r *ReorderRunningTextsRequest) ToActivityLog() ActivityLog {
+	return ActivityLog{Action: ActivityRunningTextsReordered, Summary: "mengurutkan ulang running text"}
+}
+
+func (r *UpdateRunningTextSettingRequest) ToActivityLog() ActivityLog {
+	return ActivityLog{Action: ActivityRunningTextSettingUpdated, Summary: "mengubah kecepatan running text"}
+}
+
+func RunningTextDeletedActivityLog(id int64) ActivityLog {
+	return ActivityLog{Action: ActivityRunningTextDeleted, EntityID: id, Summary: "menghapus running text"}
+}

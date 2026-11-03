@@ -10,11 +10,12 @@ import (
 )
 
 type useCase struct {
-	slides usecase.SlideRepositoryItf
+	slides      usecase.SlideRepositoryItf
+	activityLog usecase.ActivityLogPublisherItf
 }
 
-func New(slides usecase.SlideRepositoryItf) *useCase {
-	return &useCase{slides: slides}
+func New(slides usecase.SlideRepositoryItf, activityLog usecase.ActivityLogPublisherItf) *useCase {
+	return &useCase{slides: slides, activityLog: activityLog}
 }
 
 func (u *useCase) List(ctx context.Context) ([]domain.Slide, error) {
@@ -26,20 +27,25 @@ func (u *useCase) Create(ctx context.Context, req domain.CreateSlideRequest) (do
 	if err != nil {
 		return domain.Slide{}, err
 	}
-	return u.slides.Create(ctx, domain.Slide{
+	slide, err := u.slides.Create(ctx, domain.Slide{
 		Title:           req.Title,
 		Caption:         req.Caption,
 		DurationSeconds: req.DurationSeconds,
 		ShowCaption:     req.ShowCaption,
 		CreatedBy:       req.CreatedBy,
 	}, image)
+	if err != nil {
+		return domain.Slide{}, err
+	}
+	u.activityLog.Publish(ctx, req.ToActivityLog(slide.ID))
+	return slide, nil
 }
 
 func (u *useCase) Update(ctx context.Context, req domain.UpdateSlideRequest) (domain.Slide, error) {
 	if err := req.ValidateAndNormalize(); err != nil {
 		return domain.Slide{}, err
 	}
-	return u.slides.Update(ctx, domain.Slide{
+	slide, err := u.slides.Update(ctx, domain.Slide{
 		ID:              req.ID,
 		Title:           req.Title,
 		Caption:         req.Caption,
@@ -47,10 +53,19 @@ func (u *useCase) Update(ctx context.Context, req domain.UpdateSlideRequest) (do
 		ShowCaption:     req.ShowCaption,
 		Active:          req.Active,
 	})
+	if err != nil {
+		return domain.Slide{}, err
+	}
+	u.activityLog.Publish(ctx, req.ToActivityLog())
+	return slide, nil
 }
 
 func (u *useCase) Delete(ctx context.Context, id int64) error {
-	return u.slides.Delete(ctx, id)
+	if err := u.slides.Delete(ctx, id); err != nil {
+		return err
+	}
+	u.activityLog.Publish(ctx, domain.SlideDeletedActivityLog(id))
+	return nil
 }
 
 func (u *useCase) GetImage(ctx context.Context, id int64) (domain.SlideImage, error) {
@@ -82,6 +97,7 @@ func (u *useCase) Reorder(ctx context.Context, req domain.ReorderSlidesRequest) 
 	if err := u.slides.Reorder(ctx, req.IDs); err != nil {
 		return nil, err
 	}
+	u.activityLog.Publish(ctx, req.ToActivityLog())
 	return u.slides.FindAll(ctx)
 }
 

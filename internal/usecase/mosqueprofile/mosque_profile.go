@@ -9,11 +9,12 @@ import (
 )
 
 type UseCase struct {
-	profiles usecase.MosqueProfileRepositoryItf
+	profiles    usecase.MosqueProfileRepositoryItf
+	activityLog usecase.ActivityLogPublisherItf
 }
 
-func NewMosqueProfileUsecase(profiles usecase.MosqueProfileRepositoryItf) *UseCase {
-	return &UseCase{profiles: profiles}
+func NewMosqueProfileUsecase(profiles usecase.MosqueProfileRepositoryItf, activityLog usecase.ActivityLogPublisherItf) *UseCase {
+	return &UseCase{profiles: profiles, activityLog: activityLog}
 }
 
 // Get returns the mosque's profile, empty when never saved
@@ -35,6 +36,7 @@ func (u *UseCase) Update(ctx context.Context, req domain.UpdateMosqueProfileRequ
 	if err := u.profiles.Update(ctx, profile, req.UpdatedBy); err != nil {
 		return domain.MosqueProfile{}, err
 	}
+	u.activityLog.Publish(ctx, req.ToActivityLog())
 
 	return profile, nil
 }
@@ -51,10 +53,18 @@ func (u *UseCase) UpdateLogo(ctx context.Context, req domain.UpdateMosqueLogoReq
 		return err
 	}
 
-	return u.profiles.UpdateLogo(ctx, logo, req.UpdatedBy)
+	if err := u.profiles.UpdateLogo(ctx, logo, req.UpdatedBy); err != nil {
+		return err
+	}
+	u.activityLog.Publish(ctx, req.ToActivityLog())
+	return nil
 }
 
 // DeleteLogo removes the logo; removing a missing logo is not an error
 func (u *UseCase) DeleteLogo(ctx context.Context) error {
-	return u.profiles.DeleteLogo(ctx)
+	if err := u.profiles.DeleteLogo(ctx); err != nil {
+		return err
+	}
+	u.activityLog.Publish(ctx, domain.MosqueLogoDeletedActivityLog())
+	return nil
 }

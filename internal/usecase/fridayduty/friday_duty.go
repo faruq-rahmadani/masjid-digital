@@ -17,12 +17,13 @@ const UpcomingDays = 30
 const dateLayout = "2006-01-02"
 
 type UseCase struct {
-	duties usecase.FridayDutyRepositoryItf
-	now    func() time.Time
+	duties      usecase.FridayDutyRepositoryItf
+	activityLog usecase.ActivityLogPublisherItf
+	now         func() time.Time
 }
 
-func NewFridayDutyUsecase(duties usecase.FridayDutyRepositoryItf) *UseCase {
-	return &UseCase{duties: duties, now: time.Now}
+func NewFridayDutyUsecase(duties usecase.FridayDutyRepositoryItf, activityLog usecase.ActivityLogPublisherItf) *UseCase {
+	return &UseCase{duties: duties, activityLog: activityLog, now: time.Now}
 }
 
 // List returns the petugas Jumat in the given range
@@ -48,12 +49,21 @@ func (u *UseCase) Save(ctx context.Context, req domain.SaveFridayDutyRequest) (d
 		return domain.FridayDuty{}, apperror.New(apperror.CodeInvalidInput, fmt.Errorf("date %s is before %s", req.Date, earliest), "tanggal sudah lewat")
 	}
 
-	return u.duties.Save(ctx, req.ToFridayDuty())
+	duty, err := u.duties.Save(ctx, req.ToFridayDuty())
+	if err != nil {
+		return domain.FridayDuty{}, err
+	}
+	u.activityLog.Publish(ctx, req.ToActivityLog())
+	return duty, nil
 }
 
 // Delete removes the petugas of a Friday
 func (u *UseCase) Delete(ctx context.Context, date string) error {
-	return u.duties.Delete(ctx, date)
+	if err := u.duties.Delete(ctx, date); err != nil {
+		return err
+	}
+	u.activityLog.Publish(ctx, domain.FridayDutyDeletedActivityLog(date))
+	return nil
 }
 
 // earliestToday is the earliest date that can be today for the mosque. Dates are local to the

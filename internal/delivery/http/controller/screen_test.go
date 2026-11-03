@@ -15,7 +15,7 @@ import (
 func screenController(t *testing.T) (*Controller, *mock.MockScreenUsecaseItf) {
 	t.Helper()
 	screens := mock.NewMockScreenUsecaseItf(gomock.NewController(t))
-	return NewController(nil, nil, nil, nil, nil, nil, nil, nil, screens), screens
+	return NewController(nil, nil, nil, nil, nil, nil, nil, nil, screens, nil), screens
 }
 
 func TestStreamScreenEvents(t *testing.T) {
