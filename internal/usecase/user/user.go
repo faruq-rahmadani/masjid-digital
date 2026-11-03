@@ -16,10 +16,11 @@ type UserUsecase struct {
 	hasher             hasher.PasswordHasher
 	afterUpdate        []AfterUpdateHook
 	afterPasswordReset []AfterPasswordResetHook
+	activityLog        usecase.ActivityLogPublisherItf
 }
 
-func NewUserUsecase(users usecase.UserRepositoryItf, hasher hasher.PasswordHasher) *UserUsecase {
-	return &UserUsecase{users: users, hasher: hasher}
+func NewUserUsecase(users usecase.UserRepositoryItf, hasher hasher.PasswordHasher, activityLog usecase.ActivityLogPublisherItf) *UserUsecase {
+	return &UserUsecase{users: users, hasher: hasher, activityLog: activityLog}
 }
 
 // Create validates req and stores a new user, with req.CreatedBy as its creator
@@ -33,8 +34,12 @@ func (u *UserUsecase) Create(ctx context.Context, req domain.CreateUserRequest) 
 		return apperror.New(apperror.CodeInternal, fmt.Errorf("error hashing password: %w", err), "gagal membuat user")
 	}
 
-	_, err = u.users.Create(ctx, req.ToUser(passwordHash))
-	return err
+	id, err := u.users.Create(ctx, req.ToUser(passwordHash))
+	if err != nil {
+		return err
+	}
+	u.activityLog.Publish(ctx, req.ToActivityLog(id))
+	return nil
 }
 
 // FindAll returns every user
@@ -69,6 +74,8 @@ func (u *UserUsecase) Update(ctx context.Context, req domain.UpdateUserRequest) 
 	if err := u.users.Update(ctx, after); err != nil {
 		return domain.User{}, err
 	}
+
+	u.activityLog.Publish(ctx, req.ToActivityLog())
 
 	if err := u.runAfterUpdate(ctx, before, after); err != nil {
 		return domain.User{}, apperror.New(apperror.CodeInternal, err, "user tersimpan, tapi gagal menjalankan proses lanjutan")
@@ -122,6 +129,7 @@ func (u *UserUsecase) ResetPassword(ctx context.Context, req domain.ResetPasswor
 	if err := u.setPassword(ctx, user.ID, req.NewPassword); err != nil {
 		return err
 	}
+	u.activityLog.Publish(ctx, req.ToActivityLog(user.Name))
 
 	if err := u.runAfterPasswordReset(ctx, user); err != nil {
 		return apperror.New(apperror.CodeInternal, err, "password tersimpan, tapi gagal menjalankan proses lanjutan")

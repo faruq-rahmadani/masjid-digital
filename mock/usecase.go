@@ -1061,3 +1061,92 @@ func (mr *MockScreenHubItfMockRecorder) Subscribe(deviceID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Subscribe", reflect.TypeOf((*MockScreenHubItf)(nil).Subscribe), deviceID)
 }
+
+// MockActivityLogRepositoryItf is a mock of ActivityLogRepositoryItf interface.
+type MockActivityLogRepositoryItf struct {
+	ctrl     *gomock.Controller
+	recorder *MockActivityLogRepositoryItfMockRecorder
+	isgomock struct{}
+}
+
+// MockActivityLogRepositoryItfMockRecorder is the mock recorder for MockActivityLogRepositoryItf.
+type MockActivityLogRepositoryItfMockRecorder struct {
+	mock *MockActivityLogRepositoryItf
+}
+
+// NewMockActivityLogRepositoryItf creates a new mock instance.
+func NewMockActivityLogRepositoryItf(ctrl *gomock.Controller) *MockActivityLogRepositoryItf {
+	mock := &MockActivityLogRepositoryItf{ctrl: ctrl}
+	mock.recorder = &MockActivityLogRepositoryItfMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockActivityLogRepositoryItf) EXPECT() *MockActivityLogRepositoryItfMockRecorder {
+	return m.recorder
+}
+
+// Create mocks base method.
+func (m *MockActivityLogRepositoryItf) Create(ctx context.Context, log domain.ActivityLog) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, log)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockActivityLogRepositoryItfMockRecorder) Create(ctx, log any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockActivityLogRepositoryItf)(nil).Create), ctx, log)
+}
+
+// FindRecent mocks base method.
+func (m *MockActivityLogRepositoryItf) FindRecent(ctx context.Context, limit int) ([]domain.ActivityLog, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindRecent", ctx, limit)
+	ret0, _ := ret[0].([]domain.ActivityLog)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindRecent indicates an expected call of FindRecent.
+func (mr *MockActivityLogRepositoryItfMockRecorder) FindRecent(ctx, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindRecent", reflect.TypeOf((*MockActivityLogRepositoryItf)(nil).FindRecent), ctx, limit)
+}
+
+// MockActivityLogPublisherItf is a mock of ActivityLogPublisherItf interface.
+type MockActivityLogPublisherItf struct {
+	ctrl     *gomock.Controller
+	recorder *MockActivityLogPublisherItfMockRecorder
+	isgomock struct{}
+}
+
+// MockActivityLogPublisherItfMockRecorder is the mock recorder for MockActivityLogPublisherItf.
+type MockActivityLogPublisherItfMockRecorder struct {
+	mock *MockActivityLogPublisherItf
+}
+
+// NewMockActivityLogPublisherItf creates a new mock instance.
+func NewMockActivityLogPublisherItf(ctrl *gomock.Controller) *MockActivityLogPublisherItf {
+	mock := &MockActivityLogPublisherItf{ctrl: ctrl}
+	mock.recorder = &MockActivityLogPublisherItfMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockActivityLogPublisherItf) EXPECT() *MockActivityLogPublisherItfMockRecorder {
+	return m.recorder
+}
+
+// Publish mocks base method.
+func (m *MockActivityLogPublisherItf) Publish(ctx context.Context, activityLog domain.ActivityLog) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Publish", ctx, activityLog)
+}
+
+// Publish indicates an expected call of Publish.
+func (mr *MockActivityLogPublisherItfMockRecorder) Publish(ctx, activityLog any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Publish", reflect.TypeOf((*MockActivityLogPublisherItf)(nil).Publish), ctx, activityLog)
+}

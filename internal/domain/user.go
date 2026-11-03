@@ -336,3 +336,18 @@ func NormalizeEmail(email string) (string, error) {
 
 	return e, nil
 }
+
+// ToActivityLog is the log of creating the user that got id; call after ValidateAndNormalize
+func (r *CreateUserRequest) ToActivityLog(id int64) ActivityLog {
+	return ActivityLog{Action: ActivityUserCreated, EntityID: id, Summary: "menambah pengguna " + r.Name}
+}
+
+// ToActivityLog is the log of this update; call after ValidateAndNormalize
+func (r *UpdateUserRequest) ToActivityLog() ActivityLog {
+	return ActivityLog{Action: ActivityUserUpdated, EntityID: r.ID, Summary: "mengubah pengguna " + r.Name}
+}
+
+// ToActivityLog is the log of resetting the password of userName (the request only has the ID)
+func (r *ResetPasswordRequest) ToActivityLog(userName string) ActivityLog {
+	return ActivityLog{Action: ActivityUserPasswordReset, EntityID: r.UserID, Summary: "mereset password " + userName}
+}

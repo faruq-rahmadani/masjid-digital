@@ -257,3 +257,28 @@ func validateRemarks(s string) (string, error) {
 	}
 	return trimmed, nil
 }
+
+// Label is the prayer as shown to people: "maghrib" -> "Maghrib"
+func (p Prayer) Label() string {
+	if p == "" {
+		return ""
+	}
+	return strings.ToUpper(string(p[:1])) + string(p[1:])
+}
+
+func (r *UpdatePrayerSettingsRequest) ToActivityLog() ActivityLog {
+	return ActivityLog{Action: ActivityPrayerSettingsUpdated, Summary: "mengubah pengaturan waktu sholat"}
+}
+
+// ToActivityLog is the log of creating the override that got id; call after ValidateAndNormalize
+func (r *CreatePrayerTimeOverrideRequest) ToActivityLog(id int64) ActivityLog {
+	return ActivityLog{
+		Action:   ActivityPrayerOverrideCreated,
+		EntityID: id,
+		Summary:  fmt.Sprintf("menambah jadwal khusus %s %s", r.Prayer.Label(), dateForSummary(r.Date)),
+	}
+}
+
+func PrayerOverrideDeletedActivityLog(id int64) ActivityLog {
+	return ActivityLog{Action: ActivityPrayerOverrideDeleted, EntityID: id, Summary: "menghapus jadwal khusus"}
+}

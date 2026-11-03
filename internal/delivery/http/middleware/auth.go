@@ -45,6 +45,8 @@ func (m *Auth) RequireAuth(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 
 		c.Set(sessionContextKey, session)
+		// the usecases read the actor from the request context (e.g. for the activity log)
+		c.SetRequest(c.Request().WithContext(domain.WithActor(c.Request().Context(), session.UserID)))
 		return next(c)
 	}
 }

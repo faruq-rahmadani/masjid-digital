@@ -17,11 +17,12 @@ const dateLayout = "2006-01-02"
 
 type UseCase struct {
 	prayerTimes usecase.PrayerTimeRepositoryItf
+	activityLog usecase.ActivityLogPublisherItf
 	now         func() time.Time
 }
 
-func NewPrayerTimeUsecase(prayerTimes usecase.PrayerTimeRepositoryItf) *UseCase {
-	return &UseCase{prayerTimes: prayerTimes, now: time.Now}
+func NewPrayerTimeUsecase(prayerTimes usecase.PrayerTimeRepositoryItf, activityLog usecase.ActivityLogPublisherItf) *UseCase {
+	return &UseCase{prayerTimes: prayerTimes, activityLog: activityLog, now: time.Now}
 }
 
 func (u *UseCase) GetSettings(ctx context.Context) (domain.PrayerSettings, error) {
@@ -40,6 +41,7 @@ func (u *UseCase) UpdateSettings(ctx context.Context, req domain.UpdatePrayerSet
 	if err := u.prayerTimes.UpdateSettings(ctx, req.PrayerSettings, req.UpdatedBy); err != nil {
 		return domain.PrayerSettings{}, err
 	}
+	u.activityLog.Publish(ctx, req.ToActivityLog())
 	return req.PrayerSettings, nil
 }
 
@@ -58,11 +60,20 @@ func (u *UseCase) CreateOverride(ctx context.Context, req domain.CreatePrayerTim
 		return domain.PrayerTimeOverride{}, apperror.New(apperror.CodeInvalidInput, fmt.Errorf("date %s is before %s", req.Date, earliest), "tanggal sudah lewat")
 	}
 
-	return u.prayerTimes.CreateOverride(ctx, req.ToPrayerTimeOverride())
+	override, err := u.prayerTimes.CreateOverride(ctx, req.ToPrayerTimeOverride())
+	if err != nil {
+		return domain.PrayerTimeOverride{}, err
+	}
+	u.activityLog.Publish(ctx, req.ToActivityLog(override.ID))
+	return override, nil
 }
 
 func (u *UseCase) DeleteOverride(ctx context.Context, id int64) error {
-	return u.prayerTimes.DeleteOverride(ctx, id)
+	if err := u.prayerTimes.DeleteOverride(ctx, id); err != nil {
+		return err
+	}
+	u.activityLog.Publish(ctx, domain.PrayerOverrideDeletedActivityLog(id))
+	return nil
 }
 
 func (u *UseCase) GetConfig(ctx context.Context) (domain.PrayerConfig, error) {

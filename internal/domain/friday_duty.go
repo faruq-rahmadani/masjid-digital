@@ -89,3 +89,12 @@ func (r *FridayDutyRange) ValidateAndNormalize() error {
 	*r = FridayDutyRange(dates)
 	return nil
 }
+
+// ToActivityLog is the log of this save; call after ValidateAndNormalize
+func (r *SaveFridayDutyRequest) ToActivityLog() ActivityLog {
+	return ActivityLog{Action: ActivityFridayDutySaved, Summary: "mengisi petugas Jumat " + dateForSummary(r.Date)}
+}
+
+func FridayDutyDeletedActivityLog(date string) ActivityLog {
+	return ActivityLog{Action: ActivityFridayDutyDeleted, Summary: "menghapus petugas Jumat " + dateForSummary(date)}
+}

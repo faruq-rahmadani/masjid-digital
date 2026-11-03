@@ -9,11 +9,12 @@ import (
 )
 
 type UseCase struct {
-	iqamah usecase.IqamahRepositoryItf
+	iqamah      usecase.IqamahRepositoryItf
+	activityLog usecase.ActivityLogPublisherItf
 }
 
-func NewIqamahUsecase(iqamah usecase.IqamahRepositoryItf) *UseCase {
-	return &UseCase{iqamah: iqamah}
+func NewIqamahUsecase(iqamah usecase.IqamahRepositoryItf, activityLog usecase.ActivityLogPublisherItf) *UseCase {
+	return &UseCase{iqamah: iqamah, activityLog: activityLog}
 }
 
 // GetSettings returns the saved settings, or the defaults when never saved
@@ -34,5 +35,6 @@ func (u *UseCase) UpdateSettings(ctx context.Context, req domain.UpdateIqamahSet
 	if err := u.iqamah.UpdateSettings(ctx, req.IqamahSettings, req.UpdatedBy); err != nil {
 		return domain.IqamahSettings{}, err
 	}
+	u.activityLog.Publish(ctx, req.ToActivityLog())
 	return req.IqamahSettings, nil
 }

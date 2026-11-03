@@ -11,6 +11,7 @@ import (
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/cache/screenpresence"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/cache/sessions"
 	repodb "github.com/faruq-rahmadani/masjid-digital/internal/repository/database"
+	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/activitylogs"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/fridayduties"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/iqamahsettings"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/mosqueprofiles"
@@ -19,8 +20,10 @@ import (
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/screens"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/slides"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/users"
+	"github.com/faruq-rahmadani/masjid-digital/internal/repository/realtime/activitylogbus"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/realtime/screenhub"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase"
+	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/activitylog"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/authentication"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/fridayduty"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/iqamah"
@@ -49,6 +52,7 @@ type repositories struct {
 	screens        usecase.ScreenRepositoryItf
 	screenPresence usecase.ScreenPresenceRepositoryItf
 	screenHub      usecase.ScreenHubItf
+	activityLogs   usecase.ActivityLogRepositoryItf
 }
 
 type usecases struct {
@@ -61,6 +65,7 @@ type usecases struct {
 	fridayDuty    controller.FridayDutyUsecaseItf
 	slide         controller.SlideUsecaseItf
 	screen        controller.ScreenUsecaseItf
+	activityLog   *activitylog.UseCase // used by both the controller and the activity log bus
 }
 
 // handlers is what the HTTP server serves
@@ -84,7 +89,14 @@ func newHandlers(ctx context.Context, cfg *config.Schema) (h handlers, cleanup f
 	}
 	log.Printf("cache connected: driver=%s", cfg.App.Cache.Driver)
 
+	repos := newRepositories(db, c)
+
+	// every usecase publishes its changes here; the activity log usecase saves them
+	activityLog := activitylog.NewActivityLogUsecase(repos.activityLogs)
+	activityLogBus := activitylogbus.New(activityLog.Save)
+
 	cleanup = func() {
+		activityLogBus.Close() // save the queued logs while the database is still open
 		if err := c.Close(); err != nil {
 			log.Printf("error closing cache: %v", err)
 		}
@@ -93,15 +105,14 @@ func newHandlers(ctx context.Context, cfg *config.Schema) (h handlers, cleanup f
 		}
 	}
 
-	repos := newRepositories(db, c)
-	ucs, err := newUsecases(cfg, repos)
+	ucs, err := newUsecases(cfg, repos, activityLogBus, activityLog)
 	if err != nil {
 		cleanup()
 		return handlers{}, nil, err
 	}
 
 	return handlers{
-		controller: controller.NewController(ucs.user, ucs.auth, ucs.mosqueProfile, ucs.prayerTime, ucs.runningText, ucs.iqamah, ucs.fridayDuty, ucs.slide, ucs.screen),
+		controller: controller.NewController(ucs.user, ucs.auth, ucs.mosqueProfile, ucs.prayerTime, ucs.runningText, ucs.iqamah, ucs.fridayDuty, ucs.slide, ucs.screen, ucs.activityLog),
 		auth:       middleware.NewAuth(ucs.auth),
 	}, cleanup, nil
 }
@@ -121,10 +132,11 @@ func newRepositories(db *database.DB, c cache.Cache) repositories {
 		screens:        screens.New(dbClient),
 		screenPresence: screenpresence.New(c),
 		screenHub:      screenhub.New(),
+		activityLogs:   activitylogs.New(dbClient),
 	}
 }
 
-func newUsecases(cfg *config.Schema, repos repositories) (usecases, error) {
+func newUsecases(cfg *config.Schema, repos repositories, activityLogBus usecase.ActivityLogPublisherItf, activityLog *activitylog.UseCase) (usecases, error) {
 	passwordHasher := hasher.NewArgon2(hasher.DefaultArgon2Params)
 
 	tokenIssuer, err := token.NewJWT(cfg.App.Auth.JWTSecret, cfg.App.Auth.TokenTTL, cfg.App.Name)
@@ -133,21 +145,22 @@ func newUsecases(cfg *config.Schema, repos repositories) (usecases, error) {
 	}
 
 	return usecases{
-		user:          newUserUsecase(repos, passwordHasher),
+		user:          newUserUsecase(repos, passwordHasher, activityLogBus),
 		auth:          authentication.New(repos.users, passwordHasher, tokenIssuer, repos.sessions),
-		mosqueProfile: mosqueprofile.NewMosqueProfileUsecase(repos.mosqueProfiles),
-		prayerTime:    prayertime.NewPrayerTimeUsecase(repos.prayerTimes),
-		runningText:   runningtext.New(repos.runningTexts),
-		iqamah:        iqamah.NewIqamahUsecase(repos.iqamah),
-		fridayDuty:    fridayduty.NewFridayDutyUsecase(repos.fridayDuties),
-		slide:         slide.New(repos.slides),
-		screen:        screen.New(repos.screens, repos.screenPresence, repos.screenHub, repos.mosqueProfiles),
+		mosqueProfile: mosqueprofile.NewMosqueProfileUsecase(repos.mosqueProfiles, activityLogBus),
+		prayerTime:    prayertime.NewPrayerTimeUsecase(repos.prayerTimes, activityLogBus),
+		runningText:   runningtext.New(repos.runningTexts, activityLogBus),
+		iqamah:        iqamah.NewIqamahUsecase(repos.iqamah, activityLogBus),
+		fridayDuty:    fridayduty.NewFridayDutyUsecase(repos.fridayDuties, activityLogBus),
+		slide:         slide.New(repos.slides, activityLogBus),
+		screen:        screen.New(repos.screens, repos.screenPresence, repos.screenHub, repos.mosqueProfiles, activityLogBus),
+		activityLog:   activityLog,
 	}, nil
 }
 
 // newUserUsecase builds the user usecase with its AfterUpdate and AfterPasswordReset hooks
-func newUserUsecase(repos repositories, passwordHasher hasher.PasswordHasher) *user.UserUsecase {
-	uc := user.NewUserUsecase(repos.users, passwordHasher)
+func newUserUsecase(repos repositories, passwordHasher hasher.PasswordHasher, activityLogBus usecase.ActivityLogPublisherItf) *user.UserUsecase {
+	uc := user.NewUserUsecase(repos.users, passwordHasher, activityLogBus)
 	uc.AddAfterUpdate(
 		user.NewRevokeSessionOnDisableHook(repos.sessions),    // a disabled user is logged out right away
 		user.NewRevokeSessionOnRoleChangeHook(repos.sessions), // the token carries the role, so a new role needs a new login

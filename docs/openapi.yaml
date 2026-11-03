@@ -83,6 +83,13 @@ tags:
       commands come down that connection. A device gets its row the first time it connects; last
       seen and the app version live in the cache. A blocked device is hidden from the admin and
       refused on connect.
+  - name: Activity Log
+    description: |
+      Who changed what, newest first, for "Aktivitas terakhir" on Home. A row is written in the
+      background after each successful change (users, mosque profile, prayer times, iqamah,
+      petugas Jumat, running text, slides, screens), so it may show up a moment after the change
+      and is lost if the server stops before writing it. Logging in and changing one's own
+      password are not logged.
   - name: Public
     description: Read only, no login, for screens anyone can see (the TV display).
 
@@ -238,6 +245,45 @@ paths:
           $ref: "#/components/responses/Unauthenticated"
         "404":
           $ref: "#/components/responses/UserNotFound"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/activity-logs:
+    get:
+      tags: [Activity Log]
+      summary: List recent activity
+      operationId: listActivityLogs
+      description: The latest changes, newest first. Any role.
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          description: How many to return.
+          schema: { type: integer, minimum: 1, maximum: 50, default: 10 }
+      responses:
+        "200":
+          description: The latest changes.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ActivityLog"
+        "400":
+          description: "`limit harus angka 1-50`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: INVALID_INPUT
+                message: limit harus angka 1-50
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
         "500":
           $ref: "#/components/responses/Internal"
 
@@ -2262,6 +2308,49 @@ components:
         updated_by: { type: integer, format: int64, description: 0 when nobody set it. }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
+
+    ActivityLog:
+      type: object
+      required: [id, actor_id, actor_name, action, entity_id, summary, created_at]
+      properties:
+        id: { type: integer, format: int64 }
+        actor_id: { type: integer, format: int64, description: 0 when nobody was logged in. }
+        actor_name: { type: string, description: Empty when nobody was logged in., example: Hasan Basri }
+        action:
+          type: string
+          description: What changed, `<thing>.<verb>`; new values may be added.
+          enum:
+            - user.created
+            - user.updated
+            - user.password_reset
+            - mosque_profile.updated
+            - mosque_logo.updated
+            - mosque_logo.deleted
+            - prayer_settings.updated
+            - prayer_override.created
+            - prayer_override.deleted
+            - iqamah_settings.updated
+            - friday_duty.saved
+            - friday_duty.deleted
+            - running_text.created
+            - running_text.updated
+            - running_text.deleted
+            - running_text.reordered
+            - running_text_setting.updated
+            - slide.created
+            - slide.updated
+            - slide.deleted
+            - slide.reordered
+            - screen.updated
+            - screen.blocked
+            - screen.unblocked
+          example: slide.created
+        entity_id: { type: integer, format: int64, description: The changed row; 0 for a setting. }
+        summary:
+          type: string
+          description: In Indonesian, shown after the actor's name ("Hasan Basri menambah slide ...").
+          example: menambah slide "Kajian Ahad"
+        created_at: { type: string, format: date-time, description: When it happened. }
 
     ScrollSpeed:
       type: string

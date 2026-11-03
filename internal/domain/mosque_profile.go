@@ -178,3 +178,15 @@ func (r *UpdateMosqueLogoRequest) ValidateAndDetect() (MosqueLogo, error) {
 
 	return MosqueLogo{ContentType: contentType, Data: r.Data}, nil
 }
+
+func (r *UpdateMosqueProfileRequest) ToActivityLog() ActivityLog {
+	return ActivityLog{Action: ActivityMosqueProfileUpdated, Summary: "mengubah profil masjid"}
+}
+
+func (r *UpdateMosqueLogoRequest) ToActivityLog() ActivityLog {
+	return ActivityLog{Action: ActivityMosqueLogoUpdated, Summary: "mengganti logo masjid"}
+}
+
+func MosqueLogoDeletedActivityLog() ActivityLog {
+	return ActivityLog{Action: ActivityMosqueLogoDeleted, Summary: "menghapus logo masjid"}
+}

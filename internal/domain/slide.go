@@ -192,3 +192,21 @@ func truncateRunes(s string, n int) string {
 	}
 	return strings.TrimSpace(string([]rune(s)[:n]))
 }
+
+// ToActivityLog is the log of creating the slide that got id; call after ValidateAndDetect
+func (r *CreateSlideRequest) ToActivityLog(id int64) ActivityLog {
+	return ActivityLog{Action: ActivitySlideCreated, EntityID: id, Summary: "menambah slide " + quoteForSummary(r.Title)}
+}
+
+// ToActivityLog is the log of this update; call after ValidateAndNormalize
+func (r *UpdateSlideRequest) ToActivityLog() ActivityLog {
+	return ActivityLog{Action: ActivitySlideUpdated, EntityID: r.ID, Summary: "mengubah slide " + quoteForSummary(r.Title)}
+}
+
+func (r *ReorderSlidesRequest) ToActivityLog() ActivityLog {
+	return ActivityLog{Action: ActivitySlidesReordered, Summary: "mengurutkan ulang slide"}
+}
+
+func SlideDeletedActivityLog(id int64) ActivityLog {
+	return ActivityLog{Action: ActivitySlideDeleted, EntityID: id, Summary: "menghapus slide"}
+}

@@ -22,13 +22,24 @@ var (
 // now is 2026-11-01 20:00 UTC: already 2026-11-02 in Jakarta, still 2026-11-01 in UTC
 var now = time.Date(2026, 11, 1, 20, 0, 0, 0, time.UTC)
 
+// newTestUsecase is for tests not about the activity log: any log may be published
 func newTestUsecase(t *testing.T) (*UseCase, *mock.MockPrayerTimeRepositoryItf) {
 	t.Helper()
 
-	repo := mock.NewMockPrayerTimeRepositoryItf(gomock.NewController(t))
-	uc := NewPrayerTimeUsecase(repo)
-	uc.now = func() time.Time { return now }
+	uc, repo, activityLog := newTestUsecaseWithActivityLog(t)
+	activityLog.EXPECT().Publish(gomock.Any(), gomock.Any()).AnyTimes()
 	return uc, repo
+}
+
+func newTestUsecaseWithActivityLog(t *testing.T) (*UseCase, *mock.MockPrayerTimeRepositoryItf, *mock.MockActivityLogPublisherItf) {
+	t.Helper()
+
+	ctrl := gomock.NewController(t)
+	repo := mock.NewMockPrayerTimeRepositoryItf(ctrl)
+	activityLog := mock.NewMockActivityLogPublisherItf(ctrl)
+	uc := NewPrayerTimeUsecase(repo, activityLog)
+	uc.now = func() time.Time { return now }
+	return uc, repo, activityLog
 }
 
 var settings = domain.PrayerSettings{

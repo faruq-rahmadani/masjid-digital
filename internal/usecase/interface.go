@@ -141,10 +141,24 @@ type ScreenPresenceRepositoryItf interface {
 // ScreenHubItf holds the live TV connections of this API instance
 type ScreenHubItf interface {
 	// Subscribe registers one connection of the device; call unsubscribe when it ends
-	Subscribe(deviceID string) (events <-chan domain.ScreenEvent, unsubscribe func())
+	Subscribe(deviceID string) (activityLog <-chan domain.ScreenEvent, unsubscribe func())
 	// Send delivers the event to every connection of the device; a missing device is ignored
 	Send(deviceID string, event domain.ScreenEvent)
 	// Broadcast delivers the event to every connection
 	Broadcast(event domain.ScreenEvent)
 	IsConnected(deviceID string) bool
+}
+
+type ActivityLogRepositoryItf interface {
+	Create(ctx context.Context, log domain.ActivityLog) error
+	// FindRecent returns the latest limit logs, newest first, with their actor's name
+	FindRecent(ctx context.Context, limit int) ([]domain.ActivityLog, error)
+}
+
+// ActivityLogPublisherItf saves activity logs in the background. Publish never blocks and never
+// fails: a full queue drops the log, so call it after the change is saved and ignore the outcome.
+type ActivityLogPublisherItf interface {
+	// Publish fills an empty ActorID from ctx (see domain.WithActor) and an empty CreatedAt with
+	// now, then queues the log
+	Publish(ctx context.Context, activityLog domain.ActivityLog)
 }

@@ -23,26 +23,36 @@ var (
 )
 
 type fixture struct {
-	uc       *useCase
-	screens  *mock.MockScreenRepositoryItf
-	presence *mock.MockScreenPresenceRepositoryItf
-	profile  *mock.MockMosqueProfileRepositoryItf
-	hub      interface {
+	uc          *useCase
+	screens     *mock.MockScreenRepositoryItf
+	presence    *mock.MockScreenPresenceRepositoryItf
+	profile     *mock.MockMosqueProfileRepositoryItf
+	activityLog *mock.MockActivityLogPublisherItf
+	hub         interface {
 		Subscribe(string) (<-chan domain.ScreenEvent, func())
 	}
 }
 
+// newFixture is for tests not about the activity log: any log may be published
 func newFixture(t *testing.T) fixture {
+	t.Helper()
+	f := newFixtureWithActivityLog(t)
+	f.activityLog.EXPECT().Publish(gomock.Any(), gomock.Any()).AnyTimes()
+	return f
+}
+
+func newFixtureWithActivityLog(t *testing.T) fixture {
 	t.Helper()
 	ctrl := gomock.NewController(t)
 	f := fixture{
-		screens:  mock.NewMockScreenRepositoryItf(ctrl),
-		presence: mock.NewMockScreenPresenceRepositoryItf(ctrl),
-		profile:  mock.NewMockMosqueProfileRepositoryItf(ctrl),
+		screens:     mock.NewMockScreenRepositoryItf(ctrl),
+		presence:    mock.NewMockScreenPresenceRepositoryItf(ctrl),
+		profile:     mock.NewMockMosqueProfileRepositoryItf(ctrl),
+		activityLog: mock.NewMockActivityLogPublisherItf(ctrl),
 	}
 	hub := screenhub.New()
 	f.hub = hub
-	f.uc = New(f.screens, f.presence, hub, f.profile)
+	f.uc = New(f.screens, f.presence, hub, f.profile, f.activityLog)
 	f.uc.now = func() time.Time { return now }
 	return f
 }

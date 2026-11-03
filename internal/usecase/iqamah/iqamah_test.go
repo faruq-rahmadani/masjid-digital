@@ -18,11 +18,22 @@ var (
 	errDatabase         = apperror.New(apperror.CodeInternal, errors.New("db down"), "gagal mengakses data iqamah")
 )
 
+// newTestUsecase is for tests not about the activity log: any log may be published
 func newTestUsecase(t *testing.T) (*UseCase, *mock.MockIqamahRepositoryItf) {
 	t.Helper()
 
-	repo := mock.NewMockIqamahRepositoryItf(gomock.NewController(t))
-	return NewIqamahUsecase(repo), repo
+	uc, repo, activityLog := newTestUsecaseWithActivityLog(t)
+	activityLog.EXPECT().Publish(gomock.Any(), gomock.Any()).AnyTimes()
+	return uc, repo
+}
+
+func newTestUsecaseWithActivityLog(t *testing.T) (*UseCase, *mock.MockIqamahRepositoryItf, *mock.MockActivityLogPublisherItf) {
+	t.Helper()
+
+	ctrl := gomock.NewController(t)
+	repo := mock.NewMockIqamahRepositoryItf(ctrl)
+	activityLog := mock.NewMockActivityLogPublisherItf(ctrl)
+	return NewIqamahUsecase(repo, activityLog), repo, activityLog
 }
 
 func TestGetSettings(t *testing.T) {

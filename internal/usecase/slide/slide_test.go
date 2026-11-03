@@ -24,11 +24,22 @@ var saved = []domain.Slide{
 	{ID: 3, Title: "Infaq", DurationSeconds: 30, Active: true, Position: 2},
 }
 
+// newTestUsecase is for tests not about the activity log: any log may be published
 func newTestUsecase(t *testing.T) (*useCase, *mock.MockSlideRepositoryItf) {
 	t.Helper()
 
-	repo := mock.NewMockSlideRepositoryItf(gomock.NewController(t))
-	return New(repo), repo
+	uc, repo, activityLog := newTestUsecaseWithActivityLog(t)
+	activityLog.EXPECT().Publish(gomock.Any(), gomock.Any()).AnyTimes()
+	return uc, repo
+}
+
+func newTestUsecaseWithActivityLog(t *testing.T) (*useCase, *mock.MockSlideRepositoryItf, *mock.MockActivityLogPublisherItf) {
+	t.Helper()
+
+	ctrl := gomock.NewController(t)
+	repo := mock.NewMockSlideRepositoryItf(ctrl)
+	activityLog := mock.NewMockActivityLogPublisherItf(ctrl)
+	return New(repo, activityLog), repo, activityLog
 }
 
 func TestCreate(t *testing.T) {

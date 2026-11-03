@@ -103,7 +103,10 @@ func newTestRouter(t *testing.T) *echo.Echo {
 	screen.EXPECT().SendCommand(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 	screen.EXPECT().NotifyContentChanged().AnyTimes()
 
-	return newEcho(controller.NewController(users, auth, mosqueProfile, prayerTime, runningText, iqamah, fridayDuty, slide, screen), middleware.NewAuth(authenticator))
+	activityLog := mock.NewMockActivityLogUsecaseItf(ctrl)
+	activityLog.EXPECT().ListRecent(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+
+	return newEcho(controller.NewController(users, auth, mosqueProfile, prayerTime, runningText, iqamah, fridayDuty, slide, screen, activityLog), middleware.NewAuth(authenticator))
 }
 
 // TestRouteAccess pins who may call each route, so a route added without its
@@ -142,6 +145,7 @@ func TestRouteAccess(t *testing.T) {
 		{http.MethodPost, "/api/v1/auth/logout", "", anyUser, ""},
 		{http.MethodGet, "/api/v1/auth/profile", "", anyUser, ""},
 		{http.MethodPut, "/api/v1/auth/password", `{}`, anyUser, ""},
+		{http.MethodGet, "/api/v1/activity-logs", "", anyUser, ""},
 		{http.MethodPost, "/api/v1/users", `{}`, superOnly, ""},
 		{http.MethodGet, "/api/v1/users", "", superOnly, ""},
 		{http.MethodGet, "/api/v1/users/1", "", superOnly, ""},

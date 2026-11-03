@@ -39,7 +39,7 @@ describe('HomePage', () => {
     expect(
       await screen.findByRole('link', { name: /2 online · 1 offline sejak 2 jam lalu · 1 baru/ }),
     ).toBeInTheDocument()
-    expect(await screen.findByText('menambah pemasukan Rp 750.000')).toBeInTheDocument()
+    expect(await screen.findByText('mengubah pengaturan iqamah')).toBeInTheDocument()
   })
 
   it('shows the bendahara only what the role may open', async () => {
