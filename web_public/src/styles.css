@@ -1,0 +1,111 @@
+@import "tailwindcss";
+@import "@fontsource-variable/plus-jakarta-sans";
+
+/*
+ * The app's own identity (web/src/styles/index.css, docs/design/design-system.md), so the public
+ * site reads as the same product. Tailwind's default palette is removed: off-system colors fail.
+ */
+@theme {
+  --color-*: initial;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  --color-canvas: #f4f1e8; /* cream page ground */
+  --color-card: #ffffff;
+  --color-ink: #0f3d33; /* text on cream, = brand */
+  --color-ink-muted: #5b6b64;
+  --color-line: #d9d2be;
+  --color-line-soft: #e6e0ce;
+
+  --color-brand: #0f3d33; /* masjid green */
+  --color-brand-2: #164a3e; /* cards on green */
+  --color-brand-deep: #0a2a22; /* footer, TV bezel */
+  --color-on-brand: #f4f1e8;
+  --color-on-brand-muted: #c9d6cf;
+
+  --color-gold: #c9a227; /* the TV's next-prayer tile; used sparingly */
+  --color-on-gold: #0f2a23;
+  --color-gold-soft: #f5ebcb;
+
+  --font-sans: "Plus Jakarta Sans Variable", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-canvas font-sans text-ink antialiased;
+    font-variant-numeric: tabular-nums;
+  }
+  :focus-visible {
+    @apply rounded-sm outline-3 outline-offset-2 outline-gold;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      /* biome-ignore lint/complexity/noImportantStyles: must beat every transition utility */
+      transition-duration: 0ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* buttons keep the app's two looks: gold on green, green on cream. Use `btn btn-gold`. */
+  .btn {
+    @apply inline-flex h-12 items-center justify-center gap-2 rounded-xl px-5 font-bold whitespace-nowrap transition-colors;
+  }
+  .btn-gold {
+    @apply bg-gold text-on-gold hover:bg-gold-soft;
+  }
+  .btn-brand {
+    @apply bg-brand text-on-brand hover:bg-brand-2;
+  }
+  .btn-ghost-on-brand {
+    @apply border border-on-brand-muted/40 text-on-brand hover:bg-brand-2;
+  }
+  .btn-ghost {
+    @apply border border-line text-ink hover:bg-card;
+  }
+  /* long-form text on the docs page */
+  .prose-doc h2 {
+    @apply mt-14 mb-3 scroll-mt-24 text-2xl font-extrabold tracking-tight first:mt-0;
+  }
+  .prose-doc h3 {
+    @apply mt-8 mb-2 text-lg font-bold;
+  }
+  .prose-doc p,
+  .prose-doc li {
+    @apply max-w-[68ch] leading-relaxed text-ink;
+  }
+  .prose-doc p + p {
+    @apply mt-3;
+  }
+  .prose-doc ul,
+  .prose-doc ol {
+    @apply mt-2 space-y-1.5 pl-5;
+  }
+  .prose-doc ul {
+    @apply list-disc marker:text-gold;
+  }
+  .prose-doc ol {
+    @apply list-decimal marker:font-bold;
+  }
+  .prose-doc code {
+    @apply rounded bg-line-soft px-1.5 py-0.5 text-[0.9em];
+  }
+  .prose-doc a {
+    @apply font-semibold underline decoration-gold decoration-2 underline-offset-2;
+  }
+  .prose-doc figure {
+    @apply my-6;
+  }
+}
