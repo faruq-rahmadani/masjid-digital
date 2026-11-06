@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0f3d33" />
+    <title>Masjid Digital: layar TV masjid yang diatur dari HP pengurus</title>
+    <meta
+      name="description"
+      content="Jadwal sholat metode Kemenag RI, hitung mundur iqamah, slide kegiatan, dan running text di layar TV masjid. Pengurus mengatur semuanya dari HP, dan semua TV berubah dalam hitungan detik."
+    />
+    <meta property="og:title" content="Masjid Digital" />
+    <meta
+      property="og:description"
+      content="Layar TV masjid yang diatur dari HP pengurus: jadwal sholat, iqamah, slide, dan pengumuman."
+    />
+    <meta property="og:type" content="website" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <a href="#isi" class="focus:bg-gold focus:text-on-gold sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-lg focus:px-4 focus:py-2 focus:font-bold">Langsung ke isi</a>
+
+    <header class="bg-brand text-on-brand sticky top-0 z-40">
+      <div class="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4 sm:px-6">
+        <a href="/" class="flex shrink-0 items-center gap-2.5 font-extrabold tracking-tight">
+          <img src="/favicon.svg" alt="" width="32" height="32" />
+          Masjid Digital
+        </a>
+        <button
+          type="button"
+          class="border-on-brand-muted/40 ml-auto rounded-lg border px-3 py-1.5 text-sm font-semibold md:hidden"
+          data-menu-toggle
+          aria-expanded="false"
+          aria-controls="menu"
+        >
+          Menu
+        </button>
+        <nav
+          id="menu"
+          aria-label="Utama"
+          class="max-md:border-brand-2 max-md:bg-brand max-md:absolute max-md:inset-x-0 max-md:top-16 max-md:hidden max-md:border-t max-md:px-4 max-md:pb-5 md:ml-auto md:flex md:items-center md:gap-6"
+        >
+          <ul class="flex flex-col gap-1 py-3 text-sm font-semibold md:flex-row md:gap-6 md:py-0">
+            <li><a class="text-on-brand-muted hover:text-on-brand block py-2" href="#layar-tv">Layar TV</a></li>
+            <li><a class="text-on-brand-muted hover:text-on-brand block py-2" href="#panel">Panel pengurus</a></li>
+            <li><a class="text-on-brand-muted hover:text-on-brand block py-2" href="#cara-pasang">Cara pasang</a></li>
+            <li><a class="text-on-brand-muted hover:text-on-brand block py-2" href="/docs/">Dokumentasi</a></li>
+          </ul>
+          <a data-demo-only href="#demo" class="btn btn-gold h-10 text-sm max-md:w-full">Coba demo</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="isi">
+      <!-- Hero: the TV itself, switching through its real modes -->
+      <section class="bg-brand text-on-brand pb-16 sm:pb-24">
+        <div class="mx-auto max-w-6xl px-4 pt-12 sm:px-6 sm:pt-16">
+          <h1 class="max-w-3xl text-4xl leading-[1.08] font-extrabold tracking-tight text-balance sm:text-6xl">
+            Layar TV masjid yang diatur dari HP pengurus
+          </h1>
+          <p class="text-on-brand-muted mt-5 max-w-2xl text-lg leading-relaxed">
+            Jadwal sholat dihitung otomatis dengan metode Kemenag RI. Layar berganti sendiri ke adzan,
+            hitung mundur iqamah, dan mode sholat. Pengumuman yang Anda simpan tampil di semua TV dalam
+            hitungan detik.
+          </p>
+          <div class="mt-8 flex flex-wrap gap-3">
+            <a data-demo-only href="#demo" class="btn btn-gold">Coba demo</a>
+            <a href="/docs/" class="btn btn-ghost-on-brand">Baca dokumentasi</a>
+          </div>
+
+          <div data-tabs class="mt-14">
+            <figure>
+              <div class="bg-brand-deep ring-on-brand/10 rounded-[1.75rem] p-2.5 shadow-2xl ring-1 shadow-black/40 sm:p-4">
+                <div class="overflow-hidden rounded-2xl">
+                  <div role="tabpanel" id="mode-normal" aria-labelledby="tab-normal">
+                    <img src="/screenshots/tv.png" width="1920" height="1080" class="block h-auto w-full" alt="Layar TV tampilan utama: jam besar, tanggal Masehi dan Hijriah, slide kajian, jadwal tujuh waktu dengan Dzuhur disorot emas sebagai sholat berikutnya, dan running text di bawah." />
+                  </div>
+                  <div role="tabpanel" id="mode-adzan" aria-labelledby="tab-adzan" hidden>
+                    <img src="/screenshots/tv-adzan.png" width="1920" height="1080" loading="lazy" class="block h-auto w-full" alt="Layar adzan: tulisan telah masuk waktu, nama sholat, jamnya, dan iqamah dalam beberapa menit." />
+                  </div>
+                  <div role="tabpanel" id="mode-iqamah" aria-labelledby="tab-iqamah" hidden>
+                    <img src="/screenshots/tv-iqamah.png" width="1920" height="1080" loading="lazy" class="block h-auto w-full" alt="Layar hitung mundur iqamah dengan angka besar, garis sisa waktu, dan pengingat merapatkan shaf serta mematikan HP." />
+                  </div>
+                  <div role="tabpanel" id="mode-sholat" aria-labelledby="tab-sholat" hidden>
+                    <img src="/screenshots/tv-sholat.png" width="1920" height="1080" loading="lazy" class="block h-auto w-full" alt="Layar redup saat sholat berlangsung, hanya tulisan kecil dan jam." />
+                  </div>
+                  <div role="tabpanel" id="mode-jumat" aria-labelledby="tab-jumat" hidden>
+                    <img src="/screenshots/tv-jumat.png" width="1920" height="1080" loading="lazy" class="block h-auto w-full" alt="Layar Jumat: waktu sholat Jumat, hitung mundur adzan, nama khatib, imam, muadzin, dan tema khutbah." />
+                  </div>
+                </div>
+              </div>
+              <figcaption class="sr-only">Pilih mode di bawah untuk melihat tampilan layar TV.</figcaption>
+            </figure>
+
+            <!-- the mode picker borrows the TV's own prayer tiles; the selected one turns gold like "Berikutnya" -->
+            <div role="tablist" aria-label="Mode layar TV" class="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-5 sm:gap-3">
+              <button type="button" role="tab" id="tab-normal" aria-controls="mode-normal" aria-selected="true" class="group bg-canvas text-ink aria-selected:bg-gold aria-selected:text-on-gold rounded-2xl px-4 py-3.5 text-left">
+                <span class="block text-base font-extrabold">Tampilan utama</span>
+                <span class="text-ink-muted group-aria-selected:text-on-gold/80 mt-0.5 block text-sm leading-snug">Jam, jadwal hari ini, slide, running text</span>
+              </button>
+              <button type="button" role="tab" id="tab-adzan" aria-controls="mode-adzan" aria-selected="false" tabindex="-1" class="group bg-canvas text-ink aria-selected:bg-gold aria-selected:text-on-gold rounded-2xl px-4 py-3.5 text-left">
+                <span class="block text-base font-extrabold">Adzan</span>
+                <span class="text-ink-muted group-aria-selected:text-on-gold/80 mt-0.5 block text-sm leading-snug">Tepat saat masuk waktu</span>
+              </button>
+              <button type="button" role="tab" id="tab-iqamah" aria-controls="mode-iqamah" aria-selected="false" tabindex="-1" class="group bg-canvas text-ink aria-selected:bg-gold aria-selected:text-on-gold rounded-2xl px-4 py-3.5 text-left">
+                <span class="block text-base font-extrabold">Iqamah</span>
+                <span class="text-ink-muted group-aria-selected:text-on-gold/80 mt-0.5 block text-sm leading-snug">Hitung mundur besar ke iqamah</span>
+              </button>
+              <button type="button" role="tab" id="tab-sholat" aria-controls="mode-sholat" aria-selected="false" tabindex="-1" class="group bg-canvas text-ink aria-selected:bg-gold aria-selected:text-on-gold rounded-2xl px-4 py-3.5 text-left">
+                <span class="block text-base font-extrabold">Sholat</span>
+                <span class="text-ink-muted group-aria-selected:text-on-gold/80 mt-0.5 block text-sm leading-snug">Layar redup atau gelap total</span>
+              </button>
+              <button type="button" role="tab" id="tab-jumat" aria-controls="mode-jumat" aria-selected="false" tabindex="-1" class="group bg-canvas text-ink aria-selected:bg-gold aria-selected:text-on-gold col-span-2 rounded-2xl px-4 py-3.5 text-left sm:col-span-1">
+                <span class="block text-base font-extrabold">Jumat</span>
+                <span class="text-ink-muted group-aria-selected:text-on-gold/80 mt-0.5 block text-sm leading-snug">Khatib, imam, muadzin, tema khutbah</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- What the product promises, in four plain facts -->
+      <section aria-label="Keunggulan" class="border-line border-b">
+        <ul class="mx-auto grid max-w-6xl gap-x-10 gap-y-8 px-4 py-12 sm:grid-cols-2 sm:px-6 lg:grid-cols-4">
+          <li>
+            <h2 class="font-extrabold">Jadwal metode Kemenag RI</h2>
+            <p class="text-ink-muted mt-1.5 text-sm leading-relaxed">Subuh 20°, Isya 18°, dihitung dari lokasi masjid. Tiap waktu bisa dikoreksi sampai 10 menit.</p>
+          </li>
+          <li>
+            <h2 class="font-extrabold">Berubah dalam hitungan detik</h2>
+            <p class="text-ink-muted mt-1.5 text-sm leading-relaxed">Simpan pengumuman dari HP, dan semua TV di masjid langsung ikut berubah.</p>
+          </li>
+          <li>
+            <h2 class="font-extrabold">TV apa saja yang punya browser</h2>
+            <p class="text-ink-muted mt-1.5 text-sm leading-relaxed">Smart TV, TV box Android, atau mini PC. Tidak perlu memasang aplikasi.</p>
+          </li>
+          <li>
+            <h2 class="font-extrabold">Tetap jalan saat internet putus</h2>
+            <p class="text-ink-muted mt-1.5 text-sm leading-relaxed">Jam dan jadwal dihitung di TV, jadi layar tetap berganti mode tepat waktu.</p>
+          </li>
+        </ul>
+      </section>
+
+      <!-- The TV in detail -->
+      <section id="layar-tv" class="scroll-mt-16">
+        <div class="mx-auto grid max-w-6xl gap-10 px-4 py-20 sm:px-6 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
+          <div>
+            <h2 class="text-3xl font-extrabold tracking-tight text-balance sm:text-4xl">Satu layar untuk semua yang perlu diketahui jamaah</h2>
+            <p class="text-ink-muted mt-4 max-w-xl text-lg leading-relaxed">
+              Buka satu alamat di browser TV, dan layar langsung terdaftar. Ukurannya menyesuaikan TV
+              720p sampai 4K.
+            </p>
+          </div>
+          <dl class="grid gap-x-8 gap-y-6 sm:grid-cols-2">
+            <div>
+              <dt class="font-bold">Jam dan tanggal</dt>
+              <dd class="text-ink-muted mt-1 text-sm leading-relaxed">Jam besar mengikuti waktu server, bukan jam TV yang sering melenceng. Tanggal Masehi dan Hijriah.</dd>
+            </div>
+            <div>
+              <dt class="font-bold">Jadwal tujuh waktu</dt>
+              <dd class="text-ink-muted mt-1 text-sm leading-relaxed">Imsak sampai Isya, sholat berikutnya disorot, dan hitung mundur menuju waktunya.</dd>
+            </div>
+            <div>
+              <dt class="font-bold">Slide kegiatan</dt>
+              <dd class="text-ink-muted mt-1 text-sm leading-relaxed">Poster kajian dan kegiatan bergantian dengan durasi masing-masing, sama di semua TV.</dd>
+            </div>
+            <div>
+              <dt class="font-bold">Running text</dt>
+              <dd class="text-ink-muted mt-1 text-sm leading-relaxed">Pengumuman singkat berjalan di bagian bawah layar dengan kecepatan yang bisa diatur.</dd>
+            </div>
+            <div>
+              <dt class="font-bold">Alarm adzan dan iqamah</dt>
+              <dd class="text-ink-muted mt-1 text-sm leading-relaxed">Bunyi beep atau bel saat masuk waktu dan 10 detik sebelum iqamah, volume bisa diatur.</dd>
+            </div>
+            <div>
+              <dt class="font-bold">Kendali jarak jauh</dt>
+              <dd class="text-ink-muted mt-1 text-sm leading-relaxed">Lihat TV mana yang online, gelapkan layar atau paksa mode Jumat, dan muat ulang dari HP.</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <!-- The admin panel, shown as the phone screens it really is -->
+      <section id="panel" class="border-line bg-card scroll-mt-16 border-y">
+        <div class="mx-auto max-w-6xl px-4 pt-20 sm:px-6">
+          <h2 class="max-w-2xl text-3xl font-extrabold tracking-tight text-balance sm:text-4xl">Diatur dari HP, oleh pengurus yang berwenang</h2>
+          <p class="text-ink-muted mt-4 max-w-2xl text-lg leading-relaxed">
+            Panel pengurus dibuat untuk layar HP. Setiap perubahan ditanya konfirmasinya dulu, lalu
+            langsung tampil di TV. Aktivitas terakhir mencatat siapa mengubah apa.
+          </p>
+        </div>
+        <ul aria-label="Halaman panel pengurus" class="flex snap-x snap-mandatory scroll-px-[max(1rem,calc((100vw-72rem)/2+1.5rem))] gap-5 overflow-x-auto px-[max(1rem,calc((100vw-72rem)/2+1.5rem))] pt-10 pb-16">
+          <li class="w-56 shrink-0 snap-start">
+            <img src="/screenshots/home.png" width="780" height="1688" loading="lazy" class="border-brand h-auto w-full rounded-[1.75rem] border-[6px]" alt="Beranda panel pengurus" />
+            <h3 class="mt-4 font-bold">Beranda</h3>
+            <p class="text-ink-muted mt-1 text-sm leading-relaxed">Sholat berikutnya, status layar TV, dan aktivitas terakhir.</p>
+          </li>
+          <li class="w-56 shrink-0 snap-start">
+            <img src="/screenshots/prayer-times.png" width="780" height="1688" loading="lazy" class="border-brand h-auto w-full rounded-[1.75rem] border-[6px]" alt="Halaman waktu sholat dengan pratinjau tujuh hari" />
+            <h3 class="mt-4 font-bold">Waktu sholat</h3>
+            <p class="text-ink-muted mt-1 text-sm leading-relaxed">Pratinjau 7 hari, koreksi per waktu, jadwal mingguan dan jadwal khusus.</p>
+          </li>
+          <li class="w-56 shrink-0 snap-start">
+            <img src="/screenshots/iqamah.png" width="780" height="1688" loading="lazy" class="border-brand h-auto w-full rounded-[1.75rem] border-[6px]" alt="Halaman iqamah dan alarm" />
+            <h3 class="mt-4 font-bold">Iqamah &amp; alarm</h3>
+            <p class="text-ink-muted mt-1 text-sm leading-relaxed">Jeda iqamah, lama sholat, waktu khutbah, bunyi dan volume alarm.</p>
+          </li>
+          <li class="w-56 shrink-0 snap-start">
+            <img src="/screenshots/friday-duties.png" width="780" height="1688" loading="lazy" class="border-brand h-auto w-full rounded-[1.75rem] border-[6px]" alt="Halaman petugas Jumat" />
+            <h3 class="mt-4 font-bold">Petugas Jumat</h3>
+            <p class="text-ink-muted mt-1 text-sm leading-relaxed">Khatib, imam, muadzin, dan tema khutbah untuk Jumat-Jumat ke depan.</p>
+          </li>
+          <li class="w-56 shrink-0 snap-start">
+            <img src="/screenshots/slides.png" width="780" height="1688" loading="lazy" class="border-brand h-auto w-full rounded-[1.75rem] border-[6px]" alt="Halaman slide" />
+            <h3 class="mt-4 font-bold">Slide</h3>
+            <p class="text-ink-muted mt-1 text-sm leading-relaxed">Unggah poster, atur durasi, nyalakan atau matikan, geser untuk mengurutkan.</p>
+          </li>
+          <li class="w-56 shrink-0 snap-start">
+            <img src="/screenshots/running-texts.png" width="780" height="1688" loading="lazy" class="border-brand h-auto w-full rounded-[1.75rem] border-[6px]" alt="Halaman running text" />
+            <h3 class="mt-4 font-bold">Running text</h3>
+            <p class="text-ink-muted mt-1 text-sm leading-relaxed">Pengumuman sampai 200 karakter, urutan, dan kecepatan gulir.</p>
+          </li>
+          <li class="w-56 shrink-0 snap-start">
+            <img src="/screenshots/screens.png" width="780" height="1688" loading="lazy" class="border-brand h-auto w-full rounded-[1.75rem] border-[6px]" alt="Halaman layar TV dengan kode QR" />
+            <h3 class="mt-4 font-bold">Layar TV</h3>
+            <p class="text-ink-muted mt-1 text-sm leading-relaxed">Kode QR untuk memasang TV, status online, mode paksa, dan blokir.</p>
+          </li>
+          <li class="w-56 shrink-0 snap-start">
+            <img src="/screenshots/profile.png" width="780" height="1688" loading="lazy" class="border-brand h-auto w-full rounded-[1.75rem] border-[6px]" alt="Halaman profil masjid dengan peta lokasi" />
+            <h3 class="mt-4 font-bold">Profil masjid</h3>
+            <p class="text-ink-muted mt-1 text-sm leading-relaxed">Nama, alamat, logo, lokasi di peta, dan zona waktu WIB, WITA, atau WIT.</p>
+          </li>
+          <li class="w-56 shrink-0 snap-start">
+            <img src="/screenshots/users.png" width="780" height="1688" loading="lazy" class="border-brand h-auto w-full rounded-[1.75rem] border-[6px]" alt="Halaman pengguna" />
+            <h3 class="mt-4 font-bold">Pengguna</h3>
+            <p class="text-ink-muted mt-1 text-sm leading-relaxed">Tambah pengurus, atur perannya, nonaktifkan, atau atur ulang password.</p>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Roles: who sees which menu -->
+      <section class="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+        <h2 class="max-w-2xl text-3xl font-extrabold tracking-tight text-balance">Setiap pengurus hanya melihat menunya</h2>
+        <div class="border-line bg-card mt-8 overflow-x-auto rounded-2xl border">
+          <table class="w-full min-w-[34rem] text-left text-sm">
+            <thead>
+              <tr class="border-line border-b">
+                <th scope="col" class="px-5 py-3.5 font-bold">Peran</th>
+                <th scope="col" class="px-5 py-3.5 font-bold">Yang bisa dilakukan</th>
+              </tr>
+            </thead>
+            <tbody class="divide-line-soft divide-y">
+              <tr>
+                <th scope="row" class="px-5 py-4 font-semibold whitespace-nowrap">Super admin</th>
+                <td class="text-ink-muted px-5 py-4 leading-relaxed">Semua menu, termasuk menambah pengurus dan mengatur perannya.</td>
+              </tr>
+              <tr>
+                <th scope="row" class="px-5 py-4 font-semibold whitespace-nowrap">Takmir</th>
+                <td class="text-ink-muted px-5 py-4 leading-relaxed">Layar TV, waktu sholat, iqamah, petugas Jumat, slide, running text, dan profil masjid.</td>
+              </tr>
+              <tr>
+                <th scope="row" class="px-5 py-4 font-semibold whitespace-nowrap">Bendahara</th>
+                <td class="text-ink-muted px-5 py-4 leading-relaxed">Mencatat kas masjid (menu Keuangan, segera hadir).</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Installation is a real sequence, so it is numbered -->
+      <section id="cara-pasang" class="bg-brand text-on-brand scroll-mt-16">
+        <div class="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+          <h2 class="max-w-2xl text-3xl font-extrabold tracking-tight text-balance sm:text-4xl">Dari server sampai layar menyala</h2>
+          <ol class="mt-10 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+            <li>
+              <span aria-hidden="true" class="bg-gold text-on-gold flex size-10 items-center justify-center rounded-full font-extrabold">1</span>
+              <h3 class="mt-4 text-lg font-bold">Pasang di server</h3>
+              <p class="text-on-brand-muted mt-1.5 text-sm leading-relaxed">Satu pemasangan untuk satu masjid. Bisa langsung jalan dengan SQLite, atau memakai PostgreSQL.</p>
+            </li>
+            <li>
+              <span aria-hidden="true" class="bg-gold text-on-gold flex size-10 items-center justify-center rounded-full font-extrabold">2</span>
+              <h3 class="mt-4 text-lg font-bold">Isi profil masjid</h3>
+              <p class="text-on-brand-muted mt-1.5 text-sm leading-relaxed">Tandai lokasi masjid di peta. Jadwal sholat langsung dihitung dari titik itu.</p>
+            </li>
+            <li>
+              <span aria-hidden="true" class="bg-gold text-on-gold flex size-10 items-center justify-center rounded-full font-extrabold">3</span>
+              <h3 class="mt-4 text-lg font-bold">Buka alamat di TV</h3>
+              <p class="text-on-brand-muted mt-1.5 text-sm leading-relaxed">Scan kode QR dari menu Layar TV, atau ketik alamatnya di browser TV, lalu beri nama layarnya.</p>
+            </li>
+            <li>
+              <span aria-hidden="true" class="bg-gold text-on-gold flex size-10 items-center justify-center rounded-full font-extrabold">4</span>
+              <h3 class="mt-4 text-lg font-bold">Ajak pengurus lain</h3>
+              <p class="text-on-brand-muted mt-1.5 text-sm leading-relaxed">Tambahkan takmir dan bendahara dengan perannya masing-masing.</p>
+            </li>
+          </ol>
+          <a href="/docs/#memulai" class="decoration-gold mt-12 inline-block font-semibold underline decoration-2 underline-offset-4">Panduan pemasangan lengkap</a>
+        </div>
+      </section>
+
+      <!-- Honest about what is not built yet -->
+      <section class="mx-auto max-w-6xl px-4 pt-20 sm:px-6">
+        <div class="border-gold bg-gold-soft/50 rounded-3xl border-2 border-dashed p-6 sm:p-10">
+          <h2 class="text-2xl font-extrabold tracking-tight">Segera hadir: Keuangan</h2>
+          <p class="text-ink-muted mt-3 max-w-2xl leading-relaxed">
+            Bendahara mencatat pemasukan dan pengeluaran dari kas tunai dan rekening bank, menutup buku
+            tiap bulan, dan laporan kasnya tampil di layar TV. Untuk saat ini, laporan kas di layar
+            masih berupa contoh.
+          </p>
+        </div>
+      </section>
+
+      <section id="tanya-jawab" class="mx-auto max-w-6xl scroll-mt-16 px-4 py-20 sm:px-6">
+        <h2 class="text-3xl font-extrabold tracking-tight">Pertanyaan yang sering muncul</h2>
+        <div class="divide-line border-line mt-8 divide-y border-y">
+          <details class="group py-5">
+            <summary class="flex cursor-pointer list-none items-start justify-between gap-6 font-bold [&::-webkit-details-marker]:hidden">
+              Apakah perlu memasang aplikasi di TV?
+              <span aria-hidden="true" class="text-gold shrink-0 text-xl leading-none transition-transform group-open:rotate-45">+</span>
+            </summary>
+            <p class="text-ink-muted mt-3 leading-relaxed">Tidak. Cukup buka alamat layar di browser TV, TV box, atau mini PC. Ketuk layar sekali untuk tampilan penuh.</p>
+          </details>
+          <details class="group py-5">
+            <summary class="flex cursor-pointer list-none items-start justify-between gap-6 font-bold [&::-webkit-details-marker]:hidden">
+              Bagaimana kalau internet di masjid mati?
+              <span aria-hidden="true" class="text-gold shrink-0 text-xl leading-none transition-transform group-open:rotate-45">+</span>
+            </summary>
+            <p class="text-ink-muted mt-3 leading-relaxed">Jam dan jadwal dihitung di TV, jadi layar tetap berganti ke adzan, iqamah, dan sholat tepat waktu. Pengumuman baru masuk lagi begitu internet tersambung. Di menu Layar TV, layar itu tampil Offline.</p>
+          </details>
+          <details class="group py-5">
+            <summary class="flex cursor-pointer list-none items-start justify-between gap-6 font-bold [&::-webkit-details-marker]:hidden">
+              Jadwal masjid kami sedikit berbeda dari jadwal Kemenag. Bisa disesuaikan?
+              <span aria-hidden="true" class="text-gold shrink-0 text-xl leading-none transition-transform group-open:rotate-45">+</span>
+            </summary>
+            <p class="text-ink-muted mt-3 leading-relaxed">Bisa. Koreksi tiap waktu sampai 10 menit lebih awal atau lebih lambat, tetapkan jam tiap minggu (misalnya Dzuhur hari Jumat), atau ubah satu tanggal saja.</p>
+          </details>
+          <details class="group py-5">
+            <summary class="flex cursor-pointer list-none items-start justify-between gap-6 font-bold [&::-webkit-details-marker]:hidden">
+              Berapa TV yang bisa dipakai?
+              <span aria-hidden="true" class="text-gold shrink-0 text-xl leading-none transition-transform group-open:rotate-45">+</span>
+            </summary>
+            <p class="text-ink-muted mt-3 leading-relaxed">Sampai 50 layar untuk satu masjid. Semuanya menampilkan hal yang sama pada saat yang sama.</p>
+          </details>
+          <details class="group py-5">
+            <summary class="flex cursor-pointer list-none items-start justify-between gap-6 font-bold [&::-webkit-details-marker]:hidden">
+              Kenapa alarm di TV tidak berbunyi?
+              <span aria-hidden="true" class="text-gold shrink-0 text-xl leading-none transition-transform group-open:rotate-45">+</span>
+            </summary>
+            <p class="text-ink-muted mt-3 leading-relaxed">Browser baru mengizinkan suara setelah layar disentuh sekali. Ketuk layar TV setelah menyala; TV menampilkan pengingatnya selama suara belum aktif.</p>
+          </details>
+          <details class="group py-5">
+            <summary class="flex cursor-pointer list-none items-start justify-between gap-6 font-bold [&::-webkit-details-marker]:hidden">
+              Bisa dipakai untuk beberapa masjid sekaligus?
+              <span aria-hidden="true" class="text-gold shrink-0 text-xl leading-none transition-transform group-open:rotate-45">+</span>
+            </summary>
+            <p class="text-ink-muted mt-3 leading-relaxed">Satu pemasangan melayani satu masjid. Untuk masjid lain, pasang satu lagi dengan datanya sendiri.</p>
+          </details>
+        </div>
+      </section>
+
+      <!-- The demo: pick the panel (the real app in a phone frame) or the TV (the real display, 16:9) -->
+      <section id="demo" data-demo-only class="bg-brand text-on-brand scroll-mt-16">
+        <div class="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+          <h2 class="text-3xl font-extrabold tracking-tight sm:text-4xl">Coba demo</h2>
+          <p class="text-on-brand-muted mt-3 max-w-2xl text-lg leading-relaxed">
+            Pilih yang ingin dicoba. Ubah pengumuman di panel pengurus, lalu lihat layar TV-nya ikut
+            berubah.
+          </p>
+
+          <div data-tabs class="mt-10 grid gap-8 lg:grid-cols-[17rem_1fr] lg:gap-12">
+            <div role="tablist" aria-label="Pilih demo" aria-orientation="vertical" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 lg:self-start">
+              <button type="button" role="tab" id="tab-demo-panel" aria-controls="demo-panel" aria-selected="true" class="group bg-brand-2 aria-selected:bg-gold aria-selected:text-on-gold rounded-2xl p-5 text-left">
+                <span class="block text-lg font-extrabold">Panel pengurus</span>
+                <span class="text-on-brand-muted group-aria-selected:text-on-gold/80 mt-1 block text-sm leading-snug">Aplikasi di HP untuk mengatur jadwal, iqamah, slide, dan layar TV.</span>
+              </button>
+              <button type="button" role="tab" id="tab-demo-tv" aria-controls="demo-tv" aria-selected="false" tabindex="-1" class="group bg-brand-2 aria-selected:bg-gold aria-selected:text-on-gold rounded-2xl p-5 text-left">
+                <span class="block text-lg font-extrabold">Layar TV</span>
+                <span class="text-on-brand-muted group-aria-selected:text-on-gold/80 mt-1 block text-sm leading-snug">Tampilan di TV masjid, berganti mode sendiri mengikuti jadwal.</span>
+              </button>
+            </div>
+
+            <div>
+              <div role="tabpanel" id="demo-panel" aria-labelledby="tab-demo-panel" class="flex flex-col gap-8 md:flex-row md:items-start">
+                <!-- the app is built for a 390 px phone, so on a computer it runs inside a phone frame -->
+                <div class="border-brand-deep bg-canvas shrink-0 overflow-hidden rounded-[2.75rem] border-[10px] shadow-2xl shadow-black/40 max-md:hidden">
+                  <iframe data-demo-frame="panel" loading="lazy" title="Demo panel pengurus" class="block h-[720px] w-[390px]"></iframe>
+                </div>
+                <div class="max-w-sm">
+                  <h3 class="text-xl font-bold">Dibuat untuk layar HP</h3>
+                  <p class="text-on-brand-muted mt-2 leading-relaxed">
+                    <span class="max-md:hidden">Di komputer, panel tampil di dalam bingkai HP. Masuk dengan akun demo, lalu coba ubah running text atau slide.</span>
+                    <span class="md:hidden">Buka panel di HP ini, masuk dengan akun demo, lalu coba ubah running text atau slide.</span>
+                  </p>
+                  <a data-demo="panel" href="/docs/" target="_blank" rel="noopener" class="btn btn-gold mt-6">Buka panel pengurus</a>
+                </div>
+              </div>
+
+              <div role="tabpanel" id="demo-tv" aria-labelledby="tab-demo-tv" hidden>
+                <div class="bg-brand-deep rounded-[1.75rem] p-2.5 shadow-2xl shadow-black/40 sm:p-4">
+                  <iframe data-demo-frame="tv" loading="lazy" title="Demo layar TV" allow="fullscreen" class="block aspect-video w-full rounded-2xl"></iframe>
+                </div>
+                <a data-demo="tv" href="/docs/" target="_blank" rel="noopener" class="btn btn-gold mt-6">Buka layar TV di tab baru</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="bg-brand-deep text-on-brand-muted">
+      <div class="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-10 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <a href="/" class="text-on-brand flex items-center gap-2.5 font-extrabold">
+          <img src="/favicon.svg" alt="" width="28" height="28" />
+          Masjid Digital
+        </a>
+        <nav aria-label="Bawah">
+          <ul class="flex flex-wrap gap-x-6 gap-y-2">
+            <li><a class="hover:text-on-brand" href="/docs/">Dokumentasi</a></li>
+            <li><a class="hover:text-on-brand" href="#tanya-jawab">Tanya jawab</a></li>
+            <li data-demo-only><a class="hover:text-on-brand" href="#demo">Coba demo</a></li>
+          </ul>
+        </nav>
+        <p>&copy; <span data-year>2026</span> Masjid Digital</p>
+      </div>
+    </footer>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

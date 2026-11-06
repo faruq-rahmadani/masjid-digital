@@ -14,6 +14,9 @@ export default defineConfig(({ mode }) => {
       alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
     },
     server: {
+      // fixed, so it never drifts onto web_public's 5174 (whose demo links point here)
+      port: 5173,
+      strictPort: true,
       // Forward API calls to the Go backend so the browser sees one origin in dev.
       proxy: {
         '/api': {

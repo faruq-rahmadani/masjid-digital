@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0f3d33" />
+    <title>Dokumentasi Masjid Digital</title>
+    <meta
+      name="description"
+      content="Panduan Masjid Digital: memasang layar TV, mode-mode layar, dan cara memakai setiap menu panel pengurus."
+    />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <a href="#isi" class="focus:bg-gold focus:text-on-gold sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-lg focus:px-4 focus:py-2 focus:font-bold">Langsung ke isi</a>
+
+    <header class="bg-brand text-on-brand sticky top-0 z-40">
+      <div class="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4 sm:px-6">
+        <a href="/" class="flex shrink-0 items-center gap-2.5 font-extrabold tracking-tight">
+          <img src="/favicon.svg" alt="" width="32" height="32" />
+          Masjid Digital
+        </a>
+        <button
+          type="button"
+          class="border-on-brand-muted/40 ml-auto rounded-lg border px-3 py-1.5 text-sm font-semibold md:hidden"
+          data-menu-toggle
+          aria-expanded="false"
+          aria-controls="menu"
+        >
+          Menu
+        </button>
+        <nav
+          id="menu"
+          aria-label="Utama"
+          class="max-md:border-brand-2 max-md:bg-brand max-md:absolute max-md:inset-x-0 max-md:top-16 max-md:hidden max-md:border-t max-md:px-4 max-md:pb-5 md:ml-auto md:flex md:items-center md:gap-6"
+        >
+          <ul class="flex flex-col gap-1 py-3 text-sm font-semibold md:flex-row md:gap-6 md:py-0">
+            <li><a class="text-on-brand-muted hover:text-on-brand block py-2" href="/#layar-tv">Layar TV</a></li>
+            <li><a class="text-on-brand-muted hover:text-on-brand block py-2" href="/#panel">Panel pengurus</a></li>
+            <li><a class="text-on-brand-muted hover:text-on-brand block py-2" href="/#cara-pasang">Cara pasang</a></li>
+            <li><a class="text-on-brand hover:text-on-brand block py-2" href="/docs/" aria-current="page">Dokumentasi</a></li>
+          </ul>
+          <a data-demo-only href="/#demo" class="btn btn-gold h-10 text-sm max-md:w-full">Coba demo</a>
+        </nav>
+      </div>
+    </header>
+
+    <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:grid lg:grid-cols-[14rem_1fr] lg:gap-14">
+      <nav aria-label="Isi dokumentasi" class="border-line border-b py-6 lg:sticky lg:top-16 lg:max-h-[calc(100dvh-4rem)] lg:self-start lg:overflow-y-auto lg:border-b-0 lg:py-12">
+        <p class="text-sm font-bold">Isi</p>
+        <ol class="text-ink-muted mt-3 space-y-1.5 text-sm">
+          <li><a class="hover:text-ink" href="#pengenalan">Pengenalan</a></li>
+          <li><a class="hover:text-ink" href="#memulai">Memulai</a></li>
+          <li><a class="hover:text-ink" href="#pasang-tv">Memasang layar TV</a></li>
+          <li><a class="hover:text-ink" href="#mode-layar">Mode layar TV</a></li>
+          <li><a class="hover:text-ink" href="#panel-pengurus">Panel pengurus</a></li>
+          <li><a class="hover:text-ink" href="#peran">Peran dan akses</a></li>
+          <li><a class="hover:text-ink" href="#masalah">Kalau ada masalah</a></li>
+        </ol>
+      </nav>
+
+      <main id="isi" class="prose-doc min-w-0 py-12 pb-24">
+        <h1 class="text-4xl font-extrabold tracking-tight sm:text-5xl">Dokumentasi</h1>
+        <p class="text-ink-muted mt-4 text-lg">Cara memasang layar TV dan memakai setiap menu panel pengurus.</p>
+
+        <h2 id="pengenalan">Pengenalan</h2>
+        <p>
+          Masjid Digital terdiri dari dua bagian. <strong>Layar TV</strong> adalah halaman penuh
+          1920×1080 yang dibuka di TV masjid tanpa login. <strong>Panel pengurus</strong> adalah
+          aplikasi web untuk HP tempat pengurus mengatur isi layar.
+        </p>
+        <p>
+          Semua TV memegang sambungan langsung ke server. Begitu pengurus menyimpan perubahan, semua
+          TV menerimanya dalam hitungan detik. Jam di layar mengikuti waktu server, sehingga TV yang
+          jamnya salah tetap berganti mode tepat waktu.
+        </p>
+        <figure>
+          <img src="/screenshots/tv.png" width="1920" height="1080" loading="lazy" class="h-auto w-full rounded-2xl" alt="Layar TV tampilan utama dengan jam, jadwal tujuh waktu, slide, dan running text." />
+        </figure>
+
+        <h2 id="memulai">Memulai</h2>
+        <p>Satu pemasangan melayani satu masjid. Biasanya dipasang oleh teknisi atau relawan IT masjid.</p>
+        <h3>Yang dibutuhkan</h3>
+        <ul>
+          <li>Sebuah server atau VPS untuk menjalankan aplikasinya. Database bisa SQLite (tanpa setelan tambahan) atau PostgreSQL.</li>
+          <li>TV dengan browser: smart TV, TV box Android, atau mini PC yang tersambung ke internet.</li>
+          <li>HP pengurus dengan browser untuk membuka panel.</li>
+        </ul>
+        <h3>Langkah pertama</h3>
+        <ol>
+          <li>Teknisi memasang aplikasi dan membuat akun super admin pertama. Panduan teknisnya ada di README repositori.</li>
+          <li>Masuk ke panel dengan nomor HP atau email dan password.</li>
+          <li>Buka <strong>Profil masjid</strong>: isi nama, alamat, dan logo, lalu tandai lokasi masjid di peta dan pilih zona waktu (WIB, WITA, atau WIT). Jadwal sholat dihitung dari lokasi ini, jadi layar baru menampilkan jadwal setelah lokasi diisi.</li>
+          <li>Periksa <strong>Waktu sholat</strong> dan <strong>Iqamah &amp; alarm</strong>, lalu sesuaikan dengan kebiasaan masjid.</li>
+          <li>Pasang layar TV (lihat bagian berikut), lalu tambahkan pengurus lain di <strong>Pengguna</strong>.</li>
+        </ol>
+
+        <h2 id="pasang-tv">Memasang layar TV</h2>
+        <ol>
+          <li>Di panel, buka <strong>Layar TV</strong>. Alamat layar dan kode QR-nya ada di kartu <em>Pasang di TV</em>.</li>
+          <li>Buka alamat itu di browser TV. Tambahkan <code>?layar=teras</code> di akhir alamat supaya layar langsung bernama, misalnya untuk TV di teras.</li>
+          <li>Layar baru muncul di daftar dengan tanda <strong>BARU</strong>. Pilih <strong>Beri nama</strong>, atau <strong>Bukan layar kita</strong> kalau perangkat itu tidak dikenal.</li>
+          <li>Ketuk layar TV sekali: tampilan menjadi layar penuh dan suara alarm diizinkan oleh browser.</li>
+        </ol>
+        <p>
+          Dari menu yang sama, pengurus bisa melihat layar mana yang online dan versi aplikasinya,
+          memuat ulang satu layar atau semuanya, dan memblokir layar. Layar yang diblokir hilang dari
+          daftar; buka <strong>Lihat layar diblokir</strong> untuk membuka blokirnya kalau salah blokir.
+          Satu masjid bisa memakai sampai 50 layar.
+        </p>
+        <figure>
+          <img src="/screenshots/screens.png" width="780" height="1688" loading="lazy" class="border-brand h-auto w-64 rounded-[1.75rem] border-[6px]" alt="Halaman Layar TV di panel pengurus dengan kode QR dan daftar layar." />
+        </figure>
+
+        <h2 id="mode-layar">Mode layar TV</h2>
+        <p>Layar berganti mode sendiri mengikuti jadwal sholat dan pengaturan di <strong>Iqamah &amp; alarm</strong>.</p>
+        <div class="border-line bg-card mt-5 overflow-x-auto rounded-2xl border">
+          <table class="w-full min-w-[34rem] text-left text-sm">
+            <thead>
+              <tr class="border-line border-b">
+                <th scope="col" class="px-5 py-3 font-bold">Mode</th>
+                <th scope="col" class="px-5 py-3 font-bold">Kapan</th>
+                <th scope="col" class="px-5 py-3 font-bold">Yang tampil</th>
+              </tr>
+            </thead>
+            <tbody class="divide-line-soft divide-y align-top">
+              <tr>
+                <th scope="row" class="px-5 py-3.5 font-semibold">Tampilan utama</th>
+                <td class="text-ink-muted px-5 py-3.5">Di luar waktu sholat</td>
+                <td class="text-ink-muted px-5 py-3.5">Jam, tanggal Masehi dan Hijriah, jadwal tujuh waktu, hitung mundur ke sholat berikutnya, slide, running text, laporan kas</td>
+              </tr>
+              <tr>
+                <th scope="row" class="px-5 py-3.5 font-semibold">Adzan</th>
+                <td class="text-ink-muted px-5 py-3.5">Masuk waktu, selama 1–10 menit</td>
+                <td class="text-ink-muted px-5 py-3.5">Nama sholat, jamnya, dan berapa menit lagi iqamah</td>
+              </tr>
+              <tr>
+                <th scope="row" class="px-5 py-3.5 font-semibold">Iqamah</th>
+                <td class="text-ink-muted px-5 py-3.5">Setelah adzan sampai iqamah</td>
+                <td class="text-ink-muted px-5 py-3.5">Hitung mundur besar dan pengingat merapatkan shaf serta mematikan HP</td>
+              </tr>
+              <tr>
+                <th scope="row" class="px-5 py-3.5 font-semibold">Sholat</th>
+                <td class="text-ink-muted px-5 py-3.5">Setelah iqamah, selama 5–30 menit</td>
+                <td class="text-ink-muted px-5 py-3.5">Tulisan redup dan jam kecil, atau layar gelap total</td>
+              </tr>
+              <tr>
+                <th scope="row" class="px-5 py-3.5 font-semibold">Jumat</th>
+                <td class="text-ink-muted px-5 py-3.5">Hari Jumat, sampai 2 jam sebelum Dzuhur, lalu saat khutbah</td>
+                <td class="text-ink-muted px-5 py-3.5">Waktu sholat Jumat, hitung mundur adzan, khatib, imam, muadzin, tema khutbah</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <h3>Mode paksa</h3>
+        <p>
+          Di menu <strong>Layar TV</strong>, pilih <em>Paksa mode tampilan</em> untuk menahan satu layar
+          di tampilan utama, mode Jumat, atau layar gelap, misalnya saat ada acara. Mode paksa berlaku
+          sampai tengah malam, lalu layar kembali mengikuti jadwal. Selama mode paksa, alarm tidak berbunyi.
+        </p>
+        <h3>Alarm</h3>
+        <p>
+          Alarm berbunyi saat masuk waktu adzan dan 10 detik sebelum iqamah, dengan bunyi beep atau bel.
+          Atur di <strong>Iqamah &amp; alarm</strong>, lalu tekan <strong>Uji bunyi di layar</strong>
+          untuk memutarnya sekali di semua TV yang online.
+        </p>
+        <h3>Saat internet putus</h3>
+        <p>
+          Jam dan jadwal dihitung di TV, jadi layar tetap berganti mode tepat waktu. Setelah 2 menit
+          tanpa sambungan, layar menampilkan tanda <em>Offline</em> kecil dan memakai data terakhir yang
+          dimilikinya. Begitu internet kembali, layar tersambung lagi sendiri.
+        </p>
+
+        <h2 id="panel-pengurus">Panel pengurus</h2>
+        <p>Setiap simpan, ubah, hapus, dan blokir ditanya konfirmasinya dulu. Perubahan yang tampil di layar langsung terkirim ke semua TV.</p>
+
+        <h3>Beranda</h3>
+        <p>Sholat berikutnya dan hitung mundurnya, ringkasan layar TV (berapa yang online, offline, dan baru), menu sesuai peran, dan aktivitas terakhir: siapa mengubah apa.</p>
+
+        <h3>Waktu sholat</h3>
+        <ul>
+          <li>Dihitung dengan metode Kemenag RI (Subuh 20°, Isya 18°) dari lokasi masjid, dengan pratinjau 7 hari.</li>
+          <li>Koreksi tiap waktu sampai 10 menit lebih awal atau lebih lambat, dan jarak imsak sebelum Subuh.</li>
+          <li><strong>Jadwal mingguan</strong>: jam tetap tiap minggu, misalnya Dzuhur pukul 12.00 setiap Jumat.</li>
+          <li><strong>Jadwal khusus</strong>: jam untuk satu tanggal saja.</li>
+          <li>Koreksi tanggal Hijriah sampai 2 hari.</li>
+        </ul>
+
+        <h3>Iqamah &amp; alarm</h3>
+        <ul>
+          <li>Jeda adzan ke iqamah per waktu (1–30 menit) dan lama mode sholat (5–30 menit, Jumat sampai 60).</li>
+          <li>Lama layar adzan, tampilan saat sholat (redup atau gelap total), layar Jumat sebelum Dzuhur, dan lama khutbah.</li>
+          <li>Alarm: kapan berbunyi, beep atau bel, dan volumenya.</li>
+          <li>Kartu alur menunjukkan urutan layar untuk sholat berikutnya, lengkap dengan jamnya.</li>
+        </ul>
+
+        <h3>Petugas Jumat</h3>
+        <p>Khatib, imam, muadzin, dan tema khutbah untuk Jumat terdekat dan delapan Jumat berikutnya. Jumat yang belum diisi diberi tanda. Petugas Jumat terdekat tampil di layar Jumat.</p>
+
+        <h3>Slide</h3>
+        <ul>
+          <li>Unggah gambar JPG, PNG, atau WebP sampai 5 MB; ukuran 16:9 paling pas.</li>
+          <li>Atur durasi tiap slide (5, 10, 15, 20, atau 30 detik) dan apakah judul serta keterangannya ditampilkan.</li>
+          <li>Nyalakan atau matikan slide, dan geser untuk mengubah urutan.</li>
+        </ul>
+
+        <h3>Running text</h3>
+        <p>Pengumuman singkat sampai 200 karakter yang berjalan di bagian bawah layar. Nyalakan atau matikan, geser untuk mengurutkan, dan pilih kecepatan gulir: lambat, sedang, atau cepat.</p>
+
+        <h3>Profil masjid</h3>
+        <p>Nama, alamat, nomor kontak, logo, lokasi di peta (cari alamat atau pakai lokasi HP), dan zona waktu.</p>
+
+        <h3>Layar TV</h3>
+        <p>Lihat <a href="#pasang-tv">Memasang layar TV</a> dan <a href="#mode-layar">Mode paksa</a>.</p>
+
+        <h3>Pengguna</h3>
+        <p>
+          Super admin menambah pengurus, mengubah peran, menonaktifkan atau mengaktifkan lagi, dan
+          mengatur ulang password. Pengurus tidak pernah dihapus, hanya dinonaktifkan, supaya catatan
+          aktivitas tetap menunjuk ke orangnya. Setiap pengurus bisa mengganti password-nya sendiri.
+        </p>
+
+        <h2 id="peran">Peran dan akses</h2>
+        <p>Menu yang tidak boleh dibuka tidak ditampilkan sama sekali.</p>
+        <ul>
+          <li><strong>Super admin</strong>: semua menu, termasuk Pengguna.</li>
+          <li><strong>Takmir</strong>: Layar TV, Waktu sholat, Iqamah &amp; alarm, Petugas Jumat, Slide, Running text, dan Profil masjid.</li>
+          <li><strong>Bendahara</strong>: menu Keuangan untuk mencatat kas (segera hadir).</li>
+        </ul>
+        <p>
+          Satu akun hanya bisa masuk di satu perangkat pada satu waktu. Masuk di perangkat lain,
+          dinonaktifkan, berganti peran, atau password diatur ulang akan mengeluarkan sesi sebelumnya.
+        </p>
+
+        <h2 id="masalah">Kalau ada masalah</h2>
+        <h3>Layar hanya menampilkan pesan tentang lokasi</h3>
+        <p>Lokasi masjid belum diisi. Buka <strong>Profil masjid</strong> dan tandai lokasinya di peta.</p>
+        <h3>Alarm tidak berbunyi</h3>
+        <p>Ketuk layar TV sekali setelah menyala. Selama suara belum diizinkan, layar menampilkan pengingat di bagian atas.</p>
+        <h3>Layar tertulis "Layar ini diblokir"</h3>
+        <p>Layar itu diblokir dari menu Layar TV. Buka <strong>Lihat layar diblokir</strong>, pilih <strong>Buka blokir</strong>, dan layar tersambung lagi dalam 5 menit.</p>
+        <h3>Perubahan belum muncul di layar</h3>
+        <p>Periksa status layar di menu Layar TV. Kalau tertulis Offline, periksa internet TV. Layar juga memuat ulang datanya sendiri setiap 5 menit.</p>
+        <p class="mt-10">Pertanyaan lain? Lihat <a href="/#tanya-jawab">tanya jawab</a> di halaman utama.</p>
+      </main>
+    </div>
+
+    <footer class="bg-brand-deep text-on-brand-muted">
+      <div class="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-10 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <a href="/" class="text-on-brand flex items-center gap-2.5 font-extrabold">
+          <img src="/favicon.svg" alt="" width="28" height="28" />
+          Masjid Digital
+        </a>
+        <nav aria-label="Bawah">
+          <ul class="flex flex-wrap gap-x-6 gap-y-2">
+            <li><a class="hover:text-on-brand" href="/">Beranda</a></li>
+            <li><a class="hover:text-on-brand" href="/#tanya-jawab">Tanya jawab</a></li>
+            <li data-demo-only><a class="hover:text-on-brand" href="/#demo">Coba demo</a></li>
+          </ul>
+        </nav>
+        <p>&copy; <span data-year>2026</span> Masjid Digital</p>
+      </div>
+    </footer>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
