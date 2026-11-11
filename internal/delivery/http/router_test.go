@@ -106,17 +106,38 @@ func newTestRouter(t *testing.T) *echo.Echo {
 	activityLog := mock.NewMockActivityLogUsecaseItf(ctrl)
 	activityLog.EXPECT().ListRecent(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
 
-	return newEcho(controller.NewController(users, auth, mosqueProfile, prayerTime, runningText, iqamah, fridayDuty, slide, screen, activityLog), middleware.NewAuth(authenticator))
+	finance := mock.NewMockFinanceUsecaseItf(ctrl)
+	finance.EXPECT().ListAccounts(gomock.Any()).Return(nil, nil).AnyTimes()
+	finance.EXPECT().CreateAccount(gomock.Any(), gomock.Any()).Return(domain.Account{}, nil).AnyTimes()
+	finance.EXPECT().UpdateAccount(gomock.Any(), gomock.Any()).Return(domain.Account{}, nil).AnyTimes()
+	finance.EXPECT().ArchiveAccount(gomock.Any(), gomock.Any()).Return(domain.Account{}, nil).AnyTimes()
+	finance.EXPECT().RestoreAccount(gomock.Any(), gomock.Any()).Return(domain.Account{}, nil).AnyTimes()
+	finance.EXPECT().ListPockets(gomock.Any()).Return(nil, nil).AnyTimes()
+	finance.EXPECT().CreatePocket(gomock.Any(), gomock.Any()).Return(domain.Pocket{}, nil).AnyTimes()
+	finance.EXPECT().UpdatePocket(gomock.Any(), gomock.Any()).Return(domain.Pocket{}, nil).AnyTimes()
+	finance.EXPECT().ArchivePocket(gomock.Any(), gomock.Any()).Return(domain.Pocket{}, nil).AnyTimes()
+	finance.EXPECT().RestorePocket(gomock.Any(), gomock.Any()).Return(domain.Pocket{}, nil).AnyTimes()
+	finance.EXPECT().ListCategories(gomock.Any()).Return(nil, nil).AnyTimes()
+	finance.EXPECT().CreateCategory(gomock.Any(), gomock.Any()).Return(domain.Category{}, nil).AnyTimes()
+	finance.EXPECT().UpdateCategory(gomock.Any(), gomock.Any()).Return(domain.Category{}, nil).AnyTimes()
+	finance.EXPECT().DeleteCategory(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	finance.EXPECT().ArchiveCategory(gomock.Any(), gomock.Any()).Return(domain.Category{}, nil).AnyTimes()
+	finance.EXPECT().RestoreCategory(gomock.Any(), gomock.Any()).Return(domain.Category{}, nil).AnyTimes()
+	finance.EXPECT().GetBookkeeping(gomock.Any()).Return(domain.Bookkeeping{}, nil).AnyTimes()
+	finance.EXPECT().StartBookkeeping(gomock.Any(), gomock.Any()).Return(domain.Bookkeeping{}, nil).AnyTimes()
+
+	return newEcho(controller.NewController(users, auth, mosqueProfile, prayerTime, runningText, iqamah, fridayDuty, slide, screen, activityLog, finance), middleware.NewAuth(authenticator))
 }
 
 // TestRouteAccess pins who may call each route, so a route added without its
 // ACL fails here
 func TestRouteAccess(t *testing.T) {
 	const (
-		public      = "public"
-		anyUser     = "any logged in user"
-		superOnly   = "super admin only"
-		superTakmir = "super admin or takmir"
+		public         = "public"
+		anyUser        = "any logged in user"
+		superOnly      = "super admin only"
+		superTakmir    = "super admin or takmir"
+		superBendahara = "super admin or bendahara"
 	)
 
 	// a logo upload, so the route reaches its handler
@@ -184,6 +205,24 @@ func TestRouteAccess(t *testing.T) {
 		{http.MethodPost, "/api/v1/screens/1/block", "", superTakmir, ""},
 		{http.MethodDelete, "/api/v1/screens/1/block", "", superTakmir, ""},
 		{http.MethodPost, "/api/v1/screens/1/commands", `{}`, superTakmir, ""},
+		{http.MethodGet, "/api/v1/finance/accounts", "", anyUser, ""},
+		{http.MethodPost, "/api/v1/finance/accounts", `{}`, superBendahara, ""},
+		{http.MethodPut, "/api/v1/finance/accounts/1", `{}`, superBendahara, ""},
+		{http.MethodPost, "/api/v1/finance/accounts/1/archive", "", superBendahara, ""},
+		{http.MethodDelete, "/api/v1/finance/accounts/1/archive", "", superBendahara, ""},
+		{http.MethodGet, "/api/v1/finance/pockets", "", anyUser, ""},
+		{http.MethodPost, "/api/v1/finance/pockets", `{}`, superBendahara, ""},
+		{http.MethodPut, "/api/v1/finance/pockets/1", `{}`, superBendahara, ""},
+		{http.MethodPost, "/api/v1/finance/pockets/1/archive", "", superBendahara, ""},
+		{http.MethodDelete, "/api/v1/finance/pockets/1/archive", "", superBendahara, ""},
+		{http.MethodGet, "/api/v1/finance/categories", "", anyUser, ""},
+		{http.MethodPost, "/api/v1/finance/categories", `{}`, superBendahara, ""},
+		{http.MethodPut, "/api/v1/finance/categories/1", `{}`, superBendahara, ""},
+		{http.MethodDelete, "/api/v1/finance/categories/1", "", superBendahara, ""},
+		{http.MethodPost, "/api/v1/finance/categories/1/archive", "", superBendahara, ""},
+		{http.MethodDelete, "/api/v1/finance/categories/1/archive", "", superBendahara, ""},
+		{http.MethodGet, "/api/v1/finance/bookkeeping", "", anyUser, ""},
+		{http.MethodPost, "/api/v1/finance/bookkeeping", `{}`, superBendahara, ""},
 	}
 
 	callers := []struct {
@@ -211,6 +250,8 @@ func TestRouteAccess(t *testing.T) {
 				case route.access == anyUser || caller.role == domain.UserRoleSuperAdmin:
 					want = http.StatusOK
 				case route.access == superTakmir && caller.role == domain.UserRoleTakmir:
+					want = http.StatusOK
+				case route.access == superBendahara && caller.role == domain.UserRoleBendahara:
 					want = http.StatusOK
 				default:
 					want = http.StatusForbidden

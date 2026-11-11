@@ -16,7 +16,7 @@ import (
 func newRunningTextController(t *testing.T) (*Controller, *mock.MockRunningTextUsecaseItf) {
 	t.Helper()
 	runningTexts := mock.NewMockRunningTextUsecaseItf(gomock.NewController(t))
-	return NewController(nil, nil, nil, nil, runningTexts, nil, nil, nil, nil, nil), runningTexts
+	return NewController(nil, nil, nil, nil, runningTexts, nil, nil, nil, nil, nil, nil), runningTexts
 }
 
 func TestCreateRunningTextTakesCreatorFromSession(t *testing.T) {

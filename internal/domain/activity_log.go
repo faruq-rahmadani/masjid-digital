@@ -57,6 +57,24 @@ const (
 	ActivityScreenUpdated   ActivityAction = "screen.updated"
 	ActivityScreenBlocked   ActivityAction = "screen.blocked"
 	ActivityScreenUnblocked ActivityAction = "screen.unblocked"
+
+	ActivityAccountCreated  ActivityAction = "account.created"
+	ActivityAccountUpdated  ActivityAction = "account.updated"
+	ActivityAccountArchived ActivityAction = "account.archived"
+	ActivityAccountRestored ActivityAction = "account.restored"
+
+	ActivityPocketCreated  ActivityAction = "pocket.created"
+	ActivityPocketUpdated  ActivityAction = "pocket.updated"
+	ActivityPocketArchived ActivityAction = "pocket.archived"
+	ActivityPocketRestored ActivityAction = "pocket.restored"
+
+	ActivityCategoryCreated  ActivityAction = "category.created"
+	ActivityCategoryUpdated  ActivityAction = "category.updated"
+	ActivityCategoryDeleted  ActivityAction = "category.deleted"
+	ActivityCategoryArchived ActivityAction = "category.archived"
+	ActivityCategoryRestored ActivityAction = "category.restored"
+
+	ActivityBookkeepingStarted ActivityAction = "bookkeeping.started"
 )
 
 type ActivityLog struct {
