@@ -1,17 +1,20 @@
-import type { CashSummary, Quote } from '@/types/tv'
+import { apiGet, type DataResponse } from '@/api/client'
+import type { FinanceDisplay } from '@/types/finance'
+import type { Quote } from '@/types/tv'
 
 /*
- * Content for the TV display that has no endpoint yet. Each function returns mock data in the
- * shape the API will return; swap in the real call when its task lands (noted per function).
+ * Content for the TV display that the other services don't cover: the kas header (live) and the
+ * quotes (mocked until they get an endpoint).
  * The mosque name, address, time zone and logo are live (mosqueProfileService), and so are
  * the prayer times (computed on the TV from prayerTimeService's config), the running text
  * (runningTextService), the iqamah settings (iqamahService), the petugas Jumat
  * (fridayDutyService) and the slides (slideService).
  */
 
-/** E7: the latest period's cash report. */
-export async function getCashSummary(): Promise<CashSummary> {
-  return MOCK_CASH
+/** E7-04: the kas marked "tampil di layar TV" over the period pengurus chose; public. */
+export async function getCashDisplay(): Promise<FinanceDisplay> {
+  const resp = await apiGet<DataResponse<FinanceDisplay>>('/public/v1/finance/display')
+  return resp.data
 }
 
 /** Quotes rotating under the clock. */
@@ -21,14 +24,6 @@ export async function listQuotes(): Promise<Quote[]> {
 
 // --- Mock ----------------------------------------------------------------------------------
 // From the mockups (Jakarta).
-
-const MOCK_CASH: CashSummary = {
-  as_of: '2026-10-28',
-  opening_balance: 91_934_781,
-  income: 1_250_000,
-  expense: 1_126_667,
-  closing_balance: 92_058_114,
-}
 
 const MOCK_QUOTES: Quote[] = [
   {

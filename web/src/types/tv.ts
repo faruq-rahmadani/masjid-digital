@@ -1,4 +1,4 @@
-// What the TV display (/tv) shows besides the mosque profile. All mocked for now; see tvService.
+// What the TV display (/tv) shows besides the mosque profile; see tvService.
 
 import type { PrayerKey } from './prayer'
 
@@ -9,15 +9,6 @@ export type ScheduleItem = {
   key: PrayerKey | 'imsak' | 'terbit'
   name: string
   time: string /** "HH:MM" in the mosque's time zone. */
-}
-
-/** Laporan kas strip (E7): one period, integer Rupiah. */
-export type CashSummary = {
-  as_of: string /** "YYYY-MM-DD" */
-  opening_balance: number
-  income: number
-  expense: number
-  closing_balance: number
 }
 
 export type Quote = { text: string; source: string }

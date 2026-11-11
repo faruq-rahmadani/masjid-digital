@@ -625,12 +625,22 @@ export const fakeTimeService = {
 }
 
 export const fakeTvService = {
-  getCashSummary: async () => ({
-    as_of: '2026-10-28',
-    opening_balance: 91_934_781,
-    income: 1_250_000,
-    expense: 1_126_667,
-    closing_balance: 92_058_114,
+  getCashDisplay: async () => ({
+    period: 'month' as const,
+    from: '2026-10-01',
+    to: '2026-10-28',
+    pockets: [
+      {
+        id: 1,
+        name: 'Kas Umum',
+        kind: 'umum' as const,
+        opening: 91_934_781,
+        in: 1_250_000,
+        out: 1_126_667,
+        moved: 0,
+        closing: 92_058_114,
+      },
+    ],
   }),
   listQuotes: async () => [
     { text: 'Maka sesungguhnya bersama kesulitan ada kemudahan.', source: 'QS. Al-Insyirah: 5' },

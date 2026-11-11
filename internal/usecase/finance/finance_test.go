@@ -20,6 +20,8 @@ type mocks struct {
 	transactions *mock.MockTransactionRepositoryItf
 	closings     *mock.MockBookClosingRepositoryItf
 	profiles     *mock.MockMosqueProfileRepositoryItf
+	prayerTimes  *mock.MockPrayerTimeRepositoryItf
+	settings     *mock.MockFinanceSettingRepositoryItf
 	activityLog  *mock.MockActivityLogPublisherItf
 }
 
@@ -37,6 +39,8 @@ func newTestUsecase(t *testing.T) (*UseCase, mocks) {
 		transactions: mock.NewMockTransactionRepositoryItf(ctrl),
 		closings:     mock.NewMockBookClosingRepositoryItf(ctrl),
 		profiles:     mock.NewMockMosqueProfileRepositoryItf(ctrl),
+		prayerTimes:  mock.NewMockPrayerTimeRepositoryItf(ctrl),
+		settings:     mock.NewMockFinanceSettingRepositoryItf(ctrl),
 		activityLog:  mock.NewMockActivityLogPublisherItf(ctrl),
 	}
 	m.tx.EXPECT().WithTx(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
@@ -45,6 +49,7 @@ func newTestUsecase(t *testing.T) (*UseCase, mocks) {
 	uc := New(Repositories{
 		Transactor: m.tx, Accounts: m.accounts, Pockets: m.pockets, Categories: m.categories,
 		Transactions: m.transactions, BookClosings: m.closings, MosqueProfiles: m.profiles,
+		PrayerTimes: m.prayerTimes, Settings: m.settings,
 	}, m.activityLog)
 	uc.now = func() time.Time { return now }
 	return uc, m

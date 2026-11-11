@@ -241,3 +241,10 @@ type BookClosingRepositoryItf interface {
 	// Create inserts the closing and its account and pocket balances
 	Create(ctx context.Context, closing domain.BookClosing) (domain.BookClosing, error)
 }
+
+// FinanceSettingRepositoryItf stores the Keuangan settings
+type FinanceSettingRepositoryItf interface {
+	// GetTVSetting returns domain.ErrFinanceTVSettingNotFound until it is first saved
+	GetTVSetting(ctx context.Context) (domain.FinanceTVSetting, error)
+	UpdateTVSetting(ctx context.Context, setting domain.FinanceTVSetting, updatedBy int64) error
+}

@@ -22,6 +22,8 @@ type Repositories struct {
 	Transactions   usecase.TransactionRepositoryItf
 	BookClosings   usecase.BookClosingRepositoryItf
 	MosqueProfiles usecase.MosqueProfileRepositoryItf // the mosque's time zone decides "today"
+	PrayerTimes    usecase.PrayerTimeRepositoryItf    // the Hijri correction for the syariah warnings
+	Settings       usecase.FinanceSettingRepositoryItf
 }
 
 type UseCase struct {
@@ -43,15 +45,19 @@ type balances struct {
 // balances starts from the last closing (the opening before any month is closed) and adds the
 // transactions dated after its month. Before pembukuan starts everything is Rp 0.
 func (u *UseCase) balances(ctx context.Context) (balances, error) {
-	b := balances{accounts: map[int64]int64{}, pockets: map[int64]int64{}}
-
 	closing, err := u.BookClosings.FindLatest(ctx)
 	if errors.Is(err, domain.ErrBookClosingNotFound) {
-		return b, nil
+		return balances{accounts: map[int64]int64{}, pockets: map[int64]int64{}}, nil
 	}
 	if err != nil {
 		return balances{}, err
 	}
+	return u.balancesSince(ctx, closing)
+}
+
+// balancesSince is what everything holds now, starting from closing
+func (u *UseCase) balancesSince(ctx context.Context, closing domain.BookClosing) (balances, error) {
+	b := balances{accounts: map[int64]int64{}, pockets: map[int64]int64{}}
 	for _, a := range closing.Accounts {
 		b.accounts[a.AccountID] = a.ClosingBalance
 	}

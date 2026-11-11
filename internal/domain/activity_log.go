@@ -75,6 +75,16 @@ const (
 	ActivityCategoryRestored ActivityAction = "category.restored"
 
 	ActivityBookkeepingStarted ActivityAction = "bookkeeping.started"
+
+	ActivityTransactionCreated ActivityAction = "transaction.created"
+	ActivityTransactionUpdated ActivityAction = "transaction.updated"
+	ActivityTransactionDeleted ActivityAction = "transaction.deleted"
+	ActivityFundsMoved         ActivityAction = "transaction.moved"
+	ActivityReceiptUploaded    ActivityAction = "transaction.receipt_uploaded"
+	ActivityPocketFinished     ActivityAction = "pocket.finished"
+	ActivityMonthClosed        ActivityAction = "book_closing.closed"
+
+	ActivityFinanceTVSettingUpdated ActivityAction = "finance_tv_setting.updated"
 )
 
 type ActivityLog struct {

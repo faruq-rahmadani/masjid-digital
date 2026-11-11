@@ -22,7 +22,7 @@ export const MENU: readonly MenuItem[] = [
     module: 'content',
     ready: true,
   },
-  { label: 'Keuangan', path: ROUTES.finance, icon: CreditCard, module: 'finance', ready: false },
+  { label: 'Keuangan', path: ROUTES.finance, icon: CreditCard, module: 'finance', ready: true },
   {
     label: 'Waktu sholat',
     path: ROUTES.prayerTimes,

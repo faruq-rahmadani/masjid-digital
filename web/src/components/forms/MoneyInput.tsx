@@ -52,6 +52,8 @@ export function MoneyInput({
             setFocused(true)
             event.currentTarget.select()
           }}
+          // a click on the focused field selects too, so retyping never lands mid-number
+          onClick={(event) => event.currentTarget.select()}
           onBlur={() => setFocused(false)}
           onChange={(event) => {
             const digits = event.currentTarget.value.replace(/\D/g, '')

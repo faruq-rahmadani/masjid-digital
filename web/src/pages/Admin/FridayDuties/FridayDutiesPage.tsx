@@ -28,7 +28,7 @@ const FRIDAYS = 9
 export function FridayDutiesPage() {
   const now = useNow()
   const mosque = useMosqueProfile()
-  const today = localDate(now, mosque.data?.timezone ?? 'Asia/Jakarta')
+  const today = localDate(now, mosque.data?.timezone || 'Asia/Jakarta')
   const fridays = nextFridays(today, FRIDAYS)
 
   return (

@@ -17,7 +17,8 @@ A public 1920×1080 page for any TV with a browser (smart TV, set-top box, mini 
 
 - **Main screen:** clock and Gregorian + Hijri date, today's six prayer times with the next one
   highlighted, countdown to the next prayer, slideshow, running text, a Qur'an quote and the
-  kas (treasury) summary.
+  kas (treasury) header: saldo awal, pemasukan, pengeluaran and saldo akhir of each kas marked
+  "tampil di layar TV", one kas at a time.
 - **Prayer flow:** switches by itself to an adzan screen, an iqamah countdown, then a dimmed or
   black screen while the prayer is on, and back to normal.
 - **Jumat:** before Dzuhur on Friday, a Jumat screen with khatib, imam, muadzin and the khutbah
@@ -74,8 +75,16 @@ A mobile-first web app for pengurus. Each role sees only the menus it may use (s
   link from a phone). Name it, see whether it is online and which version it runs, force a mode
   (auto, normal, Jumat, black), reload it remotely, or block a screen that isn't yours.
 
-**Not built yet:** kas (treasury) records. The TV's kas summary and Qur'an quote are sample data
-for now, and the Keuangan menu is a placeholder.
+- **Keuangan (kas):** money is tracked by account (Tunai, bank) and by kas (Kas Umum, Zakat Mal,
+  Zakat Fitrah, Fidyah, and earmarked "terikat" kas such as Renovasi Atap). Pemasukan and
+  pengeluaran with a receipt photo, one receipt split over several kas, Pindah dana between kas or
+  accounts, edits and deletes with a reason and history, "Mulai pembukuan" with opening balances,
+  monthly tutup buku after counting each account, kas targets and "Selesaikan program". Syariah
+  rules are enforced: zakat and fidyah only reach their recipients, earmarked money moves only
+  with the donors' consent, and no account or kas goes below Rp 0. Warnings show when amil
+  spending passes 1/8 of the zakat income or Zakat Fitrah is still held after 1 Syawal.
+
+**Not built yet:** the TV's Qur'an quote is sample data for now.
 
 ## Repository layout
 
@@ -93,6 +102,7 @@ migrations/      # goose SQL migrations, one folder per driver (sqlite, postgres
 mock/            # gomock mocks, generated
 pkg/             # reusable packages: apperror, cache, database, hasher, token, env
 web/             # React client (see web/README.md)
+web_public/      # public product site and user docs, static (see web_public/README.md)
 docs/            # API spec (openapi.yaml), design notes, README screenshots
 ```
 
@@ -118,6 +128,9 @@ go run ./cmd/http    # http://localhost:3000, migrations run on startup
 ```
 
 Check it is up with `curl localhost:3000/health`.
+
+The public product site with the user documentation lives in `web_public/` (static HTML; set the
+demo links in its `.env`, see [web_public/README.md](web_public/README.md)).
 
 Frontend, in another terminal:
 

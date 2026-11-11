@@ -113,7 +113,7 @@ function PrayerTimesForm({ profile, saved }: PrayerTimesFormProps) {
   const toast = useToast()
 
   const now = useNow()
-  const today = localDate(now, profile?.timezone ?? 'Asia/Jakarta')
+  const today = localDate(now, profile?.timezone || 'Asia/Jakarta')
   const overrides = usePrayerOverrides(today, addDays(today, OVERRIDE_DAYS))
   const location = profile && (profile.latitude || profile.longitude) ? profile : null
 

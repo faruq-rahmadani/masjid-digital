@@ -86,6 +86,21 @@ func (mr *MockFinanceUsecaseItfMockRecorder) ArchivePocket(ctx, id any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ArchivePocket", reflect.TypeOf((*MockFinanceUsecaseItf)(nil).ArchivePocket), ctx, id)
 }
 
+// CloseMonth mocks base method.
+func (m *MockFinanceUsecaseItf) CloseMonth(ctx context.Context, req domain.CloseMonthRequest) (domain.BookClosing, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CloseMonth", ctx, req)
+	ret0, _ := ret[0].(domain.BookClosing)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CloseMonth indicates an expected call of CloseMonth.
+func (mr *MockFinanceUsecaseItfMockRecorder) CloseMonth(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CloseMonth", reflect.TypeOf((*MockFinanceUsecaseItf)(nil).CloseMonth), ctx, req)
+}
+
 // CreateAccount mocks base method.
 func (m *MockFinanceUsecaseItf) CreateAccount(ctx context.Context, req domain.CreateAccountRequest) (domain.Account, error) {
 	m.ctrl.T.Helper()
@@ -131,6 +146,21 @@ func (mr *MockFinanceUsecaseItfMockRecorder) CreatePocket(ctx, req any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePocket", reflect.TypeOf((*MockFinanceUsecaseItf)(nil).CreatePocket), ctx, req)
 }
 
+// CreateTransaction mocks base method.
+func (m *MockFinanceUsecaseItf) CreateTransaction(ctx context.Context, req domain.SaveTransactionRequest) ([]domain.Transaction, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateTransaction", ctx, req)
+	ret0, _ := ret[0].([]domain.Transaction)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateTransaction indicates an expected call of CreateTransaction.
+func (mr *MockFinanceUsecaseItfMockRecorder) CreateTransaction(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTransaction", reflect.TypeOf((*MockFinanceUsecaseItf)(nil).CreateTransaction), ctx, req)
+}
+
 // DeleteCategory mocks base method.
 func (m *MockFinanceUsecaseItf) DeleteCategory(ctx context.Context, id int64) error {
 	m.ctrl.T.Helper()
@@ -143,6 +173,35 @@ func (m *MockFinanceUsecaseItf) DeleteCategory(ctx context.Context, id int64) er
 func (mr *MockFinanceUsecaseItfMockRecorder) DeleteCategory(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCategory", reflect.TypeOf((*MockFinanceUsecaseItf)(nil).DeleteCategory), ctx, id)
+}
+
+// DeleteTransaction mocks base method.
+func (m *MockFinanceUsecaseItf) DeleteTransaction(ctx context.Context, req domain.DeleteTransactionRequest) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteTransaction", ctx, req)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteTransaction indicates an expected call of DeleteTransaction.
+func (mr *MockFinanceUsecaseItfMockRecorder) DeleteTransaction(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTransaction", reflect.TypeOf((*MockFinanceUsecaseItf)(nil).DeleteTransaction), ctx, req)
+}
+
+// FinishPocket mocks base method.
+func (m *MockFinanceUsecaseItf) FinishPocket(ctx context.Context, req domain.FinishPocketRequest) (domain.Pocket, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FinishPocket", ctx, req)
+	ret0, _ := ret[0].(domain.Pocket)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FinishPocket indicates an expected call of FinishPocket.
+func (mr *MockFinanceUsecaseItfMockRecorder) FinishPocket(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinishPocket", reflect.TypeOf((*MockFinanceUsecaseItf)(nil).FinishPocket), ctx, req)
 }
 
 // GetBookkeeping mocks base method.
@@ -158,6 +217,51 @@ func (m *MockFinanceUsecaseItf) GetBookkeeping(ctx context.Context) (domain.Book
 func (mr *MockFinanceUsecaseItfMockRecorder) GetBookkeeping(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBookkeeping", reflect.TypeOf((*MockFinanceUsecaseItf)(nil).GetBookkeeping), ctx)
+}
+
+// GetDisplay mocks base method.
+func (m *MockFinanceUsecaseItf) GetDisplay(ctx context.Context) (domain.FinanceDisplay, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDisplay", ctx)
+	ret0, _ := ret[0].(domain.FinanceDisplay)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDisplay indicates an expected call of GetDisplay.
+func (mr *MockFinanceUsecaseItfMockRecorder) GetDisplay(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDisplay", reflect.TypeOf((*MockFinanceUsecaseItf)(nil).GetDisplay), ctx)
+}
+
+// GetReceipt mocks base method.
+func (m *MockFinanceUsecaseItf) GetReceipt(ctx context.Context, id int64) (domain.TransactionPhoto, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetReceipt", ctx, id)
+	ret0, _ := ret[0].(domain.TransactionPhoto)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetReceipt indicates an expected call of GetReceipt.
+func (mr *MockFinanceUsecaseItfMockRecorder) GetReceipt(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReceipt", reflect.TypeOf((*MockFinanceUsecaseItf)(nil).GetReceipt), ctx, id)
+}
+
+// GetTVSetting mocks base method.
+func (m *MockFinanceUsecaseItf) GetTVSetting(ctx context.Context) (domain.FinanceTVSetting, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTVSetting", ctx)
+	ret0, _ := ret[0].(domain.FinanceTVSetting)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTVSetting indicates an expected call of GetTVSetting.
+func (mr *MockFinanceUsecaseItfMockRecorder) GetTVSetting(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTVSetting", reflect.TypeOf((*MockFinanceUsecaseItf)(nil).GetTVSetting), ctx)
 }
 
 // ListAccounts mocks base method.
@@ -190,6 +294,21 @@ func (mr *MockFinanceUsecaseItfMockRecorder) ListCategories(ctx any) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListCategories", reflect.TypeOf((*MockFinanceUsecaseItf)(nil).ListCategories), ctx)
 }
 
+// ListClosings mocks base method.
+func (m *MockFinanceUsecaseItf) ListClosings(ctx context.Context) ([]domain.BookClosing, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListClosings", ctx)
+	ret0, _ := ret[0].([]domain.BookClosing)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListClosings indicates an expected call of ListClosings.
+func (mr *MockFinanceUsecaseItfMockRecorder) ListClosings(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListClosings", reflect.TypeOf((*MockFinanceUsecaseItf)(nil).ListClosings), ctx)
+}
+
 // ListPockets mocks base method.
 func (m *MockFinanceUsecaseItf) ListPockets(ctx context.Context) ([]domain.PocketWithBalance, error) {
 	m.ctrl.T.Helper()
@@ -203,6 +322,51 @@ func (m *MockFinanceUsecaseItf) ListPockets(ctx context.Context) ([]domain.Pocke
 func (mr *MockFinanceUsecaseItfMockRecorder) ListPockets(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPockets", reflect.TypeOf((*MockFinanceUsecaseItf)(nil).ListPockets), ctx)
+}
+
+// ListRevisions mocks base method.
+func (m *MockFinanceUsecaseItf) ListRevisions(ctx context.Context, id int64) ([]domain.TransactionRevision, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListRevisions", ctx, id)
+	ret0, _ := ret[0].([]domain.TransactionRevision)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListRevisions indicates an expected call of ListRevisions.
+func (mr *MockFinanceUsecaseItfMockRecorder) ListRevisions(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListRevisions", reflect.TypeOf((*MockFinanceUsecaseItf)(nil).ListRevisions), ctx, id)
+}
+
+// ListTransactions mocks base method.
+func (m *MockFinanceUsecaseItf) ListTransactions(ctx context.Context, req domain.ListTransactionsRequest) ([]domain.Transaction, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListTransactions", ctx, req)
+	ret0, _ := ret[0].([]domain.Transaction)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListTransactions indicates an expected call of ListTransactions.
+func (mr *MockFinanceUsecaseItfMockRecorder) ListTransactions(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListTransactions", reflect.TypeOf((*MockFinanceUsecaseItf)(nil).ListTransactions), ctx, req)
+}
+
+// MoveFunds mocks base method.
+func (m *MockFinanceUsecaseItf) MoveFunds(ctx context.Context, req domain.MoveFundsRequest) ([]domain.Transaction, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MoveFunds", ctx, req)
+	ret0, _ := ret[0].([]domain.Transaction)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MoveFunds indicates an expected call of MoveFunds.
+func (mr *MockFinanceUsecaseItfMockRecorder) MoveFunds(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MoveFunds", reflect.TypeOf((*MockFinanceUsecaseItf)(nil).MoveFunds), ctx, req)
 }
 
 // RestoreAccount mocks base method.
@@ -250,6 +414,20 @@ func (mr *MockFinanceUsecaseItfMockRecorder) RestorePocket(ctx, id any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestorePocket", reflect.TypeOf((*MockFinanceUsecaseItf)(nil).RestorePocket), ctx, id)
 }
 
+// SaveReceipt mocks base method.
+func (m *MockFinanceUsecaseItf) SaveReceipt(ctx context.Context, id int64, data []byte) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SaveReceipt", ctx, id, data)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveReceipt indicates an expected call of SaveReceipt.
+func (mr *MockFinanceUsecaseItfMockRecorder) SaveReceipt(ctx, id, data any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveReceipt", reflect.TypeOf((*MockFinanceUsecaseItf)(nil).SaveReceipt), ctx, id, data)
+}
+
 // StartBookkeeping mocks base method.
 func (m *MockFinanceUsecaseItf) StartBookkeeping(ctx context.Context, req domain.StartBookkeepingRequest) (domain.Bookkeeping, error) {
 	m.ctrl.T.Helper()
@@ -263,6 +441,21 @@ func (m *MockFinanceUsecaseItf) StartBookkeeping(ctx context.Context, req domain
 func (mr *MockFinanceUsecaseItfMockRecorder) StartBookkeeping(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartBookkeeping", reflect.TypeOf((*MockFinanceUsecaseItf)(nil).StartBookkeeping), ctx, req)
+}
+
+// Summary mocks base method.
+func (m *MockFinanceUsecaseItf) Summary(ctx context.Context, month string) (domain.FinanceSummary, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Summary", ctx, month)
+	ret0, _ := ret[0].(domain.FinanceSummary)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Summary indicates an expected call of Summary.
+func (mr *MockFinanceUsecaseItfMockRecorder) Summary(ctx, month any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Summary", reflect.TypeOf((*MockFinanceUsecaseItf)(nil).Summary), ctx, month)
 }
 
 // UpdateAccount mocks base method.
@@ -308,4 +501,34 @@ func (m *MockFinanceUsecaseItf) UpdatePocket(ctx context.Context, req domain.Upd
 func (mr *MockFinanceUsecaseItfMockRecorder) UpdatePocket(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePocket", reflect.TypeOf((*MockFinanceUsecaseItf)(nil).UpdatePocket), ctx, req)
+}
+
+// UpdateTVSetting mocks base method.
+func (m *MockFinanceUsecaseItf) UpdateTVSetting(ctx context.Context, req domain.UpdateFinanceTVSettingRequest) (domain.FinanceTVSetting, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateTVSetting", ctx, req)
+	ret0, _ := ret[0].(domain.FinanceTVSetting)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateTVSetting indicates an expected call of UpdateTVSetting.
+func (mr *MockFinanceUsecaseItfMockRecorder) UpdateTVSetting(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTVSetting", reflect.TypeOf((*MockFinanceUsecaseItf)(nil).UpdateTVSetting), ctx, req)
+}
+
+// UpdateTransaction mocks base method.
+func (m *MockFinanceUsecaseItf) UpdateTransaction(ctx context.Context, req domain.SaveTransactionRequest) ([]domain.Transaction, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateTransaction", ctx, req)
+	ret0, _ := ret[0].([]domain.Transaction)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateTransaction indicates an expected call of UpdateTransaction.
+func (mr *MockFinanceUsecaseItfMockRecorder) UpdateTransaction(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTransaction", reflect.TypeOf((*MockFinanceUsecaseItf)(nil).UpdateTransaction), ctx, req)
 }

@@ -2494,6 +2494,520 @@ paths:
         "500":
           $ref: "#/components/responses/Internal"
 
+  /api/v1/finance/summary:
+    get:
+      tags: [Finance]
+      summary: One month of Keuangan
+      operationId: getFinanceSummary
+      description: "Any role. Per kas and account: opening, in, out (Pindah dana apart as `moved`), closing; the month totals without Pindah dana; today's in and out; and the syariah warnings that apply today. `month` defaults to the current one on the mosque's clock."
+      parameters:
+        - name: month
+          in: query
+          schema: {type: string}
+      responses:
+        "200":
+          description: The summary.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/FinanceSummary"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/finance/transactions:
+    get:
+      tags: [Finance]
+      summary: List a month's transactions
+      operationId: listTransactions
+      description: "Any role. Oldest first."
+      parameters:
+        - name: month
+          in: query
+          schema: {type: string}
+        - name: pocket_id
+          in: query
+          schema: {type: integer}
+        - name: include_deleted
+          in: query
+          schema: {type: boolean}
+      responses:
+        "200":
+          description: The transactions.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Transaction"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "500":
+          $ref: "#/components/responses/Internal"
+    post:
+      tags: [Finance]
+      summary: Record a pemasukan or pengeluaran
+      operationId: createTransaction
+      description: "`super_admin` and `bendahara`. Several lines (pemasukan only) are a split: one row per kas sharing a `group_id`. Amount 1..10.000.000.000; the category must fit the kas kind; the date may not be in a closed month or after today; no account or kas may go below Rp 0. Needs pembukuan started."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveTransactionInput"
+      responses:
+        "201":
+          description: The saved rows.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Transaction"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/FinanceNotFound"
+        "422":
+          $ref: "#/components/responses/BusinessRule"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/finance/transactions/{id}:
+    put:
+      tags: [Finance]
+      summary: Edit a transaction
+      operationId: updateTransaction
+      description: "`super_admin` and `bendahara`. Open months only, with `reason`; the old values are kept as a revision. A split is edited as a whole, its lines in saved order; the kind never changes. Pindah dana is edited through /transfers."
+      parameters:
+        - $ref: "#/components/parameters/FinanceID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveTransactionInput"
+      responses:
+        "200":
+          description: The saved rows.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Transaction"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/FinanceNotFound"
+        "422":
+          $ref: "#/components/responses/BusinessRule"
+        "500":
+          $ref: "#/components/responses/Internal"
+    delete:
+      tags: [Finance]
+      summary: Delete a transaction
+      operationId: deleteTransaction
+      description: "`super_admin` and `bendahara`. Soft delete with a reason, together with the rest of its group (a split or a Pindah dana pair). Open months only; refused when it would take a balance below Rp 0."
+      parameters:
+        - $ref: "#/components/parameters/FinanceID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReasonInput"
+      responses:
+        "200":
+          description: Done.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: transaksi dihapus
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/FinanceNotFound"
+        "422":
+          $ref: "#/components/responses/BusinessRule"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/finance/transactions/{id}/revisions:
+    get:
+      tags: [Finance]
+      summary: A transaction's history
+      operationId: listTransactionRevisions
+      description: "Any role. Each edit or delete with the row as it was and the reason, oldest first."
+      parameters:
+        - $ref: "#/components/parameters/FinanceID"
+      responses:
+        "200":
+          description: The revisions.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/TransactionRevision"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/FinanceNotFound"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/finance/transactions/{id}/receipt:
+    get:
+      tags: [Finance]
+      summary: Get the receipt photo
+      operationId: getReceipt
+      description: "Any role."
+      parameters:
+        - $ref: "#/components/parameters/FinanceID"
+      responses:
+        "200":
+          description: The photo.
+          content:
+            image/*:
+              schema: {type: string, format: binary}
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/FinanceNotFound"
+        "500":
+          $ref: "#/components/responses/Internal"
+    put:
+      tags: [Finance]
+      summary: Attach or replace the receipt photo
+      operationId: saveReceipt
+      description: "`super_admin` and `bendahara`. Resized in the browser to at most 1 MB."
+      parameters:
+        - $ref: "#/components/parameters/FinanceID"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: {type: string, format: binary, description: "PNG, JPG or WebP, at most 1 MB"}
+      responses:
+        "200":
+          description: Done.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: foto bukti disimpan
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/FinanceNotFound"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+        "422":
+          $ref: "#/components/responses/BusinessRule"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/finance/transfers:
+    post:
+      tags: [Finance]
+      summary: Pindah dana
+      operationId: moveFunds
+      description: "`super_admin` and `bendahara`. An out row on the source and an in row on the destination, sharing a `group_id`, in the system category Pindah dana and left out of the totals. Same kas with two accounts is setor/tarik tunai. Never into or out of zakat or fidyah; out of a terikat kas only with `note` and `donor_consent`."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MoveFundsInput"
+      responses:
+        "201":
+          description: The out and in rows.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Transaction"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/FinanceNotFound"
+        "422":
+          $ref: "#/components/responses/BusinessRule"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/finance/transfers/{group_id}:
+    put:
+      tags: [Finance]
+      summary: Edit a Pindah dana
+      operationId: updateMoveFunds
+      description: "`super_admin` and `bendahara`. Same rules, with `reason`."
+      parameters:
+        - name: group_id
+          in: path
+          required: true
+          schema: {type: string}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MoveFundsInput"
+      responses:
+        "200":
+          description: The out and in rows.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Transaction"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/FinanceNotFound"
+        "422":
+          $ref: "#/components/responses/BusinessRule"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/finance/pockets/{id}/finish:
+    post:
+      tags: [Finance]
+      summary: Selesaikan program
+      operationId: finishPocket
+      description: "`super_admin` and `bendahara`. Moves a terikat kas's remainder to Kas Umum as a Pindah dana dated today, then archives it. With rencana sisa dana `ask_donor`, `donor_consent` and `note` are required."
+      parameters:
+        - $ref: "#/components/parameters/FinanceID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FinishPocketInput"
+      responses:
+        "200":
+          description: The archived kas.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Pocket"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/FinanceNotFound"
+        "422":
+          $ref: "#/components/responses/BusinessRule"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/finance/closings:
+    get:
+      tags: [Finance]
+      summary: List the book closings
+      operationId: listClosings
+      description: "Any role. The opening and every closed month, oldest first, with their balances."
+      responses:
+        "200":
+          description: The closings.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/BookClosing"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "500":
+          $ref: "#/components/responses/Internal"
+    post:
+      tags: [Finance]
+      summary: Tutup buku
+      operationId: closeMonth
+      description: "`super_admin` and `bendahara`. Only the month after the last closing, once it has ended. Every account's counted balance must equal its computed one; a difference is recorded as a transaction first. Locks the month."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CloseMonthInput"
+      responses:
+        "201":
+          description: The closing.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/BookClosing"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/BusinessRule"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/finance/tv-setting:
+    get:
+      tags: [Finance]
+      summary: Get the TV kas period
+      operationId: getFinanceTvSetting
+      description: "Any role. `month` until saved."
+      responses:
+        "200":
+          description: The setting.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/FinanceTvSetting"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "500":
+          $ref: "#/components/responses/Internal"
+    put:
+      tags: [Finance]
+      summary: Set the TV kas period
+      operationId: updateFinanceTvSetting
+      description: "`super_admin` and `bendahara`."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FinanceTvSetting"
+      responses:
+        "200":
+          description: The setting.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/FinanceTvSetting"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/public/v1/finance/display:
+    get:
+      tags: [Public, Finance]
+      summary: The TV kas header
+      operationId: getFinanceDisplay
+      description: "No login. Each open kas marked `show_on_tv` over the period set: saldo awal, pemasukan, pengeluaran and saldo akhir. Pindah dana counts as that kas's own in and out here, so the four columns add up."
+      security: []
+      responses:
+        "200":
+          description: The kas header.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/FinanceDisplay"
+        "500":
+          $ref: "#/components/responses/Internal"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -3150,9 +3664,17 @@ components:
       allOf:
         - $ref: "#/components/schemas/Pocket"
         - type: object
-          required: [balance]
+          required: [balance, progress]
           properties:
             balance: {type: integer, format: int64}
+            progress:
+              description: Terikat kas with a target only; everything that came in, Pindah dana included.
+              oneOf:
+                - type: object
+                  properties:
+                    collected: {type: integer, format: int64}
+                    target_reached: {type: boolean}
+                - type: "null"
     TerikatPocketInput:
       type: object
       required: [name, purpose, surplus_plan]
@@ -3244,6 +3766,161 @@ components:
           oneOf:
             - $ref: "#/components/schemas/BookClosing"
             - type: "null"
+    Flow:
+      type: object
+      properties:
+        opening: {type: integer, format: int64}
+        in: {type: integer, format: int64}
+        out: {type: integer, format: int64}
+        moved: {type: integer, format: int64, description: Pindah dana in minus out.}
+        closing: {type: integer, format: int64}
+    FinanceSummary:
+      type: object
+      properties:
+        month: {type: string, example: 2026-11}
+        today: {type: string, example: 2026-11-11}
+        closed: {type: boolean}
+        total_in: {type: integer, format: int64}
+        total_out: {type: integer, format: int64}
+        today_in: {type: integer, format: int64}
+        today_out: {type: integer, format: int64}
+        balance: {type: integer, format: int64, description: Every kas together at the end of the month.}
+        pockets:
+          type: array
+          items:
+            allOf:
+              - $ref: "#/components/schemas/Flow"
+              - type: object
+                properties:
+                  pocket_id: {type: integer, format: int64}
+                  today_in: {type: integer, format: int64}
+                  today_out: {type: integer, format: int64}
+        accounts:
+          type: array
+          items:
+            allOf:
+              - $ref: "#/components/schemas/Flow"
+              - type: object
+                properties:
+                  account_id: {type: integer, format: int64}
+        warnings:
+          type: array
+          items:
+            type: object
+            properties:
+              kind: {type: string, enum: [amil_cap, fitrah_deadline]}
+              pocket_id: {type: integer, format: int64}
+              message: {type: string}
+    Transaction:
+      type: object
+      properties:
+        id: {type: integer, format: int64}
+        kind: {type: string, enum: [in, out]}
+        amount: {type: integer, format: int64}
+        date: {type: string, example: 2026-11-06}
+        account_id: {type: integer, format: int64}
+        pocket_id: {type: integer, format: int64}
+        category_id: {type: integer, format: int64}
+        group_id: {type: [string, "null"]}
+        donor_consent: {type: boolean}
+        corrects_id: {type: [integer, "null"], format: int64}
+        note: {type: string}
+        donor_note: {type: string}
+        has_photo: {type: boolean}
+        created_by: {type: integer, format: int64}
+        updated_by: {type: integer, format: int64}
+        created_at: {type: string, format: date-time}
+        updated_at: {type: string, format: date-time}
+        deleted_at: {type: [string, "null"], format: date-time}
+        deleted_by: {type: integer, format: int64}
+    SaveTransactionInput:
+      type: object
+      required: [kind, date, account_id, lines]
+      properties:
+        kind: {type: string, enum: [in, out]}
+        date: {type: string, example: 2026-11-06}
+        account_id: {type: integer, format: int64}
+        lines:
+          type: array
+          items:
+            type: object
+            required: [pocket_id, category_id, amount]
+            properties:
+              pocket_id: {type: integer, format: int64}
+              category_id: {type: integer, format: int64}
+              amount: {type: integer, format: int64, minimum: 1, maximum: 10000000000}
+        note: {type: string, maxLength: 200}
+        donor_note: {type: string, maxLength: 200}
+        corrects_id: {type: [integer, "null"], format: int64, description: A transaction in a closed month this one corrects.}
+        reason: {type: string, maxLength: 200, description: Required when editing.}
+    ReasonInput:
+      type: object
+      required: [reason]
+      properties:
+        reason: {type: string, maxLength: 200}
+    MoveFundsInput:
+      type: object
+      required: [from_pocket_id, from_account_id, to_pocket_id, to_account_id, amount, date]
+      properties:
+        from_pocket_id: {type: integer, format: int64}
+        from_account_id: {type: integer, format: int64}
+        to_pocket_id: {type: integer, format: int64}
+        to_account_id: {type: integer, format: int64}
+        amount: {type: integer, format: int64, minimum: 1, maximum: 10000000000}
+        date: {type: string}
+        note: {type: string, maxLength: 200, description: The reason; required out of a terikat kas.}
+        donor_consent: {type: boolean}
+        reason: {type: string, maxLength: 200, description: Required when editing.}
+    TransactionRevision:
+      type: object
+      properties:
+        id: {type: integer, format: int64}
+        transaction_id: {type: integer, format: int64}
+        action: {type: string, enum: [edit, delete]}
+        previous: {$ref: "#/components/schemas/Transaction"}
+        reason: {type: string}
+        user_id: {type: integer, format: int64}
+        created_at: {type: string, format: date-time}
+    FinishPocketInput:
+      type: object
+      properties:
+        account_id: {type: integer, format: int64, description: Where the remainder sits; the move does not change it.}
+        donor_consent: {type: boolean}
+        note: {type: string, maxLength: 200}
+    CloseMonthInput:
+      type: object
+      required: [month, accounts]
+      properties:
+        month: {type: string, example: 2026-10}
+        accounts:
+          type: array
+          items:
+            type: object
+            required: [account_id, counted]
+            properties:
+              account_id: {type: integer, format: int64}
+              counted: {type: integer, format: int64, minimum: 0}
+    FinanceTvSetting:
+      type: object
+      required: [period]
+      properties:
+        period: {type: string, enum: [today, week, month]}
+    FinanceDisplay:
+      type: object
+      properties:
+        period: {type: string, enum: [today, week, month]}
+        from: {type: string}
+        to: {type: string}
+        pockets:
+          type: array
+          items:
+            allOf:
+              - $ref: "#/components/schemas/Flow"
+              - type: object
+                properties:
+                  id: {type: integer, format: int64}
+                  name: {type: string}
+                  kind: {type: string, enum: [umum, zakat_mal, zakat_fitrah, fidyah, terikat]}
   responses:
     FinanceNotFound:
       description: No account, kas or category has the ID.

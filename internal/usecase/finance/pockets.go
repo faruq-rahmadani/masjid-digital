@@ -18,9 +18,18 @@ func (u *UseCase) ListPockets(ctx context.Context) ([]domain.PocketWithBalance, 
 		return nil, err
 	}
 
+	progress, err := u.progress(ctx, pockets)
+	if err != nil {
+		return nil, err
+	}
+
 	list := make([]domain.PocketWithBalance, 0, len(pockets))
 	for _, p := range pockets {
-		list = append(list, domain.PocketWithBalance{Pocket: p, Balance: b.pockets[p.ID]})
+		item := domain.PocketWithBalance{Pocket: p, Balance: b.pockets[p.ID]}
+		if pr, ok := progress[p.ID]; ok {
+			item.Progress = &pr
+		}
+		list = append(list, item)
 	}
 	return list, nil
 }

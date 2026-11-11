@@ -150,6 +150,55 @@ export const routes: RouteObject[] = [
               },
             ],
           },
+          {
+            path: ROUTES.finance,
+            element: <RequireAccess module="finance" />,
+            children: [
+              {
+                index: true,
+                lazy: async () => ({
+                  Component: (await import('@/pages/Admin/Finance/FinancePage')).FinancePage,
+                }),
+              },
+            ],
+          },
+          {
+            path: ROUTES.pockets,
+            element: <RequireAccess module="finance" />,
+            children: [
+              {
+                index: true,
+                lazy: async () => ({
+                  Component: (await import('@/pages/Admin/Pockets/PocketsPage')).PocketsPage,
+                }),
+              },
+            ],
+          },
+          {
+            path: ROUTES.accounts,
+            element: <RequireAccess module="finance" />,
+            children: [
+              {
+                index: true,
+                lazy: async () => ({
+                  Component: (await import('@/pages/Admin/Accounts/AccountsPage')).AccountsPage,
+                }),
+              },
+            ],
+          },
+          {
+            path: ROUTES.categories,
+            element: <RequireAccess module="categories" />,
+            children: [
+              {
+                index: true,
+                lazy: async () => ({
+                  Component: (await import('@/pages/Admin/Categories/CategoriesPage'))
+                    .CategoriesPage,
+                }),
+              },
+            ],
+          },
           // Menu items without a screen yet, each still guarded by its role permission.
           ...MENU.filter((item) => !item.ready).map((item) => ({
             path: item.path,

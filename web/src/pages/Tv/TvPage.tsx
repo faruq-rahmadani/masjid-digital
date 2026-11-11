@@ -33,7 +33,7 @@ export function TvPage() {
   const iqamah = usePublicIqamahSettings()
   const fridayDuties = useUpcomingFridayDuties()
 
-  const timeZone = profile.data?.timezone ?? 'Asia/Jakarta'
+  const timeZone = profile.data?.timezone || 'Asia/Jakarta'
   // Computed on the TV for the mosque's date, so it rolls over at the mosque's midnight
   const today = localDate(now, timeZone)
   const schedule = usePublicDaySchedule(today)

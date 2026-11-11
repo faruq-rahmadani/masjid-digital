@@ -1,7 +1,7 @@
 import { screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { ROUTES } from '@/route'
-import { renderRoute, superAdmin, takmir } from '@/test/render'
+import { renderRoute, takmir } from '@/test/render'
 
 describe('routes', () => {
   it('sends a visitor without a session to the login page', async () => {
@@ -23,11 +23,10 @@ describe('routes', () => {
     expect(await screen.findByText('Menu ini tidak tersedia untuk peran Anda')).toBeInTheDocument()
   })
 
-  it('shows "Segera hadir" for menu items not built yet', async () => {
-    renderRoute(ROUTES.finance, { as: superAdmin })
+  it('keeps Kategori from takmir, who only reads Keuangan', async () => {
+    renderRoute(ROUTES.categories, { as: takmir })
 
-    expect(await screen.findByRole('heading', { name: 'Keuangan' })).toBeInTheDocument()
-    expect(screen.getByText('Segera hadir')).toBeInTheDocument()
+    expect(await screen.findByText('Menu ini tidak tersedia untuk peran Anda')).toBeInTheDocument()
   })
 
   it('renders the not-found page with a way back', async () => {

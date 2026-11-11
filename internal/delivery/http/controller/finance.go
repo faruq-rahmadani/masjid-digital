@@ -4,6 +4,9 @@ package controller
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/faruq-rahmadani/masjid-digital/internal/delivery/http/middleware"
@@ -35,6 +38,23 @@ type FinanceUsecaseItf interface {
 
 	GetBookkeeping(ctx context.Context) (domain.Bookkeeping, error)
 	StartBookkeeping(ctx context.Context, req domain.StartBookkeepingRequest) (domain.Bookkeeping, error)
+
+	ListTransactions(ctx context.Context, req domain.ListTransactionsRequest) ([]domain.Transaction, error)
+	CreateTransaction(ctx context.Context, req domain.SaveTransactionRequest) ([]domain.Transaction, error)
+	UpdateTransaction(ctx context.Context, req domain.SaveTransactionRequest) ([]domain.Transaction, error)
+	DeleteTransaction(ctx context.Context, req domain.DeleteTransactionRequest) error
+	ListRevisions(ctx context.Context, id int64) ([]domain.TransactionRevision, error)
+	SaveReceipt(ctx context.Context, id int64, data []byte) error
+	GetReceipt(ctx context.Context, id int64) (domain.TransactionPhoto, error)
+	MoveFunds(ctx context.Context, req domain.MoveFundsRequest) ([]domain.Transaction, error)
+
+	Summary(ctx context.Context, month string) (domain.FinanceSummary, error)
+	FinishPocket(ctx context.Context, req domain.FinishPocketRequest) (domain.Pocket, error)
+	ListClosings(ctx context.Context) ([]domain.BookClosing, error)
+	CloseMonth(ctx context.Context, req domain.CloseMonthRequest) (domain.BookClosing, error)
+	GetTVSetting(ctx context.Context) (domain.FinanceTVSetting, error)
+	UpdateTVSetting(ctx context.Context, req domain.UpdateFinanceTVSettingRequest) (domain.FinanceTVSetting, error)
+	GetDisplay(ctx context.Context) (domain.FinanceDisplay, error)
 }
 
 func (ctrl *Controller) ListAccounts(c echo.Context) error {
@@ -200,4 +220,183 @@ func byID[T any](c echo.Context, action func(context.Context, int64) (T, error))
 
 func errBadRequest(err error) *apperror.AppError {
 	return apperror.New(apperror.CodeInvalidInput, err, "format request tidak valid")
+}
+
+func (ctrl *Controller) ListTransactions(c echo.Context) error {
+	var req domain.ListTransactionsRequest
+	if err := c.Bind(&req); err != nil {
+		return errBadRequest(err)
+	}
+	return respond(c, http.StatusOK)(ctrl.finance.ListTransactions(c.Request().Context(), req))
+}
+
+func (ctrl *Controller) CreateTransaction(c echo.Context) error {
+	session, err := middleware.Session(c)
+	if err != nil {
+		return err
+	}
+	var req domain.SaveTransactionRequest
+	if err := c.Bind(&req); err != nil {
+		return errBadRequest(err)
+	}
+	req.UserID = session.UserID
+	return respond(c, http.StatusCreated)(ctrl.finance.CreateTransaction(c.Request().Context(), req))
+}
+
+func (ctrl *Controller) UpdateTransaction(c echo.Context) error {
+	session, err := middleware.Session(c)
+	if err != nil {
+		return err
+	}
+	id, err := paramID(c)
+	if err != nil {
+		return err
+	}
+	var req domain.SaveTransactionRequest
+	if err := c.Bind(&req); err != nil {
+		return errBadRequest(err)
+	}
+	req.UserID, req.ID = session.UserID, id
+	return respond(c, http.StatusOK)(ctrl.finance.UpdateTransaction(c.Request().Context(), req))
+}
+
+func (ctrl *Controller) DeleteTransaction(c echo.Context) error {
+	session, err := middleware.Session(c)
+	if err != nil {
+		return err
+	}
+	id, err := paramID(c)
+	if err != nil {
+		return err
+	}
+	var req domain.DeleteTransactionRequest
+	if err := c.Bind(&req); err != nil {
+		return errBadRequest(err)
+	}
+	req.UserID, req.ID = session.UserID, id
+	if err := ctrl.finance.DeleteTransaction(c.Request().Context(), req); err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, messageResponse{Message: "transaksi dihapus"})
+}
+
+func (ctrl *Controller) ListRevisions(c echo.Context) error {
+	return byID(c, ctrl.finance.ListRevisions)
+}
+
+func (ctrl *Controller) SaveReceipt(c echo.Context) error {
+	id, err := paramID(c)
+	if err != nil {
+		return err
+	}
+	header, err := c.FormFile("file")
+	if err != nil {
+		if errors.Is(err, http.ErrMissingFile) || errors.Is(err, http.ErrNotMultipart) {
+			return apperror.New(apperror.CodeInvalidInput, err, "foto bukti wajib diunggah")
+		}
+		return errBadRequest(err)
+	}
+	file, err := header.Open()
+	if err != nil {
+		return apperror.New(apperror.CodeInternal, fmt.Errorf("error opening receipt: %w", err), "gagal membaca foto")
+	}
+	defer file.Close()
+	data, err := io.ReadAll(io.LimitReader(file, domain.MaxReceiptPhotoSize+1))
+	if err != nil {
+		return apperror.New(apperror.CodeInternal, fmt.Errorf("error reading receipt: %w", err), "gagal membaca foto")
+	}
+	if err := ctrl.finance.SaveReceipt(c.Request().Context(), id, data); err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, messageResponse{Message: "foto bukti disimpan"})
+}
+
+func (ctrl *Controller) GetReceipt(c echo.Context) error {
+	id, err := paramID(c)
+	if err != nil {
+		return err
+	}
+	photo, err := ctrl.finance.GetReceipt(c.Request().Context(), id)
+	if err != nil {
+		return err
+	}
+	c.Response().Header().Set(echo.HeaderCacheControl, "private, max-age=300")
+	return c.Blob(http.StatusOK, photo.ContentType, photo.Data)
+}
+
+func (ctrl *Controller) MoveFunds(c echo.Context) error {
+	session, err := middleware.Session(c)
+	if err != nil {
+		return err
+	}
+	var req domain.MoveFundsRequest
+	if err := c.Bind(&req); err != nil {
+		return errBadRequest(err)
+	}
+	req.UserID, req.GroupID = session.UserID, c.Param("group_id")
+	status := http.StatusCreated
+	if req.GroupID != "" {
+		status = http.StatusOK
+	}
+	return respond(c, status)(ctrl.finance.MoveFunds(c.Request().Context(), req))
+}
+
+func (ctrl *Controller) GetFinanceSummary(c echo.Context) error {
+	return respond(c, http.StatusOK)(ctrl.finance.Summary(c.Request().Context(), c.QueryParam("month")))
+}
+
+func (ctrl *Controller) FinishPocket(c echo.Context) error {
+	session, err := middleware.Session(c)
+	if err != nil {
+		return err
+	}
+	id, err := paramID(c)
+	if err != nil {
+		return err
+	}
+	var req domain.FinishPocketRequest
+	if err := c.Bind(&req); err != nil {
+		return errBadRequest(err)
+	}
+	req.UserID, req.ID = session.UserID, id
+	return respond(c, http.StatusOK)(ctrl.finance.FinishPocket(c.Request().Context(), req))
+}
+
+func (ctrl *Controller) ListClosings(c echo.Context) error {
+	return respond(c, http.StatusOK)(ctrl.finance.ListClosings(c.Request().Context()))
+}
+
+func (ctrl *Controller) CloseMonth(c echo.Context) error {
+	session, err := middleware.Session(c)
+	if err != nil {
+		return err
+	}
+	var req domain.CloseMonthRequest
+	if err := c.Bind(&req); err != nil {
+		return errBadRequest(err)
+	}
+	req.UserID = session.UserID
+	return respond(c, http.StatusCreated)(ctrl.finance.CloseMonth(c.Request().Context(), req))
+}
+
+func (ctrl *Controller) GetFinanceTVSetting(c echo.Context) error {
+	return respond(c, http.StatusOK)(ctrl.finance.GetTVSetting(c.Request().Context()))
+}
+
+func (ctrl *Controller) UpdateFinanceTVSetting(c echo.Context) error {
+	session, err := middleware.Session(c)
+	if err != nil {
+		return err
+	}
+	var req domain.UpdateFinanceTVSettingRequest
+	if err := c.Bind(&req); err != nil {
+		return errBadRequest(err)
+	}
+	req.UpdatedBy = session.UserID
+	return respond(c, http.StatusOK)(ctrl.finance.UpdateTVSetting(c.Request().Context(), req))
+}
+
+// GetFinanceDisplay is the TV's kas header
+func (ctrl *Controller) GetFinanceDisplay(c echo.Context) error {
+	return respond(c, http.StatusOK)(ctrl.finance.GetDisplay(c.Request().Context()))
 }
