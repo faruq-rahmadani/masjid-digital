@@ -1150,3 +1150,562 @@ func (mr *MockActivityLogPublisherItfMockRecorder) Publish(ctx, activityLog any)
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Publish", reflect.TypeOf((*MockActivityLogPublisherItf)(nil).Publish), ctx, activityLog)
 }
+
+// MockTransactorItf is a mock of TransactorItf interface.
+type MockTransactorItf struct {
+	ctrl     *gomock.Controller
+	recorder *MockTransactorItfMockRecorder
+	isgomock struct{}
+}
+
+// MockTransactorItfMockRecorder is the mock recorder for MockTransactorItf.
+type MockTransactorItfMockRecorder struct {
+	mock *MockTransactorItf
+}
+
+// NewMockTransactorItf creates a new mock instance.
+func NewMockTransactorItf(ctrl *gomock.Controller) *MockTransactorItf {
+	mock := &MockTransactorItf{ctrl: ctrl}
+	mock.recorder = &MockTransactorItfMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockTransactorItf) EXPECT() *MockTransactorItfMockRecorder {
+	return m.recorder
+}
+
+// WithTx mocks base method.
+func (m *MockTransactorItf) WithTx(ctx context.Context, fn func(context.Context) error) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WithTx", ctx, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// WithTx indicates an expected call of WithTx.
+func (mr *MockTransactorItfMockRecorder) WithTx(ctx, fn any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WithTx", reflect.TypeOf((*MockTransactorItf)(nil).WithTx), ctx, fn)
+}
+
+// MockAccountRepositoryItf is a mock of AccountRepositoryItf interface.
+type MockAccountRepositoryItf struct {
+	ctrl     *gomock.Controller
+	recorder *MockAccountRepositoryItfMockRecorder
+	isgomock struct{}
+}
+
+// MockAccountRepositoryItfMockRecorder is the mock recorder for MockAccountRepositoryItf.
+type MockAccountRepositoryItfMockRecorder struct {
+	mock *MockAccountRepositoryItf
+}
+
+// NewMockAccountRepositoryItf creates a new mock instance.
+func NewMockAccountRepositoryItf(ctrl *gomock.Controller) *MockAccountRepositoryItf {
+	mock := &MockAccountRepositoryItf{ctrl: ctrl}
+	mock.recorder = &MockAccountRepositoryItfMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockAccountRepositoryItf) EXPECT() *MockAccountRepositoryItfMockRecorder {
+	return m.recorder
+}
+
+// Create mocks base method.
+func (m *MockAccountRepositoryItf) Create(ctx context.Context, account domain.Account) (domain.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, account)
+	ret0, _ := ret[0].(domain.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockAccountRepositoryItfMockRecorder) Create(ctx, account any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockAccountRepositoryItf)(nil).Create), ctx, account)
+}
+
+// FindAll mocks base method.
+func (m *MockAccountRepositoryItf) FindAll(ctx context.Context) ([]domain.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindAll", ctx)
+	ret0, _ := ret[0].([]domain.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindAll indicates an expected call of FindAll.
+func (mr *MockAccountRepositoryItfMockRecorder) FindAll(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAll", reflect.TypeOf((*MockAccountRepositoryItf)(nil).FindAll), ctx)
+}
+
+// FindByID mocks base method.
+func (m *MockAccountRepositoryItf) FindByID(ctx context.Context, id int64) (domain.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindByID", ctx, id)
+	ret0, _ := ret[0].(domain.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindByID indicates an expected call of FindByID.
+func (mr *MockAccountRepositoryItfMockRecorder) FindByID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByID", reflect.TypeOf((*MockAccountRepositoryItf)(nil).FindByID), ctx, id)
+}
+
+// Update mocks base method.
+func (m *MockAccountRepositoryItf) Update(ctx context.Context, account domain.Account) (domain.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, account)
+	ret0, _ := ret[0].(domain.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockAccountRepositoryItfMockRecorder) Update(ctx, account any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockAccountRepositoryItf)(nil).Update), ctx, account)
+}
+
+// MockPocketRepositoryItf is a mock of PocketRepositoryItf interface.
+type MockPocketRepositoryItf struct {
+	ctrl     *gomock.Controller
+	recorder *MockPocketRepositoryItfMockRecorder
+	isgomock struct{}
+}
+
+// MockPocketRepositoryItfMockRecorder is the mock recorder for MockPocketRepositoryItf.
+type MockPocketRepositoryItfMockRecorder struct {
+	mock *MockPocketRepositoryItf
+}
+
+// NewMockPocketRepositoryItf creates a new mock instance.
+func NewMockPocketRepositoryItf(ctrl *gomock.Controller) *MockPocketRepositoryItf {
+	mock := &MockPocketRepositoryItf{ctrl: ctrl}
+	mock.recorder = &MockPocketRepositoryItfMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockPocketRepositoryItf) EXPECT() *MockPocketRepositoryItfMockRecorder {
+	return m.recorder
+}
+
+// Create mocks base method.
+func (m *MockPocketRepositoryItf) Create(ctx context.Context, pocket domain.Pocket) (domain.Pocket, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, pocket)
+	ret0, _ := ret[0].(domain.Pocket)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockPocketRepositoryItfMockRecorder) Create(ctx, pocket any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockPocketRepositoryItf)(nil).Create), ctx, pocket)
+}
+
+// FindAll mocks base method.
+func (m *MockPocketRepositoryItf) FindAll(ctx context.Context) ([]domain.Pocket, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindAll", ctx)
+	ret0, _ := ret[0].([]domain.Pocket)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindAll indicates an expected call of FindAll.
+func (mr *MockPocketRepositoryItfMockRecorder) FindAll(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAll", reflect.TypeOf((*MockPocketRepositoryItf)(nil).FindAll), ctx)
+}
+
+// FindByID mocks base method.
+func (m *MockPocketRepositoryItf) FindByID(ctx context.Context, id int64) (domain.Pocket, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindByID", ctx, id)
+	ret0, _ := ret[0].(domain.Pocket)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindByID indicates an expected call of FindByID.
+func (mr *MockPocketRepositoryItfMockRecorder) FindByID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByID", reflect.TypeOf((*MockPocketRepositoryItf)(nil).FindByID), ctx, id)
+}
+
+// Update mocks base method.
+func (m *MockPocketRepositoryItf) Update(ctx context.Context, pocket domain.Pocket) (domain.Pocket, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, pocket)
+	ret0, _ := ret[0].(domain.Pocket)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockPocketRepositoryItfMockRecorder) Update(ctx, pocket any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockPocketRepositoryItf)(nil).Update), ctx, pocket)
+}
+
+// MockCategoryRepositoryItf is a mock of CategoryRepositoryItf interface.
+type MockCategoryRepositoryItf struct {
+	ctrl     *gomock.Controller
+	recorder *MockCategoryRepositoryItfMockRecorder
+	isgomock struct{}
+}
+
+// MockCategoryRepositoryItfMockRecorder is the mock recorder for MockCategoryRepositoryItf.
+type MockCategoryRepositoryItfMockRecorder struct {
+	mock *MockCategoryRepositoryItf
+}
+
+// NewMockCategoryRepositoryItf creates a new mock instance.
+func NewMockCategoryRepositoryItf(ctrl *gomock.Controller) *MockCategoryRepositoryItf {
+	mock := &MockCategoryRepositoryItf{ctrl: ctrl}
+	mock.recorder = &MockCategoryRepositoryItfMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockCategoryRepositoryItf) EXPECT() *MockCategoryRepositoryItfMockRecorder {
+	return m.recorder
+}
+
+// Create mocks base method.
+func (m *MockCategoryRepositoryItf) Create(ctx context.Context, category domain.Category) (domain.Category, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, category)
+	ret0, _ := ret[0].(domain.Category)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockCategoryRepositoryItfMockRecorder) Create(ctx, category any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockCategoryRepositoryItf)(nil).Create), ctx, category)
+}
+
+// Delete mocks base method.
+func (m *MockCategoryRepositoryItf) Delete(ctx context.Context, id int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockCategoryRepositoryItfMockRecorder) Delete(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockCategoryRepositoryItf)(nil).Delete), ctx, id)
+}
+
+// FindAll mocks base method.
+func (m *MockCategoryRepositoryItf) FindAll(ctx context.Context) ([]domain.Category, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindAll", ctx)
+	ret0, _ := ret[0].([]domain.Category)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindAll indicates an expected call of FindAll.
+func (mr *MockCategoryRepositoryItfMockRecorder) FindAll(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAll", reflect.TypeOf((*MockCategoryRepositoryItf)(nil).FindAll), ctx)
+}
+
+// FindByCode mocks base method.
+func (m *MockCategoryRepositoryItf) FindByCode(ctx context.Context, code string) (domain.Category, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindByCode", ctx, code)
+	ret0, _ := ret[0].(domain.Category)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindByCode indicates an expected call of FindByCode.
+func (mr *MockCategoryRepositoryItfMockRecorder) FindByCode(ctx, code any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByCode", reflect.TypeOf((*MockCategoryRepositoryItf)(nil).FindByCode), ctx, code)
+}
+
+// FindByID mocks base method.
+func (m *MockCategoryRepositoryItf) FindByID(ctx context.Context, id int64) (domain.Category, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindByID", ctx, id)
+	ret0, _ := ret[0].(domain.Category)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindByID indicates an expected call of FindByID.
+func (mr *MockCategoryRepositoryItfMockRecorder) FindByID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByID", reflect.TypeOf((*MockCategoryRepositoryItf)(nil).FindByID), ctx, id)
+}
+
+// Update mocks base method.
+func (m *MockCategoryRepositoryItf) Update(ctx context.Context, category domain.Category) (domain.Category, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, category)
+	ret0, _ := ret[0].(domain.Category)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockCategoryRepositoryItfMockRecorder) Update(ctx, category any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockCategoryRepositoryItf)(nil).Update), ctx, category)
+}
+
+// MockTransactionRepositoryItf is a mock of TransactionRepositoryItf interface.
+type MockTransactionRepositoryItf struct {
+	ctrl     *gomock.Controller
+	recorder *MockTransactionRepositoryItfMockRecorder
+	isgomock struct{}
+}
+
+// MockTransactionRepositoryItfMockRecorder is the mock recorder for MockTransactionRepositoryItf.
+type MockTransactionRepositoryItfMockRecorder struct {
+	mock *MockTransactionRepositoryItf
+}
+
+// NewMockTransactionRepositoryItf creates a new mock instance.
+func NewMockTransactionRepositoryItf(ctrl *gomock.Controller) *MockTransactionRepositoryItf {
+	mock := &MockTransactionRepositoryItf{ctrl: ctrl}
+	mock.recorder = &MockTransactionRepositoryItfMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockTransactionRepositoryItf) EXPECT() *MockTransactionRepositoryItfMockRecorder {
+	return m.recorder
+}
+
+// AddRevision mocks base method.
+func (m *MockTransactionRepositoryItf) AddRevision(ctx context.Context, revision domain.TransactionRevision) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddRevision", ctx, revision)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddRevision indicates an expected call of AddRevision.
+func (mr *MockTransactionRepositoryItfMockRecorder) AddRevision(ctx, revision any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddRevision", reflect.TypeOf((*MockTransactionRepositoryItf)(nil).AddRevision), ctx, revision)
+}
+
+// Create mocks base method.
+func (m *MockTransactionRepositoryItf) Create(ctx context.Context, tx domain.Transaction) (domain.Transaction, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, tx)
+	ret0, _ := ret[0].(domain.Transaction)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockTransactionRepositoryItfMockRecorder) Create(ctx, tx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockTransactionRepositoryItf)(nil).Create), ctx, tx)
+}
+
+// Find mocks base method.
+func (m *MockTransactionRepositoryItf) Find(ctx context.Context, filter domain.TransactionFilter) ([]domain.Transaction, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Find", ctx, filter)
+	ret0, _ := ret[0].([]domain.Transaction)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Find indicates an expected call of Find.
+func (mr *MockTransactionRepositoryItfMockRecorder) Find(ctx, filter any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockTransactionRepositoryItf)(nil).Find), ctx, filter)
+}
+
+// FindByID mocks base method.
+func (m *MockTransactionRepositoryItf) FindByID(ctx context.Context, id int64) (domain.Transaction, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindByID", ctx, id)
+	ret0, _ := ret[0].(domain.Transaction)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindByID indicates an expected call of FindByID.
+func (mr *MockTransactionRepositoryItfMockRecorder) FindByID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByID", reflect.TypeOf((*MockTransactionRepositoryItf)(nil).FindByID), ctx, id)
+}
+
+// FindRevisions mocks base method.
+func (m *MockTransactionRepositoryItf) FindRevisions(ctx context.Context, transactionID int64) ([]domain.TransactionRevision, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindRevisions", ctx, transactionID)
+	ret0, _ := ret[0].([]domain.TransactionRevision)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindRevisions indicates an expected call of FindRevisions.
+func (mr *MockTransactionRepositoryItfMockRecorder) FindRevisions(ctx, transactionID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindRevisions", reflect.TypeOf((*MockTransactionRepositoryItf)(nil).FindRevisions), ctx, transactionID)
+}
+
+// GetPhoto mocks base method.
+func (m *MockTransactionRepositoryItf) GetPhoto(ctx context.Context, transactionID int64) (domain.TransactionPhoto, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPhoto", ctx, transactionID)
+	ret0, _ := ret[0].(domain.TransactionPhoto)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPhoto indicates an expected call of GetPhoto.
+func (mr *MockTransactionRepositoryItfMockRecorder) GetPhoto(ctx, transactionID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPhoto", reflect.TypeOf((*MockTransactionRepositoryItf)(nil).GetPhoto), ctx, transactionID)
+}
+
+// SavePhoto mocks base method.
+func (m *MockTransactionRepositoryItf) SavePhoto(ctx context.Context, transactionID int64, photo domain.TransactionPhoto) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SavePhoto", ctx, transactionID, photo)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SavePhoto indicates an expected call of SavePhoto.
+func (mr *MockTransactionRepositoryItfMockRecorder) SavePhoto(ctx, transactionID, photo any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SavePhoto", reflect.TypeOf((*MockTransactionRepositoryItf)(nil).SavePhoto), ctx, transactionID, photo)
+}
+
+// SoftDelete mocks base method.
+func (m *MockTransactionRepositoryItf) SoftDelete(ctx context.Context, id, deletedBy int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SoftDelete", ctx, id, deletedBy)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SoftDelete indicates an expected call of SoftDelete.
+func (mr *MockTransactionRepositoryItfMockRecorder) SoftDelete(ctx, id, deletedBy any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SoftDelete", reflect.TypeOf((*MockTransactionRepositoryItf)(nil).SoftDelete), ctx, id, deletedBy)
+}
+
+// Update mocks base method.
+func (m *MockTransactionRepositoryItf) Update(ctx context.Context, tx domain.Transaction) (domain.Transaction, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, tx)
+	ret0, _ := ret[0].(domain.Transaction)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockTransactionRepositoryItfMockRecorder) Update(ctx, tx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockTransactionRepositoryItf)(nil).Update), ctx, tx)
+}
+
+// UsesCategory mocks base method.
+func (m *MockTransactionRepositoryItf) UsesCategory(ctx context.Context, categoryID int64) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UsesCategory", ctx, categoryID)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UsesCategory indicates an expected call of UsesCategory.
+func (mr *MockTransactionRepositoryItfMockRecorder) UsesCategory(ctx, categoryID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UsesCategory", reflect.TypeOf((*MockTransactionRepositoryItf)(nil).UsesCategory), ctx, categoryID)
+}
+
+// MockBookClosingRepositoryItf is a mock of BookClosingRepositoryItf interface.
+type MockBookClosingRepositoryItf struct {
+	ctrl     *gomock.Controller
+	recorder *MockBookClosingRepositoryItfMockRecorder
+	isgomock struct{}
+}
+
+// MockBookClosingRepositoryItfMockRecorder is the mock recorder for MockBookClosingRepositoryItf.
+type MockBookClosingRepositoryItfMockRecorder struct {
+	mock *MockBookClosingRepositoryItf
+}
+
+// NewMockBookClosingRepositoryItf creates a new mock instance.
+func NewMockBookClosingRepositoryItf(ctrl *gomock.Controller) *MockBookClosingRepositoryItf {
+	mock := &MockBookClosingRepositoryItf{ctrl: ctrl}
+	mock.recorder = &MockBookClosingRepositoryItfMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockBookClosingRepositoryItf) EXPECT() *MockBookClosingRepositoryItfMockRecorder {
+	return m.recorder
+}
+
+// Create mocks base method.
+func (m *MockBookClosingRepositoryItf) Create(ctx context.Context, closing domain.BookClosing) (domain.BookClosing, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, closing)
+	ret0, _ := ret[0].(domain.BookClosing)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockBookClosingRepositoryItfMockRecorder) Create(ctx, closing any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockBookClosingRepositoryItf)(nil).Create), ctx, closing)
+}
+
+// FindAll mocks base method.
+func (m *MockBookClosingRepositoryItf) FindAll(ctx context.Context) ([]domain.BookClosing, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindAll", ctx)
+	ret0, _ := ret[0].([]domain.BookClosing)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindAll indicates an expected call of FindAll.
+func (mr *MockBookClosingRepositoryItfMockRecorder) FindAll(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAll", reflect.TypeOf((*MockBookClosingRepositoryItf)(nil).FindAll), ctx)
+}
+
+// FindLatest mocks base method.
+func (m *MockBookClosingRepositoryItf) FindLatest(ctx context.Context) (domain.BookClosing, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindLatest", ctx)
+	ret0, _ := ret[0].(domain.BookClosing)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindLatest indicates an expected call of FindLatest.
+func (mr *MockBookClosingRepositoryItfMockRecorder) FindLatest(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindLatest", reflect.TypeOf((*MockBookClosingRepositoryItf)(nil).FindLatest), ctx)
+}

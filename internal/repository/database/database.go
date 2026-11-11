@@ -19,3 +19,19 @@ func NewDatabaseClient(cfg config.Schema) *DatabaseClient {
 
 	return &DatabaseClient{Querier: db}
 }
+
+// NullableID stores the ID 0 (nobody, nothing) as NULL
+func NullableID(id int64) *int64 {
+	if id == 0 {
+		return nil
+	}
+	return &id
+}
+
+// IDOrZero reads a nullable ID column, NULL as 0
+func IDOrZero(id *int64) int64 {
+	if id == nil {
+		return 0
+	}
+	return *id
+}
