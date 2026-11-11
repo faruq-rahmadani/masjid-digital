@@ -118,6 +118,28 @@ func registerRouters(e *echo.Echo, ctrl *controller.Controller, auth *middleware
 	v1WithAuth.POST("/screens/:id/block", ctrl.BlockScreen, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
 	v1WithAuth.DELETE("/screens/:id/block", ctrl.UnblockScreen, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
 	v1WithAuth.POST("/screens/:id/commands", ctrl.SendScreenCommand, middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleTakmir))
+
+	// keuangan (E7): read by anyone logged in, changed by super admins and bendahara
+	financeEditor := middleware.RequireRole(domain.UserRoleSuperAdmin, domain.UserRoleBendahara)
+	finance := v1WithAuth.Group("/finance")
+	finance.GET("/accounts", ctrl.ListAccounts)
+	finance.POST("/accounts", ctrl.CreateAccount, financeEditor)
+	finance.PUT("/accounts/:id", ctrl.UpdateAccount, financeEditor)
+	finance.POST("/accounts/:id/archive", ctrl.ArchiveAccount, financeEditor)
+	finance.DELETE("/accounts/:id/archive", ctrl.RestoreAccount, financeEditor)
+	finance.GET("/pockets", ctrl.ListPockets)
+	finance.POST("/pockets", ctrl.CreatePocket, financeEditor)
+	finance.PUT("/pockets/:id", ctrl.UpdatePocket, financeEditor)
+	finance.POST("/pockets/:id/archive", ctrl.ArchivePocket, financeEditor)
+	finance.DELETE("/pockets/:id/archive", ctrl.RestorePocket, financeEditor)
+	finance.GET("/categories", ctrl.ListCategories)
+	finance.POST("/categories", ctrl.CreateCategory, financeEditor)
+	finance.PUT("/categories/:id", ctrl.UpdateCategory, financeEditor)
+	finance.DELETE("/categories/:id", ctrl.DeleteCategory, financeEditor)
+	finance.POST("/categories/:id/archive", ctrl.ArchiveCategory, financeEditor)
+	finance.DELETE("/categories/:id/archive", ctrl.RestoreCategory, financeEditor)
+	finance.GET("/bookkeeping", ctrl.GetBookkeeping)
+	finance.POST("/bookkeeping", ctrl.StartBookkeeping, financeEditor)
 }
 
 func healthcheckHandler(c echo.Context) error {

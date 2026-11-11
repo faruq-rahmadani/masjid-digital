@@ -17,7 +17,7 @@ func TestListActivityLogsPassesLimit(t *testing.T) {
 	logs.EXPECT().ListRecent(gomock.Any(), domain.ListActivityLogsRequest{Limit: "4"}).
 		Return([]domain.ActivityLog{{ID: 1, ActorID: 7, ActorName: "Hasan Basri", Action: domain.ActivityIqamahSettingsUpdated, Summary: "mengubah pengaturan iqamah", CreatedAt: at}}, nil)
 
-	ctrl := NewController(nil, nil, nil, nil, nil, nil, nil, nil, nil, logs)
+	ctrl := NewController(nil, nil, nil, nil, nil, nil, nil, nil, nil, logs, nil)
 	rec, err := serve(authenticated(t, ctrl.ListActivityLogs), http.MethodGet, "/api/v1/activity-logs?limit=4", "", "Bearer valid-token")
 	if err != nil {
 		t.Fatalf("handler: %v", err)

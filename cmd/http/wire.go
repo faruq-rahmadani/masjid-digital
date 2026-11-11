@@ -11,20 +11,26 @@ import (
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/cache/screenpresence"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/cache/sessions"
 	repodb "github.com/faruq-rahmadani/masjid-digital/internal/repository/database"
+	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/accounts"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/activitylogs"
+	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/bookclosings"
+	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/categories"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/fridayduties"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/iqamahsettings"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/mosqueprofiles"
+	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/pockets"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/prayertimes"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/runningtexts"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/screens"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/slides"
+	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/transactions"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/users"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/realtime/activitylogbus"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/realtime/screenhub"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/activitylog"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/authentication"
+	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/finance"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/fridayduty"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/iqamah"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/mosqueprofile"
@@ -53,6 +59,7 @@ type repositories struct {
 	screenPresence usecase.ScreenPresenceRepositoryItf
 	screenHub      usecase.ScreenHubItf
 	activityLogs   usecase.ActivityLogRepositoryItf
+	finance        finance.Repositories
 }
 
 type usecases struct {
@@ -66,6 +73,7 @@ type usecases struct {
 	slide         controller.SlideUsecaseItf
 	screen        controller.ScreenUsecaseItf
 	activityLog   *activitylog.UseCase // used by both the controller and the activity log bus
+	finance       controller.FinanceUsecaseItf
 }
 
 // handlers is what the HTTP server serves
@@ -112,7 +120,7 @@ func newHandlers(ctx context.Context, cfg *config.Schema) (h handlers, cleanup f
 	}
 
 	return handlers{
-		controller: controller.NewController(ucs.user, ucs.auth, ucs.mosqueProfile, ucs.prayerTime, ucs.runningText, ucs.iqamah, ucs.fridayDuty, ucs.slide, ucs.screen, ucs.activityLog),
+		controller: controller.NewController(ucs.user, ucs.auth, ucs.mosqueProfile, ucs.prayerTime, ucs.runningText, ucs.iqamah, ucs.fridayDuty, ucs.slide, ucs.screen, ucs.activityLog, ucs.finance),
 		auth:       middleware.NewAuth(ucs.auth),
 	}, cleanup, nil
 }
@@ -133,6 +141,15 @@ func newRepositories(db *database.DB, c cache.Cache) repositories {
 		screenPresence: screenpresence.New(c),
 		screenHub:      screenhub.New(),
 		activityLogs:   activitylogs.New(dbClient),
+		finance: finance.Repositories{
+			Transactor:     db,
+			Accounts:       accounts.New(dbClient),
+			Pockets:        pockets.New(dbClient),
+			Categories:     categories.New(dbClient),
+			Transactions:   transactions.New(dbClient),
+			BookClosings:   bookclosings.New(dbClient),
+			MosqueProfiles: mosqueprofiles.NewMosqueProfileDBRepository(dbClient),
+		},
 	}
 }
 
@@ -155,6 +172,7 @@ func newUsecases(cfg *config.Schema, repos repositories, activityLogBus usecase.
 		slide:         slide.New(repos.slides, activityLogBus),
 		screen:        screen.New(repos.screens, repos.screenPresence, repos.screenHub, repos.mosqueProfiles, activityLogBus),
 		activityLog:   activityLog,
+		finance:       finance.New(repos.finance, activityLogBus),
 	}, nil
 }
 

@@ -87,9 +87,15 @@ tags:
     description: |
       Who changed what, newest first, for "Aktivitas terakhir" on Home. A row is written in the
       background after each successful change (users, mosque profile, prayer times, iqamah,
-      petugas Jumat, running text, slides, screens), so it may show up a moment after the change
+      petugas Jumat, running text, slides, screens, keuangan), so it may show up a moment after the change
       and is lost if the server stops before writing it. Logging in and changing one's own
       password are not logged.
+  - name: Finance
+    description: |
+      Keuangan (E7). An account (akun) is where money sits: Tunai or a bank. A kas (`pockets`) is
+      whose money it is: Kas Umum, Zakat Mal, Zakat Fitrah and Fidyah are built in; pengurus add
+      terikat kas. Balances are computed from the last book closing plus the transactions after
+      it, never stored. Read by any role; changed by `super_admin` and `bendahara`.
   - name: Public
     description: Read only, no login, for screens anyone can see (the TV display).
 
@@ -1940,6 +1946,554 @@ paths:
         "404":
           $ref: "#/components/responses/ScreenNotFound"
 
+  /api/v1/finance/accounts:
+    get:
+      tags: [Finance]
+      summary: List accounts with balances
+      operationId: listAccounts
+      description: "Any role. Tunai first, archived ones too. `balance` is computed from the last book closing plus the transactions after it."
+      responses:
+        "200":
+          description: The accounts.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/AccountWithBalance"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "500":
+          $ref: "#/components/responses/Internal"
+    post:
+      tags: [Finance]
+      summary: Add an account
+      operationId: createAccount
+      description: "`super_admin` and `bendahara`. A cash account has no number."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccountInput"
+      responses:
+        "201":
+          description: The created account.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Account"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/FinanceAlreadyExists"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/finance/accounts/{id}:
+    put:
+      tags: [Finance]
+      summary: Rename an account or change its number
+      operationId: updateAccount
+      description: "`super_admin` and `bendahara`. The kind never changes."
+      parameters:
+        - $ref: "#/components/parameters/FinanceID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccountUpdate"
+      responses:
+        "200":
+          description: The saved account.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Account"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/FinanceNotFound"
+        "409":
+          $ref: "#/components/responses/FinanceAlreadyExists"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/finance/accounts/{id}/archive:
+    post:
+      tags: [Finance]
+      summary: Archive an account
+      operationId: archiveAccount
+      description: "`super_admin` and `bendahara`. Only at Rp 0; the last cash account stays. Archiving an archived account changes nothing."
+      parameters:
+        - $ref: "#/components/parameters/FinanceID"
+      responses:
+        "200":
+          description: The archived account.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Account"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/FinanceNotFound"
+        "422":
+          $ref: "#/components/responses/BusinessRule"
+        "500":
+          $ref: "#/components/responses/Internal"
+    delete:
+      tags: [Finance]
+      summary: Restore an archived account
+      operationId: restoreAccount
+      description: "`super_admin` and `bendahara`."
+      parameters:
+        - $ref: "#/components/parameters/FinanceID"
+      responses:
+        "200":
+          description: The restored account.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Account"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/FinanceNotFound"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/finance/pockets:
+    get:
+      tags: [Finance]
+      summary: List kas with balances
+      operationId: listPockets
+      description: "Any role. The four built-in kas first, archived ones too."
+      responses:
+        "200":
+          description: The kas.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/PocketWithBalance"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "500":
+          $ref: "#/components/responses/Internal"
+    post:
+      tags: [Finance]
+      summary: Add a terikat kas
+      operationId: createPocket
+      description: "`super_admin` and `bendahara`. Users only add terikat kas; the built-in ones are seeded."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TerikatPocketInput"
+      responses:
+        "201":
+          description: The created kas.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Pocket"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/FinanceAlreadyExists"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/finance/pockets/{id}:
+    put:
+      tags: [Finance]
+      summary: Edit a kas
+      operationId: updatePocket
+      description: "`super_admin` and `bendahara`. A built-in kas only changes `show_on_tv`; its other fields are ignored. An archived kas is not edited."
+      parameters:
+        - $ref: "#/components/parameters/FinanceID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TerikatPocketInput"
+      responses:
+        "200":
+          description: The saved kas.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Pocket"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/FinanceNotFound"
+        "409":
+          $ref: "#/components/responses/FinanceAlreadyExists"
+        "422":
+          $ref: "#/components/responses/BusinessRule"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/finance/pockets/{id}/archive:
+    post:
+      tags: [Finance]
+      summary: Archive a terikat kas
+      operationId: archivePocket
+      description: "`super_admin` and `bendahara`. Terikat only, at Rp 0."
+      parameters:
+        - $ref: "#/components/parameters/FinanceID"
+      responses:
+        "200":
+          description: The archived kas.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Pocket"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/FinanceNotFound"
+        "422":
+          $ref: "#/components/responses/BusinessRule"
+        "500":
+          $ref: "#/components/responses/Internal"
+    delete:
+      tags: [Finance]
+      summary: Restore an archived kas
+      operationId: restorePocket
+      description: "`super_admin` and `bendahara`."
+      parameters:
+        - $ref: "#/components/parameters/FinanceID"
+      responses:
+        "200":
+          description: The restored kas.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Pocket"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/FinanceNotFound"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/finance/categories:
+    get:
+      tags: [Finance]
+      summary: List categories with transaction counts
+      operationId: listCategories
+      description: "Any role. System categories (with a `code`) and own ones, archived ones too."
+      responses:
+        "200":
+          description: The categories.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/CategoryWithCount"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "500":
+          $ref: "#/components/responses/Internal"
+    post:
+      tags: [Finance]
+      summary: Add an own category
+      operationId: createCategory
+      description: "`super_admin` and `bendahara`. Own categories are for Kas Umum and terikat kas (scope `umum_terikat`)."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryInput"
+      responses:
+        "201":
+          description: The created category.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Category"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/FinanceAlreadyExists"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/finance/categories/{id}:
+    put:
+      tags: [Finance]
+      summary: Rename an own category
+      operationId: updateCategory
+      description: "`super_admin` and `bendahara`. System categories keep their name; the type never changes."
+      parameters:
+        - $ref: "#/components/parameters/FinanceID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryRename"
+      responses:
+        "200":
+          description: The saved category.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Category"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/FinanceNotFound"
+        "409":
+          $ref: "#/components/responses/FinanceAlreadyExists"
+        "422":
+          $ref: "#/components/responses/BusinessRule"
+        "500":
+          $ref: "#/components/responses/Internal"
+    delete:
+      tags: [Finance]
+      summary: Delete an unused own category
+      operationId: deleteCategory
+      description: "`super_admin` and `bendahara`. Only an own category no transaction ever used (deleted ones count); archive a used one."
+      parameters:
+        - $ref: "#/components/parameters/FinanceID"
+      responses:
+        "200":
+          description: Category deleted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: kategori dihapus
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/FinanceNotFound"
+        "422":
+          $ref: "#/components/responses/BusinessRule"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/finance/categories/{id}/archive:
+    post:
+      tags: [Finance]
+      summary: Archive a category
+      operationId: archiveCategory
+      description: "`super_admin` and `bendahara`. Hidden from the form. Own categories, asnaf and fidyah recipients; income system categories and Pindah dana stay."
+      parameters:
+        - $ref: "#/components/parameters/FinanceID"
+      responses:
+        "200":
+          description: The archived category.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Category"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/FinanceNotFound"
+        "422":
+          $ref: "#/components/responses/BusinessRule"
+        "500":
+          $ref: "#/components/responses/Internal"
+    delete:
+      tags: [Finance]
+      summary: Restore an archived category
+      operationId: restoreCategory
+      description: "`super_admin` and `bendahara`."
+      parameters:
+        - $ref: "#/components/parameters/FinanceID"
+      responses:
+        "200":
+          description: The restored category.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Category"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/FinanceNotFound"
+        "500":
+          $ref: "#/components/responses/Internal"
+
+  /api/v1/finance/bookkeeping:
+    get:
+      tags: [Finance]
+      summary: Get where pembukuan stands
+      operationId: getBookkeeping
+      description: "Any role. `started` false until Mulai pembukuan."
+      responses:
+        "200":
+          description: Pembukuan.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Bookkeeping"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "500":
+          $ref: "#/components/responses/Internal"
+    post:
+      tags: [Finance]
+      summary: Start pembukuan (Mulai pembukuan)
+      operationId: startBookkeeping
+      description: "`super_admin` and `bendahara`. Once. Saved as the opening closing of the month before `start_month`, never as pemasukan. Every open account and kas gets a row; those left out start at Rp 0. Account and kas totals must be equal."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StartBookkeepingInput"
+      responses:
+        "201":
+          description: Pembukuan started.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Bookkeeping"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/BusinessRule"
+        "500":
+          $ref: "#/components/responses/Internal"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -1948,6 +2502,14 @@ components:
       bearerFormat: JWT
 
   parameters:
+    FinanceID:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
     UserID:
       name: id
       in: path
@@ -2537,7 +3099,179 @@ components:
         status: { type: string, enum: [online, offline], description: "Online while connected and for 2 minutes after." }
         last_seen_at: { type: string, format: date-time, nullable: true, description: "Null when the cache has no record, e.g. after it was emptied." }
         app_version: { type: string }
+    Account:
+      type: object
+      required: [id, name, kind, number, archived_at, created_by, created_at, updated_at]
+      properties:
+        id: {type: integer, format: int64}
+        name: {type: string, example: BSI Masjid}
+        kind: {type: string, enum: [cash, bank]}
+        number: {type: string, description: Bank account number; empty for cash.}
+        archived_at: {type: [string, "null"], format: date-time}
+        created_by: {type: integer, format: int64, description: 0 for seeded rows.}
+        created_at: {type: string, format: date-time}
+        updated_at: {type: string, format: date-time}
+    AccountWithBalance:
+      allOf:
+        - $ref: "#/components/schemas/Account"
+        - type: object
+          required: [balance]
+          properties:
+            balance: {type: integer, format: int64, description: Integer Rupiah.}
+    AccountInput:
+      type: object
+      required: [name, kind]
+      properties:
+        name: {type: string, maxLength: 60}
+        kind: {type: string, enum: [cash, bank]}
+        number: {type: string, maxLength: 40, description: Ignored for cash.}
+    AccountUpdate:
+      type: object
+      required: [name]
+      properties:
+        name: {type: string, maxLength: 60}
+        number: {type: string, maxLength: 40}
+    Pocket:
+      type: object
+      required: [id, kind, name, purpose, target_amount, surplus_plan, show_on_tv, status, created_by, created_at, updated_at]
+      properties:
+        id: {type: integer, format: int64}
+        kind: {type: string, enum: [umum, zakat_mal, zakat_fitrah, fidyah, terikat]}
+        name: {type: string, example: Renovasi Atap}
+        purpose: {type: string, description: Peruntukan.}
+        target_amount: {type: [integer, "null"], format: int64, description: Terikat only; null = no target.}
+        surplus_plan: {type: [string, "null"], enum: [to_umum, ask_donor], description: Terikat only.}
+        show_on_tv: {type: boolean}
+        status: {type: string, enum: [active, target_reached, done, archived]}
+        created_by: {type: integer, format: int64}
+        created_at: {type: string, format: date-time}
+        updated_at: {type: string, format: date-time}
+    PocketWithBalance:
+      allOf:
+        - $ref: "#/components/schemas/Pocket"
+        - type: object
+          required: [balance]
+          properties:
+            balance: {type: integer, format: int64}
+    TerikatPocketInput:
+      type: object
+      required: [name, purpose, surplus_plan]
+      properties:
+        name: {type: string, maxLength: 60}
+        purpose: {type: string, maxLength: 200}
+        target_amount: {type: [integer, "null"], format: int64, maximum: 10000000000, description: null or 0 = no target.}
+        surplus_plan: {type: string, enum: [to_umum, ask_donor]}
+        show_on_tv: {type: boolean}
+    Category:
+      type: object
+      required: [id, name, type, scope, code, archived_at, created_by, created_at, updated_at]
+      properties:
+        id: {type: integer, format: int64}
+        name: {type: string, example: Infaq Jumat}
+        type: {type: string, enum: [in, out]}
+        scope: {type: string, enum: [umum_terikat, zakat, fidyah, all]}
+        code: {type: [string, "null"], description: "System categories only, e.g. asnaf_fakir, pindah_out."}
+        archived_at: {type: [string, "null"], format: date-time}
+        created_by: {type: integer, format: int64}
+        created_at: {type: string, format: date-time}
+        updated_at: {type: string, format: date-time}
+    CategoryWithCount:
+      allOf:
+        - $ref: "#/components/schemas/Category"
+        - type: object
+          required: [transaction_count]
+          properties:
+            transaction_count: {type: integer, description: Transactions not deleted.}
+    CategoryInput:
+      type: object
+      required: [name, type]
+      properties:
+        name: {type: string, maxLength: 60}
+        type: {type: string, enum: [in, out]}
+    CategoryRename:
+      type: object
+      required: [name]
+      properties:
+        name: {type: string, maxLength: 60}
+    OpeningBalance:
+      type: object
+      required: [id, amount]
+      properties:
+        id: {type: integer, format: int64, description: Account or kas ID.}
+        amount: {type: integer, format: int64, minimum: 0, maximum: 10000000000}
+    StartBookkeepingInput:
+      type: object
+      required: [start_month]
+      properties:
+        start_month: {type: string, example: 2026-11, description: "YYYY-MM, not after this month on the mosque's clock."}
+        accounts: {type: array, items: {$ref: "#/components/schemas/OpeningBalance"}}
+        pockets: {type: array, items: {$ref: "#/components/schemas/OpeningBalance"}}
+    BookClosing:
+      type: object
+      properties:
+        id: {type: integer, format: int64}
+        month: {type: string, example: 2026-10}
+        kind: {type: string, enum: [opening, closing]}
+        total_in: {type: integer, format: int64}
+        total_out: {type: integer, format: int64}
+        closing_balance: {type: integer, format: int64}
+        accounts:
+          type: array
+          items:
+            type: object
+            properties:
+              account_id: {type: integer, format: int64}
+              closing_balance: {type: integer, format: int64}
+              counted_balance: {type: [integer, "null"], format: int64}
+        pockets:
+          type: array
+          items:
+            type: object
+            properties:
+              pocket_id: {type: integer, format: int64}
+              closing_balance: {type: integer, format: int64}
+        closed_by: {type: integer, format: int64}
+        closed_at: {type: string, format: date-time}
+        reopened_at: {type: [string, "null"], format: date-time}
+        reopen_reason: {type: string}
+    Bookkeeping:
+      type: object
+      required: [started, start_month, opening]
+      properties:
+        started: {type: boolean}
+        start_month: {type: string, description: "YYYY-MM; empty before pembukuan starts."}
+        opening:
+          oneOf:
+            - $ref: "#/components/schemas/BookClosing"
+            - type: "null"
   responses:
+    FinanceNotFound:
+      description: No account, kas or category has the ID.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: NOT_FOUND
+            message: kas tidak ditemukan
+    FinanceAlreadyExists:
+      description: The name is taken.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: ALREADY_EXISTS
+            message: nama kas sudah dipakai
+    BusinessRule:
+      description: Valid data that breaks a rule; `message` says which.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: BUSINESS_RULE
+            message: kas hanya bisa diarsipkan saat saldonya Rp 0
     ScreenNotFound:
       description: No screen has this ID.
       content:
