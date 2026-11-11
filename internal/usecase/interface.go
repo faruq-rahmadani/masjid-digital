@@ -162,3 +162,82 @@ type ActivityLogPublisherItf interface {
 	// now, then queues the log
 	Publish(ctx context.Context, activityLog domain.ActivityLog)
 }
+
+// TransactorItf runs fn in one database transaction; repository calls made with the ctx passed to
+// fn join it. Keuangan writes several rows per change (a pindah dana pair, a revision and its
+// edit) that must land together. *database.DB implements it.
+type TransactorItf interface {
+	WithTx(ctx context.Context, fn func(ctx context.Context) error) error
+}
+
+// AccountRepositoryItf stores where money sits (Tunai, banks)
+type AccountRepositoryItf interface {
+	// FindAll returns every account, archived ones too, Tunai first
+	FindAll(ctx context.Context) ([]domain.Account, error)
+	// FindByID returns domain.ErrAccountNotFound when no account has the ID
+	FindByID(ctx context.Context, id int64) (domain.Account, error)
+	Create(ctx context.Context, account domain.Account) (domain.Account, error)
+	// Update saves the name, number and archived_at
+	Update(ctx context.Context, account domain.Account) (domain.Account, error)
+}
+
+// PocketRepositoryItf stores the kas: the four built-in ones (seeded) and the terikat ones
+type PocketRepositoryItf interface {
+	// FindAll returns every pocket, archived ones too, built-in ones first
+	FindAll(ctx context.Context) ([]domain.Pocket, error)
+	// FindByID returns domain.ErrPocketNotFound when no pocket has the ID
+	FindByID(ctx context.Context, id int64) (domain.Pocket, error)
+	Create(ctx context.Context, pocket domain.Pocket) (domain.Pocket, error)
+	// Update saves everything but the kind, which never changes
+	Update(ctx context.Context, pocket domain.Pocket) (domain.Pocket, error)
+}
+
+// CategoryRepositoryItf stores the categories, system ones (seeded, with a code) included
+type CategoryRepositoryItf interface {
+	// FindAll returns every category, archived ones too
+	FindAll(ctx context.Context) ([]domain.Category, error)
+	// FindByID returns domain.ErrCategoryNotFound when no category has the ID
+	FindByID(ctx context.Context, id int64) (domain.Category, error)
+	// FindByCode returns the system category with the code, or domain.ErrCategoryNotFound
+	FindByCode(ctx context.Context, code string) (domain.Category, error)
+	Create(ctx context.Context, category domain.Category) (domain.Category, error)
+	// Update saves the name and archived_at
+	Update(ctx context.Context, category domain.Category) (domain.Category, error)
+	// Delete removes a category; the usecase only deletes unused ones
+	Delete(ctx context.Context, id int64) error
+}
+
+// TransactionRepositoryItf stores the transactions, their receipt photos and their revisions.
+// It never sums: the usecase computes balances from the rows it returns.
+type TransactionRepositoryItf interface {
+	Create(ctx context.Context, tx domain.Transaction) (domain.Transaction, error)
+	// FindByID returns domain.ErrTransactionNotFound when no transaction has the ID; a deleted one
+	// is returned with DeletedAt set
+	FindByID(ctx context.Context, id int64) (domain.Transaction, error)
+	// Find returns the transactions matching the filter, by date then ID
+	Find(ctx context.Context, filter domain.TransactionFilter) ([]domain.Transaction, error)
+	// Update saves amount, date, account, pocket, category, notes, donor consent and updated_by/at
+	Update(ctx context.Context, tx domain.Transaction) (domain.Transaction, error)
+	// SoftDelete marks the transaction deleted by the user
+	SoftDelete(ctx context.Context, id, deletedBy int64) error
+	// UsesCategory is whether any transaction, deleted ones too, is in the category
+	UsesCategory(ctx context.Context, categoryID int64) (bool, error)
+	// SavePhoto inserts or replaces the receipt photo
+	SavePhoto(ctx context.Context, transactionID int64, photo domain.TransactionPhoto) error
+	// GetPhoto returns domain.ErrTransactionNotFound when the transaction has no photo
+	GetPhoto(ctx context.Context, transactionID int64) (domain.TransactionPhoto, error)
+	AddRevision(ctx context.Context, revision domain.TransactionRevision) error
+	// FindRevisions returns a transaction's revisions, oldest first
+	FindRevisions(ctx context.Context, transactionID int64) ([]domain.TransactionRevision, error)
+}
+
+// BookClosingRepositoryItf stores the opening and each month's closing with their balances
+type BookClosingRepositoryItf interface {
+	// FindAll returns the closings not reopened, oldest month first, with their balances
+	FindAll(ctx context.Context) ([]domain.BookClosing, error)
+	// FindLatest returns the newest closing not reopened, or domain.ErrBookClosingNotFound before
+	// pembukuan starts
+	FindLatest(ctx context.Context) (domain.BookClosing, error)
+	// Create inserts the closing and its account and pocket balances
+	Create(ctx context.Context, closing domain.BookClosing) (domain.BookClosing, error)
+}

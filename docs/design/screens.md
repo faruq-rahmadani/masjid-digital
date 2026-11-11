@@ -21,12 +21,14 @@ and has a back button in `PageHeader`. There is no tab bar.
 | Iqamah & alarm   | `admin-iqamah.html`       | E5-04   | super admin, takmir                  | Brand "Alur di layar" card, iqamah & mode sholat `Stepper sm` table, Jumat group (settings + `NavCard` to Petugas Jumat), Layar & alarm (`RadioCard`, `Checkbox`, `Select`, `Slider`), `ConfirmDialog`, `LeaveGuard` |
 | Slide ✓          | `admin-slide.html`        | E6-04   | super admin, takmir                  | `UploadTile` (one file, PNG/JPG/WebP ≤ 20 MB, checked client-side) opens a "Slide baru" `Sheet` with a mandatory crop to the TV panel's shape (1312:582, react-easy-crop: drag, pinch, zoom `Slider`, caption bar laid over it; only the framed part is uploaded, as JPEG ≤ 2624 px wide), then `Checkbox` tampilkan judul & keterangan, judul from the file name, keterangan, `Select` durasi 5–30 dtk); nothing is uploaded until Simpan. `SegmentedControl pill` filter, drag to reorder, `Thumbnail` + meta (durasi · sedang tampil/nonaktif), `Button sm` Matikan / Tampilkan, edit `Sheet` (same fields) + `ConfirmDialog`. No "Tampil di": every screen shows the same slides; the image can't be replaced |
 | Running text ✓   | `admin-running-text.html` | E6-05   | super admin, takmir                  | `Textarea showCount`, `SegmentedControl pill` filter (Aktif default · Nonaktif · Semua), drag to reorder (dnd-kit), `Button sm` Matikan / Tampilkan per row (action, not a checkbox), meta line (pembuat · sedang/terakhir tampil), `Sheet` (edit) + `ConfirmDialog`, `SegmentedControl split`, `Ticker preview`. No "penting" flag: order decides |
-| Keuangan         | `admin-keuangan.html`     | E7-06   | super admin, bendahara (takmir view) | `Card brand` + `Stat`, `Button income/expense`, `SearchInput`, `SegmentedControl pill`, `Select pill`, `List` + `Money`, `Callout`, `ConfirmDialog` |
-| Tambah transaksi | `admin-transaksi.html`    | E7-07   | super admin, bendahara               | `SegmentedControl track`, `MoneyInput`, `Field`, `UploadTile tile`, `Callout`, `ActionBar`                                                          |
-| Kategori         | `admin-kategori.html`     | E7-08   | super admin, bendahara               | `Tabs`, `Input`, `List`, `Button danger`, `ConfirmDialog`                                                                                           |
-| Akun             | no mockup yet             | E7-10   | super admin, bendahara (takmir view) | Accounts with balances (Tunai, bank), Mulai pembukuan with the opening balance per account                                                          |
-| Tutup buku       | no mockup yet             | E7-11   | super admin, bendahara               | `Sheet`: per account computed vs counted balance, difference recorded before closing, `ConfirmDialog`                                               |
 | Petugas Jumat    | `admin-petugas.html`      | E5-05   | super admin, takmir                  | Own menu. Brand "Jumat terdekat" card, next 8 Fridays (`Badge notice` "Belum diisi"), `Sheet` form, confirm before save/delete |
+| Keuangan         | Kas simulation¹           | E7-06   | super admin, bendahara (takmir view) | Kas chips (`SegmentedControl pill`), `Card brand` balance with kas type `Badge` + purpose, + / − / Pindah dana, `SearchInput`, filters, month `Select`, `List` + `Money`, "Diedit", show deleted |
+| Tambah transaksi | Kas simulation¹           | E7-07   | super admin, bendahara               | `SegmentedControl track`, `MoneyInput`, kas `Select` with purpose hint, akun, category by kas kind, `UploadTile`, split "Bagi ke beberapa kas", `ConfirmDialog` above Rp 10 juta |
+| Pindah dana      | Kas simulation¹           | E7-17   | super admin, bendahara               | Dari kas + akun (saldo hint), ke kas + akun, nominal, tanggal, alasan, donor-consent `Checkbox` for terikat, zakat options blocked with reason |
+| Kas              | Kas simulation¹           | E7-18, E7-19 | super admin, bendahara (takmir view) | Kas list (built-in locked), `Sheet` Kas baru / Ubah kas (Terikat), target `ProgressBar`, "Selesaikan program" `ConfirmDialog` |
+| Kategori         | Kas simulation¹           | E7-08   | super admin, bendahara               | `Tabs` per kas kind, asnaf (hide only), `Input`, `List`, archive / restore, `ConfirmDialog` |
+| Akun             | no mockup yet             | E7-10   | super admin, bendahara (takmir view) | Accounts with balances (Tunai, bank), Mulai pembukuan with the opening balance per account split over kas |
+| Tutup buku       | no mockup yet             | E7-11   | super admin, bendahara               | `Sheet`: per account computed vs counted balance, kas balances listed, `ConfirmDialog` |
 
 ## TV display (1920×1080, `/tv`)
 
@@ -63,3 +65,6 @@ before iqamah, after one tap unlocks audio ("Ketuk layar sekali untuk menyalakan
 | Jumat  | `tv-jumat.html`  | E8-05 | Sholat Jumat time, adzan countdown, khatib / imam / muadzin, tema khutbah, INFO bar                                                                                                     |
 
 Mode order per waktu: normal → adzan → iqamah → sholat → normal (E8-06).
+
+¹ Kas simulation: https://claude.ai/artifact/GjDxT3BL6iHv3dk6HMgP7m. It supersedes `admin-keuangan.html`,
+`admin-transaksi.html` and `admin-kategori.html` (kept for history).

@@ -126,6 +126,43 @@ func TestMigrations(t *testing.T) {
 				t.Errorf("forced_mode = %q, %v; want auto", forcedMode, err)
 			}
 
+			// 00013: the built-in pockets, Tunai and the system categories are seeded
+			var pocketKinds []string
+			if err := db.Select(ctx, &pocketKinds, "SELECT kind FROM pockets ORDER BY id"); err != nil || len(pocketKinds) != 4 {
+				t.Errorf("seeded pockets = %v, %v; want umum, zakat_mal, zakat_fitrah, fidyah", pocketKinds, err)
+			}
+			insertPocket := "INSERT INTO pockets (kind, name, created_at, updated_at) VALUES (?, ?, ?, ?)"
+			if _, err := db.Exec(ctx, insertPocket, "zakat_mal", "Zakat Mal 2", now, now); !errors.Is(err, database.ErrUniqueViolation) {
+				t.Errorf("second zakat_mal pocket: err = %v, want ErrUniqueViolation", err)
+			}
+			if _, err := db.Exec(ctx, insertPocket, "terikat", "Renovasi Atap", now, now); err != nil {
+				t.Errorf("terikat pocket: %v", err)
+			}
+			var asnaf int
+			if err := db.Get(ctx, &asnaf, "SELECT COUNT(*) FROM categories WHERE code LIKE 'asnaf_%'"); err != nil || asnaf != 8 {
+				t.Errorf("asnaf categories = %d, %v; want 8", asnaf, err)
+			}
+			var tunaiID, umumID, infaqID int64
+			if err := db.Get(ctx, &tunaiID, "SELECT id FROM accounts WHERE name = 'Tunai'"); err != nil {
+				t.Fatalf("seeded Tunai: %v", err)
+			}
+			_ = db.Get(ctx, &umumID, "SELECT id FROM pockets WHERE kind = 'umum'")
+			_ = db.Get(ctx, &infaqID, "SELECT id FROM categories WHERE name = 'Infaq Jumat'")
+			insertTx := "INSERT INTO transactions (kind, amount, date, account_id, pocket_id, category_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+			if _, err := db.Exec(ctx, insertTx, "in", 0, "2026-11-06", tunaiID, umumID, infaqID, now, now); err == nil {
+				t.Error("zero amount accepted")
+			}
+			if _, err := db.Exec(ctx, insertTx, "in", 2000000, "2026-11-06", tunaiID, umumID, infaqID, now, now); err != nil {
+				t.Errorf("insert transaction: %v", err)
+			}
+			insertClosing := "INSERT INTO book_closings (month, kind, closing_balance, closed_at) VALUES (?, ?, ?, ?)"
+			if _, err := db.Exec(ctx, insertClosing, "2026-10", "opening", 0, now); err != nil {
+				t.Fatalf("insert closing: %v", err)
+			}
+			if _, err := db.Exec(ctx, insertClosing, "2026-10", "closing", 0, now); !errors.Is(err, database.ErrUniqueViolation) {
+				t.Errorf("second active closing of a month: err = %v, want ErrUniqueViolation", err)
+			}
+
 			for {
 				version, err := m.Version(ctx)
 				if err != nil {
