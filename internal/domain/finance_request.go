@@ -32,7 +32,8 @@ type AccountWithBalance struct {
 // PocketWithBalance is a kas with its balance
 type PocketWithBalance struct {
 	Pocket
-	Balance int64 `json:"balance"`
+	Balance  int64           `json:"balance"`
+	Progress *PocketProgress `json:"progress"` // terikat kas with a target only
 }
 
 // CategoryWithCount is a category with how many transactions (not deleted) use it

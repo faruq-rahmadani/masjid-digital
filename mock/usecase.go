@@ -1709,3 +1709,56 @@ func (mr *MockBookClosingRepositoryItfMockRecorder) FindLatest(ctx any) *gomock.
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindLatest", reflect.TypeOf((*MockBookClosingRepositoryItf)(nil).FindLatest), ctx)
 }
+
+// MockFinanceSettingRepositoryItf is a mock of FinanceSettingRepositoryItf interface.
+type MockFinanceSettingRepositoryItf struct {
+	ctrl     *gomock.Controller
+	recorder *MockFinanceSettingRepositoryItfMockRecorder
+	isgomock struct{}
+}
+
+// MockFinanceSettingRepositoryItfMockRecorder is the mock recorder for MockFinanceSettingRepositoryItf.
+type MockFinanceSettingRepositoryItfMockRecorder struct {
+	mock *MockFinanceSettingRepositoryItf
+}
+
+// NewMockFinanceSettingRepositoryItf creates a new mock instance.
+func NewMockFinanceSettingRepositoryItf(ctrl *gomock.Controller) *MockFinanceSettingRepositoryItf {
+	mock := &MockFinanceSettingRepositoryItf{ctrl: ctrl}
+	mock.recorder = &MockFinanceSettingRepositoryItfMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockFinanceSettingRepositoryItf) EXPECT() *MockFinanceSettingRepositoryItfMockRecorder {
+	return m.recorder
+}
+
+// GetTVSetting mocks base method.
+func (m *MockFinanceSettingRepositoryItf) GetTVSetting(ctx context.Context) (domain.FinanceTVSetting, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTVSetting", ctx)
+	ret0, _ := ret[0].(domain.FinanceTVSetting)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTVSetting indicates an expected call of GetTVSetting.
+func (mr *MockFinanceSettingRepositoryItfMockRecorder) GetTVSetting(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTVSetting", reflect.TypeOf((*MockFinanceSettingRepositoryItf)(nil).GetTVSetting), ctx)
+}
+
+// UpdateTVSetting mocks base method.
+func (m *MockFinanceSettingRepositoryItf) UpdateTVSetting(ctx context.Context, setting domain.FinanceTVSetting, updatedBy int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateTVSetting", ctx, setting, updatedBy)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateTVSetting indicates an expected call of UpdateTVSetting.
+func (mr *MockFinanceSettingRepositoryItfMockRecorder) UpdateTVSetting(ctx, setting, updatedBy any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTVSetting", reflect.TypeOf((*MockFinanceSettingRepositoryItf)(nil).UpdateTVSetting), ctx, setting, updatedBy)
+}

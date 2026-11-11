@@ -40,6 +40,7 @@ export { ToastProvider } from '@/components/feedback/ToastProvider'
 export { type Toaster, type ToastInput, useToast } from '@/components/feedback/toast-context'
 export type { FeedbackTone } from '@/components/feedback/tone-icons'
 // Forms
+export { AmountInput } from '@/components/forms/AmountInput'
 export { Checkbox } from '@/components/forms/Checkbox'
 export { Field } from '@/components/forms/Field'
 export { Input } from '@/components/forms/Input'

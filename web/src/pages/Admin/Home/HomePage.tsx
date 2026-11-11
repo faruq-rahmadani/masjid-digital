@@ -13,6 +13,7 @@ import {
   Stat,
   StatusDot,
 } from '@/components'
+import { useFinanceSummary } from '@/hooks/useFinance'
 import { useRecentActivity } from '@/hooks/useHomeData'
 import { useMosqueProfile } from '@/hooks/useMosqueProfile'
 import { useNow } from '@/hooks/useNow'
@@ -28,6 +29,7 @@ import { roleLabels } from '@/utils/auth/roles'
 import { formatActivityTime, formatTimeAgo } from '@/utils/format/date'
 import { PRAYER_KEYS } from '@/utils/prayer/calculate'
 import { localDate } from '@/utils/prayer/calendar'
+import { FinanceWarnings } from '../Finance/components/FinanceWarnings'
 import { AccountDrawer } from './drawers/AccountDrawer'
 import { ChangePasswordDrawer } from './drawers/ChangePasswordDrawer'
 import { formatCountdown, nextPrayer } from './nextPrayer'
@@ -38,7 +40,7 @@ export function HomePage() {
   const mosque = useMosqueProfile()
   const [drawer, setDrawer] = useState<'account' | 'password' | null>(null)
   const now = useNow()
-  const timezone = mosque.data?.timezone ?? 'Asia/Jakarta'
+  const timezone = mosque.data?.timezone || 'Asia/Jakarta'
   const schedule = useDaySchedule(localDate(now, timezone))
   const prayers = schedule.data?.filter((e) => (PRAYER_KEYS as readonly string[]).includes(e.key))
   const next = prayers?.length ? nextPrayer(now, prayers, timezone) : null
@@ -48,6 +50,8 @@ export function HomePage() {
   // blocked screens are not ours; the Layar TV page lists them apart
   const validScreens = screens.data?.filter((s) => s.blocked_at === null)
   const activity = useRecentActivity()
+  // syariah warnings (E7-21) for the roles that see Keuangan
+  const finance = useFinanceSummary('', canOpen(session.role, 'finance'))
   const role = roleLabels[session.role]
 
   const profile = useProfile()
@@ -91,6 +95,7 @@ export function HomePage() {
       </HeroHeader>
 
       <PageBody className="gap-4.5 pt-4.5">
+        {finance.data && <FinanceWarnings warnings={finance.data.warnings} />}
         {canOpen(session.role, 'screens') && (
           <NavCard
             to={ROUTES.screens}

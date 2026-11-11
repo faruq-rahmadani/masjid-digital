@@ -90,7 +90,7 @@ function IqamahForm({ saved }: IqamahFormProps) {
 
   const now = useNow()
   const mosque = useMosqueProfile()
-  const timezone = mosque.data?.timezone ?? 'Asia/Jakarta'
+  const timezone = mosque.data?.timezone || 'Asia/Jakarta'
   const today = localDate(now, timezone)
   const schedule = useDaySchedule(today)
 

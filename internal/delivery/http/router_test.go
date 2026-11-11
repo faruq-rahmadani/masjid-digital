@@ -125,6 +125,21 @@ func newTestRouter(t *testing.T) *echo.Echo {
 	finance.EXPECT().RestoreCategory(gomock.Any(), gomock.Any()).Return(domain.Category{}, nil).AnyTimes()
 	finance.EXPECT().GetBookkeeping(gomock.Any()).Return(domain.Bookkeeping{}, nil).AnyTimes()
 	finance.EXPECT().StartBookkeeping(gomock.Any(), gomock.Any()).Return(domain.Bookkeeping{}, nil).AnyTimes()
+	finance.EXPECT().Summary(gomock.Any(), gomock.Any()).Return(domain.FinanceSummary{}, nil).AnyTimes()
+	finance.EXPECT().ListTransactions(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	finance.EXPECT().CreateTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	finance.EXPECT().UpdateTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	finance.EXPECT().DeleteTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	finance.EXPECT().ListRevisions(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	finance.EXPECT().GetReceipt(gomock.Any(), gomock.Any()).Return(domain.TransactionPhoto{ContentType: "image/png"}, nil).AnyTimes()
+	finance.EXPECT().SaveReceipt(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	finance.EXPECT().MoveFunds(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	finance.EXPECT().FinishPocket(gomock.Any(), gomock.Any()).Return(domain.Pocket{}, nil).AnyTimes()
+	finance.EXPECT().ListClosings(gomock.Any()).Return(nil, nil).AnyTimes()
+	finance.EXPECT().CloseMonth(gomock.Any(), gomock.Any()).Return(domain.BookClosing{}, nil).AnyTimes()
+	finance.EXPECT().GetTVSetting(gomock.Any()).Return(domain.FinanceTVSetting{}, nil).AnyTimes()
+	finance.EXPECT().UpdateTVSetting(gomock.Any(), gomock.Any()).Return(domain.FinanceTVSetting{}, nil).AnyTimes()
+	finance.EXPECT().GetDisplay(gomock.Any()).Return(domain.FinanceDisplay{}, nil).AnyTimes()
 
 	return newEcho(controller.NewController(users, auth, mosqueProfile, prayerTime, runningText, iqamah, fridayDuty, slide, screen, activityLog, finance), middleware.NewAuth(authenticator))
 }
@@ -223,6 +238,22 @@ func TestRouteAccess(t *testing.T) {
 		{http.MethodDelete, "/api/v1/finance/categories/1/archive", "", superBendahara, ""},
 		{http.MethodGet, "/api/v1/finance/bookkeeping", "", anyUser, ""},
 		{http.MethodPost, "/api/v1/finance/bookkeeping", `{}`, superBendahara, ""},
+		{http.MethodGet, "/api/v1/finance/summary", "", anyUser, ""},
+		{http.MethodGet, "/api/v1/finance/transactions?month=2026-11", "", anyUser, ""},
+		{http.MethodPost, "/api/v1/finance/transactions", `{}`, superBendahara, ""},
+		{http.MethodPut, "/api/v1/finance/transactions/1", `{}`, superBendahara, ""},
+		{http.MethodDelete, "/api/v1/finance/transactions/1", `{}`, superBendahara, ""},
+		{http.MethodGet, "/api/v1/finance/transactions/1/revisions", "", anyUser, ""},
+		{http.MethodGet, "/api/v1/finance/transactions/1/receipt", "", anyUser, ""},
+		{http.MethodPut, "/api/v1/finance/transactions/1/receipt", upload.String(), superBendahara, form.FormDataContentType()},
+		{http.MethodPost, "/api/v1/finance/transfers", `{}`, superBendahara, ""},
+		{http.MethodPut, "/api/v1/finance/transfers/abc", `{}`, superBendahara, ""},
+		{http.MethodPost, "/api/v1/finance/pockets/1/finish", `{}`, superBendahara, ""},
+		{http.MethodGet, "/api/v1/finance/closings", "", anyUser, ""},
+		{http.MethodPost, "/api/v1/finance/closings", `{}`, superBendahara, ""},
+		{http.MethodGet, "/api/v1/finance/tv-setting", "", anyUser, ""},
+		{http.MethodPut, "/api/v1/finance/tv-setting", `{}`, superBendahara, ""},
+		{http.MethodGet, "/api/public/v1/finance/display", "", public, ""},
 	}
 
 	callers := []struct {

@@ -1,19 +1,22 @@
 import { useEffect } from 'react'
 import { MosqueLogo, SlideFrame } from '@/components'
 import { usePublicSlides } from '@/hooks/useSlides'
-import { useCashSummary, useQuotes } from '@/hooks/useTvData'
+import { useCashDisplay, useQuotes } from '@/hooks/useTvData'
 import { slideImageUrl } from '@/services/slideService'
+import type { FinanceDisplay } from '@/types/finance'
 import type { IqamahSettings } from '@/types/iqamah'
 import type { ScheduleItem } from '@/types/tv'
 import { cn } from '@/utils/cn'
 import { formatRupiah } from '@/utils/format/money'
-import { formatClock, formatHijriDate, formatHms, formatLongDate, formatShortDate } from '../clock'
+import { formatClock, formatHijriDate, formatHms, formatLongDate } from '../clock'
 import { RunningText } from '../components/RunningText'
 import type { DisplayState } from '../displayMode'
 import { slideIndexAt } from '../slideShow'
 import type { TvContext } from '../types'
 
 const QUOTE_SECONDS = 60
+/** With several kas on the TV, the header shows one at a time (PRD: static columns, never a ticker). */
+const CASH_SECONDS = 6
 
 type NormalModeProps = {
   tv: TvContext
@@ -28,7 +31,7 @@ export function NormalMode({ tv, state, schedule, settings }: NormalModeProps) {
     <div className="bg-brand text-on-brand flex min-h-0 flex-1 flex-col gap-6 p-8">
       <div className="flex h-30 shrink-0 gap-6">
         <MosqueCard mosque={tv.mosque} />
-        <CashCard />
+        <CashCard seconds={tv.now.getTime() / 1000} />
       </div>
 
       <div className="flex min-h-0 flex-1 gap-6">
@@ -117,33 +120,51 @@ function MosqueCard({ mosque }: { mosque: TvContext['mosque'] }) {
   )
 }
 
-function CashCard() {
-  const cash = useCashSummary().data
-  if (!cash) return <div className="bg-canvas rounded-tv flex-1" />
+const PERIOD_LABEL: Record<FinanceDisplay['period'], string> = {
+  today: 'Hari ini',
+  week: 'Minggu ini',
+  month: 'Bulan ini',
+}
+
+// Rotation follows the clock like the quotes, so it needs no timer of its own.
+function CashCard({ seconds }: { seconds: number }) {
+  const cash = useCashDisplay().data
+  if (!cash || cash.pockets.length === 0) return <div className="bg-canvas rounded-tv flex-1" />
+  const index = Math.floor(seconds / CASH_SECONDS) % cash.pockets.length
+  const kas = cash.pockets[index] ?? cash.pockets[0]
+  if (!kas) return null
 
   return (
     <div className="bg-canvas text-ink rounded-tv flex min-w-0 flex-1 items-center gap-6 px-6">
-      <div className="w-37.5 shrink-0">
-        <div className="text-tv-16 text-ink-soft">Laporan Kas</div>
-        <div className="text-tv-22 mt-1 font-bold">Per {formatShortDate(cash.as_of)}</div>
+      <div className="w-60 shrink-0">
+        <div className="text-tv-16 text-ink-soft whitespace-nowrap">
+          Laporan Kas · {PERIOD_LABEL[cash.period]}
+        </div>
+        <div className="text-tv-22 mt-1 line-clamp-2 leading-tight font-bold">{kas.name}</div>
+        {cash.pockets.length > 1 && (
+          <div className="mt-2 flex gap-1.5">
+            {cash.pockets.map((p, i) => (
+              <span
+                key={p.id}
+                className={cn('h-2 rounded-full', i === index ? 'bg-gold w-6' : 'bg-line w-2')}
+              />
+            ))}
+          </div>
+        )}
       </div>
       <div className="bg-line my-6 w-0.5 self-stretch" />
       <div className="grid min-w-0 flex-1 grid-cols-[1fr_1fr_1fr_1.3fr] items-center gap-4">
-        <CashValue label="Saldo awal" value={formatRupiah(cash.opening_balance)} />
-        <CashValue
-          label="Pemasukan"
-          value={`+ ${formatRupiah(cash.income)}`}
-          className="text-income"
-        />
+        <CashValue label="Saldo awal" value={formatRupiah(kas.opening)} />
+        <CashValue label="Pemasukan" value={`+ ${formatRupiah(kas.in)}`} className="text-income" />
         <CashValue
           label="Pengeluaran"
-          value={`- ${formatRupiah(cash.expense)}`}
+          value={`- ${formatRupiah(kas.out)}`}
           className="text-expense"
         />
         <div className="bg-brand text-on-brand rounded-xl px-4.5 py-3">
           <div className="text-tv-16 text-on-brand-muted">Saldo akhir</div>
           <div className="text-tv-28 mt-0.5 font-extrabold whitespace-nowrap">
-            {formatRupiah(cash.closing_balance)}
+            {formatRupiah(kas.closing)}
           </div>
         </div>
       </div>

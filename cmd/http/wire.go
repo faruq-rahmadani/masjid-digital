@@ -15,6 +15,7 @@ import (
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/activitylogs"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/bookclosings"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/categories"
+	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/financesettings"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/fridayduties"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/iqamahsettings"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/mosqueprofiles"
@@ -149,6 +150,8 @@ func newRepositories(db *database.DB, c cache.Cache) repositories {
 			Transactions:   transactions.New(dbClient),
 			BookClosings:   bookclosings.New(dbClient),
 			MosqueProfiles: mosqueprofiles.NewMosqueProfileDBRepository(dbClient),
+			PrayerTimes:    prayertimes.NewPrayerTimeDBRepository(dbClient),
+			Settings:       financesettings.New(dbClient),
 		},
 	}
 }

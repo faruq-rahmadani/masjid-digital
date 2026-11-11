@@ -17,13 +17,16 @@ const (
 	uploadBodyLimit = "3M"
 	// slideUploadBodyLimit fits an image of domain.MaxSlideImageSize plus the multipart framing
 	slideUploadBodyLimit = "6M"
+	// receiptUploadBodyLimit fits a receipt of domain.MaxReceiptPhotoSize plus the multipart framing
+	receiptUploadBodyLimit = "2M"
 )
 
 // largeBodyRoutes are the routes (as registered, with the /api/v1 prefix) that
 // set their own body limit, so the default one skips them
 var largeBodyRoutes = map[string]bool{
-	"/api/v1/mosque-profile/logo": true,
-	"/api/v1/slides":              true,
+	"/api/v1/mosque-profile/logo":              true,
+	"/api/v1/slides":                           true,
+	"/api/v1/finance/transactions/:id/receipt": true,
 }
 
 // screenContentRoutes are the route prefixes whose changes show on the TV
@@ -34,6 +37,7 @@ var screenContentRoutes = []string{
 	"/api/v1/friday-duties",
 	"/api/v1/running-text", // running-texts and running-text/setting
 	"/api/v1/slides",
+	"/api/v1/finance", // the TV kas header
 }
 
 func registerRouters(e *echo.Echo, ctrl *controller.Controller, auth *middleware.Auth) {
@@ -51,6 +55,7 @@ func registerRouters(e *echo.Echo, ctrl *controller.Controller, auth *middleware
 	public.GET("/slides", ctrl.GetSlideDisplay)
 	public.GET("/slides/:id/image", ctrl.GetSlideImage)               // any slide, so the admin list's <img> needs no token
 	public.GET("/screens/:device_id/events", ctrl.StreamScreenEvents) // the TV's live connection (SSE)
+	public.GET("/finance/display", ctrl.GetFinanceDisplay)            // the TV kas header
 
 	v1 := e.Group("/api/v1")
 	v1.POST("/auth/login", ctrl.Login)
@@ -140,6 +145,21 @@ func registerRouters(e *echo.Echo, ctrl *controller.Controller, auth *middleware
 	finance.DELETE("/categories/:id/archive", ctrl.RestoreCategory, financeEditor)
 	finance.GET("/bookkeeping", ctrl.GetBookkeeping)
 	finance.POST("/bookkeeping", ctrl.StartBookkeeping, financeEditor)
+	finance.GET("/summary", ctrl.GetFinanceSummary)
+	finance.GET("/transactions", ctrl.ListTransactions)
+	finance.POST("/transactions", ctrl.CreateTransaction, financeEditor)
+	finance.PUT("/transactions/:id", ctrl.UpdateTransaction, financeEditor)
+	finance.DELETE("/transactions/:id", ctrl.DeleteTransaction, financeEditor)
+	finance.GET("/transactions/:id/revisions", ctrl.ListRevisions)
+	finance.GET("/transactions/:id/receipt", ctrl.GetReceipt)
+	finance.PUT("/transactions/:id/receipt", ctrl.SaveReceipt, financeEditor, echomiddleware.BodyLimit(receiptUploadBodyLimit))
+	finance.POST("/transfers", ctrl.MoveFunds, financeEditor)
+	finance.PUT("/transfers/:group_id", ctrl.MoveFunds, financeEditor)
+	finance.POST("/pockets/:id/finish", ctrl.FinishPocket, financeEditor)
+	finance.GET("/closings", ctrl.ListClosings)
+	finance.POST("/closings", ctrl.CloseMonth, financeEditor)
+	finance.GET("/tv-setting", ctrl.GetFinanceTVSetting)
+	finance.PUT("/tv-setting", ctrl.UpdateFinanceTVSetting, financeEditor)
 }
 
 func healthcheckHandler(c echo.Context) error {

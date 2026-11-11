@@ -4,6 +4,7 @@ import { afterEach, vi } from 'vitest'
 import { useSessionStore } from '@/stores/sessionStore'
 import { resetFakeApi } from './fakeApi'
 import { FakeEventSource } from './fakeEventSource'
+import { resetFakeFinance } from './fakeFinance'
 
 // jsdom has no layout engine; ScrollRestoration calls this on every navigation.
 window.scrollTo = () => {}
@@ -60,10 +61,12 @@ vi.mock(
 )
 vi.mock('@/services/screenService', async () => (await import('./fakeApi')).fakeScreenService)
 vi.mock('@/services/activityService', async () => (await import('./fakeApi')).fakeActivityService)
+vi.mock('@/services/financeService', async () => (await import('./fakeFinance')).fakeFinanceService)
 
 afterEach(() => {
   cleanup()
   resetFakeApi()
+  resetFakeFinance()
   localStorage.clear()
   sessionStorage.clear()
   useSessionStore.setState({ session: null })
