@@ -141,7 +141,14 @@ npm install
 npm run dev          # http://localhost:5173, /api is proxied to the Go server
 ```
 
-> There is no way to create the first `super_admin` yet: every user endpoint requires one.
+Create the first `super_admin` (every user endpoint needs one) with the admin CLI; it asks
+for the password:
+
+```sh
+go run ./cmd/admin create-super-admin -name "Nama Lengkap" -phone 081234567890
+```
+
+Deploying to a server: [docs/deploy.md](docs/deploy.md).
 
 ## Configuration
 

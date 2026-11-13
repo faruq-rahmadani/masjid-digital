@@ -1,4 +1,4 @@
-# The API as one container, for hosts like Render, Fly.io or Railway.
+# The API as one container, for hosts other than the VPS setup in deploy/ (see docs/deploy.md).
 # The web clients (web/, web_public/) are static and deploy separately, e.g. to Vercel.
 #
 #   docker build -t masjid-digital-api .
@@ -17,14 +17,15 @@ COPY internal ./internal
 COPY pkg ./pkg
 COPY migrations ./migrations
 RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/http ./cmd/http \
- && CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/migrate ./cmd/migrate
+ && CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/migrate ./cmd/migrate \
+ && CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/admin ./cmd/admin
 
 FROM alpine:3.22
 # tzdata: the mosque's time zone; ca-certificates: TLS to the database
 RUN apk add --no-cache ca-certificates tzdata \
  && adduser -D -H -u 10001 app
 WORKDIR /app
-COPY --from=build /out/http /out/migrate ./
+COPY --from=build /out/http /out/migrate /out/admin ./
 USER app
 ENV ENV=production
 EXPOSE 3000

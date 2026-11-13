@@ -1,75 +1,74 @@
 # Deploy
 
-Three parts, each on its own host:
+masjid-digital runs on one Ubuntu server (24.04 tested) behind nginx:
 
-| Part | What it is | Where |
+| Domain (example) | What | Served by |
 | --- | --- | --- |
-| API | Go server (`cmd/http`), long-running: the TV keeps a server-sent events stream open | A container host: Render, Fly.io or Railway (`Dockerfile`) |
-| Admin panel + TV | `web/`, static SPA | Vercel (`web/vercel.json`) |
-| Public site + docs | `web_public/`, static pages | Vercel (`web_public/vercel.json`) |
-| Database | Postgres | Supabase |
+| `masjid.example.com` | public site and docs (`web_public/`) | nginx, static files |
+| `admin.masjid.example.com` | admin panel and TV at `/tv` (`web/`) | nginx, single-page app |
+| `api.masjid.example.com` | API (`cmd/http`) | systemd service on `127.0.0.1:3100`, nginx in front |
 
-The API does not run as a Vercel Function: TV updates are pushed from memory of one running
-process over a stream that a function would cut.
+The database is the server's local PostgreSQL. Releases are built on the server from a git
+checkout of `main`. The API is one long-running process: the TV keeps a server-sent events
+stream open and its events live in that process's memory, so run exactly one.
 
-## 1. Database (Supabase)
+## Once: prepare the server
 
-Use the **session pooler** connection string (port 5432), not the transaction pooler (6543):
-the API keeps its connections open and uses prepared statements.
+1. Point the three domains (DNS `A` records) at the server.
+2. Clone the repo as the user that will deploy (no root needed):
 
+   ```sh
+   git clone https://github.com/<owner>/masjid-digital.git ~/apps/masjid-digital
+   ```
+
+3. Run the setup as root. It installs Go, creates the Postgres database, a config with fresh
+   secrets, the systemd service, the nginx site and a daily backup. Read
+   [`deploy/setup-server.sh`](../deploy/setup-server.sh) first; it is safe to run again.
+
+   ```sh
+   sudo PUBLIC_DOMAIN=masjid.example.com ADMIN_DOMAIN=admin.masjid.example.com \
+        API_DOMAIN=api.masjid.example.com DEPLOY_USER=$USER \
+        bash ~/apps/masjid-digital/deploy/setup-server.sh
+   ```
+
+4. Ship the first release (below), then turn on HTTPS once DNS resolves: the same command
+   with `HTTPS=1` (and optionally `CERTBOT_EMAIL=...`) in front of `bash`.
+5. Create the first super admin. The password is asked on the terminal:
+
+   ```sh
+   sudo -u masjid-digital ENV=production /opt/masjid-digital/admin \
+        create-super-admin -name "Nama Lengkap" -phone 081234567890
+   ```
+
+## Every release
+
+Merge to `main`, then on the server:
+
+```sh
+~/apps/masjid-digital/deploy/release.sh
 ```
-postgres://postgres.<project-ref>:<password>@aws-<n>-<region>.pooler.supabase.com:5432/postgres?sslmode=require
-```
 
-The API applies pending migrations when it starts (`auto_migrate`, on by default).
+It resets the checkout to `origin/main`, builds the API and both web apps, swaps them in,
+restarts the API (migrations run on start) and waits for `/health`. `ONLY=api|admin|public`
+ships one part; `BRANCH=...` ships another branch.
 
-## 2. API (container)
+## Where things are
 
-Configuration comes from environment variables: every key of `config.yaml.example` is its
-path in capitals with `_`, e.g. `app.database.dsn` is `APP_DATABASE_DSN`. `PORT`, which the
-host sets, is used as the listen port.
-
-| Variable | Value |
+| Path | What |
 | --- | --- |
-| `APP_DATABASE_DRIVER` | `postgres` |
-| `APP_DATABASE_DSN` | the Supabase connection string above |
-| `APP_AUTH_JWT_SECRET` | at least 32 bytes: `openssl rand -base64 32` |
-| `APP_HTTP_SERVER_ALLOWED_ORIGINS` | the admin panel's origin(s), comma separated, e.g. `https://masjid-admin.vercel.app` |
-| `APP_CACHE_DRIVER`, `APP_CACHE_DSN` | optional: `redis` and a Redis URL, so logins survive a restart |
+| `/etc/masjid-digital-config/config.yaml` | API config with the database password and JWT secret (root and the service only) |
+| `/opt/masjid-digital/` | API binaries (`http`, `migrate`, `admin`) and `release.env` |
+| `/var/www/masjid-digital/{public,admin}` | built web apps |
+| `/var/backups/masjid-digital/` | daily `pg_dump`, kept 14 days |
+| `/etc/nginx/sites-available/masjid-digital.conf` | nginx site |
 
-Run **one instance**. TV events and the memory cache live in that process.
+Logs: `sudo journalctl -u masjid-digital -f`. Forgotten password:
+`sudo -u masjid-digital ENV=production /opt/masjid-digital/admin reset-password -phone 0812...`.
+Restore a backup: `sudo -u postgres pg_restore --clean -d masjid_digital <file>.dump`.
 
-Pick a region near the database, and a plan that does not sleep: a sleeping service drops
-the TV's live connection.
+## Other hosts
 
-**Render:** New > Blueprint, pick the repo; `render.yaml` creates the service, then fill in
-the secret variables. Health check: `/health`.
-
-**Fly.io:** `fly launch --no-deploy` (it finds the `Dockerfile`), `fly secrets set ...`,
-`fly scale count 1`, `fly deploy`.
-
-**Railway:** New project from the repo; it builds the `Dockerfile`. Add the variables and
-generate a domain.
-
-## 3. Admin panel and TV (Vercel)
-
-New project from the repo, **Root Directory `web`**. Environment variable:
-
-| Variable | Value |
-| --- | --- |
-| `VITE_API_BASE_URL` | the API's URL with `/api`, e.g. `https://masjid-digital-api.onrender.com/api` |
-
-Then put this project's domain in the API's `APP_HTTP_SERVER_ALLOWED_ORIGINS` and redeploy
-the API. The TV is the same site at `/tv`.
-
-## 4. Public site (Vercel)
-
-Another project from the same repo, **Root Directory `web_public`**. Optional variables:
-`VITE_DEMO_URL` (the admin panel's URL) and `VITE_DEMO_TV_URL`.
-
-## Check
-
-- `https://<api>/health` answers 200.
-- The admin panel logs in, and the network tab shows calls to the API's domain without CORS errors.
-- `/tv` on the admin panel's domain pairs, and a change saved in the panel shows on the TV
-  within a few seconds.
+The [`Dockerfile`](../Dockerfile) builds the API as a container configured by environment
+variables: every key of `config.yaml.example` is its path in capitals with `_`
+(`app.database.dsn` is `APP_DATABASE_DSN`), and `PORT` sets the port. Web clients on another
+origin go in `APP_HTTP_SERVER_ALLOWED_ORIGINS`.
