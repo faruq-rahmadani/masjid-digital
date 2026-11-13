@@ -24,11 +24,11 @@ var (
 	fxCategories = []domain.Category{
 		{ID: 10, Name: "Infaq Jumat", Type: domain.CategoryTypeIn, Scope: domain.CategoryScopeUmumTerikat},
 		{ID: 11, Name: "Listrik", Type: domain.CategoryTypeOut, Scope: domain.CategoryScopeUmumTerikat},
-		{ID: 12, Name: "Zakat Mal", Type: domain.CategoryTypeIn, Scope: domain.CategoryScopeZakat, Code: code(domain.CategoryCodeZakatMal)},
-		{ID: 13, Name: "Fakir", Type: domain.CategoryTypeOut, Scope: domain.CategoryScopeZakat, Code: code("asnaf_fakir")},
-		{ID: 14, Name: "Amil", Type: domain.CategoryTypeOut, Scope: domain.CategoryScopeZakat, Code: code(domain.CategoryCodeAmil)},
-		{ID: 20, Name: "Pindah dana", Type: domain.CategoryTypeOut, Scope: domain.CategoryScopeAll, Code: code(domain.CategoryCodePindahOut)},
-		{ID: 21, Name: "Pindah dana", Type: domain.CategoryTypeIn, Scope: domain.CategoryScopeAll, Code: code(domain.CategoryCodePindahIn)},
+		{ID: 12, Name: "Zakat Mal", Type: domain.CategoryTypeIn, Scope: domain.CategoryScopeZakat, Code: new(domain.CategoryCodeZakatMal)},
+		{ID: 13, Name: "Fakir", Type: domain.CategoryTypeOut, Scope: domain.CategoryScopeZakat, Code: new("asnaf_fakir")},
+		{ID: 14, Name: "Amil", Type: domain.CategoryTypeOut, Scope: domain.CategoryScopeZakat, Code: new(domain.CategoryCodeAmil)},
+		{ID: 20, Name: "Pindah dana", Type: domain.CategoryTypeOut, Scope: domain.CategoryScopeAll, Code: new(domain.CategoryCodePindahOut)},
+		{ID: 21, Name: "Pindah dana", Type: domain.CategoryTypeIn, Scope: domain.CategoryScopeAll, Code: new(domain.CategoryCodePindahIn)},
 	}
 )
 

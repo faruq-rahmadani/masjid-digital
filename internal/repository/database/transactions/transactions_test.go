@@ -35,8 +35,6 @@ func setup(t *testing.T, db dbtest.DB) fixture {
 	return f
 }
 
-func ptr[T any](v T) *T { return &v }
-
 func TestTransactions(t *testing.T) {
 	for driver, db := range dbtest.Open(t) {
 		t.Run(string(driver), func(t *testing.T) {
@@ -57,7 +55,7 @@ func TestTransactions(t *testing.T) {
 				{Kind: domain.CategoryTypeOut, AccountID: f.tunai, CategoryID: f.pindahOut},
 				{Kind: domain.CategoryTypeIn, AccountID: f.bank, CategoryID: f.pindahIn},
 			} {
-				side.Amount, side.Date, side.PocketID, side.GroupID, side.CreatedBy = 1_500_000, "2026-11-09", f.umum, ptr(group), f.userID
+				side.Amount, side.Date, side.PocketID, side.GroupID, side.CreatedBy = 1_500_000, "2026-11-09", f.umum, new(group), f.userID
 				if _, err := f.repo.Create(ctx, side); err != nil {
 					t.Fatalf("create pindah side: %v", err)
 				}

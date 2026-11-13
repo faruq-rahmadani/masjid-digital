@@ -5,8 +5,6 @@ import (
 	"time"
 )
 
-func code(c string) *string { return &c }
-
 func TestPocketKindRules(t *testing.T) {
 	tests := []struct {
 		kind                           PocketKind
@@ -36,10 +34,10 @@ func TestPocketKindRules(t *testing.T) {
 
 func TestCategoryFitsPocket(t *testing.T) {
 	infaq := Category{Scope: CategoryScopeUmumTerikat}
-	zakatMal := Category{Scope: CategoryScopeZakat, Code: code(CategoryCodeZakatMal)}
-	fakir := Category{Scope: CategoryScopeZakat, Code: code("asnaf_fakir")}
-	fidyahFakir := Category{Scope: CategoryScopeFidyah, Code: code("fidyah_fakir")}
-	pindah := Category{Scope: CategoryScopeAll, Code: code(CategoryCodePindahOut)}
+	zakatMal := Category{Scope: CategoryScopeZakat, Code: new(CategoryCodeZakatMal)}
+	fakir := Category{Scope: CategoryScopeZakat, Code: new("asnaf_fakir")}
+	fidyahFakir := Category{Scope: CategoryScopeFidyah, Code: new("fidyah_fakir")}
+	pindah := Category{Scope: CategoryScopeAll, Code: new(CategoryCodePindahOut)}
 
 	tests := []struct {
 		name string

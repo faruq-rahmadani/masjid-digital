@@ -141,7 +141,7 @@ func newTestRouter(t *testing.T) *echo.Echo {
 	finance.EXPECT().UpdateTVSetting(gomock.Any(), gomock.Any()).Return(domain.FinanceTVSetting{}, nil).AnyTimes()
 	finance.EXPECT().GetDisplay(gomock.Any()).Return(domain.FinanceDisplay{}, nil).AnyTimes()
 
-	return newEcho(controller.NewController(users, auth, mosqueProfile, prayerTime, runningText, iqamah, fridayDuty, slide, screen, activityLog, finance), middleware.NewAuth(authenticator))
+	return newEcho(controller.NewController(users, auth, mosqueProfile, prayerTime, runningText, iqamah, fridayDuty, slide, screen, activityLog, finance), middleware.NewAuth(authenticator), nil)
 }
 
 // TestRouteAccess pins who may call each route, so a route added without its
@@ -354,5 +354,27 @@ func TestBodyLimits(t *testing.T) {
 				t.Errorf("status = %d (%s), want %d", rec.Code, strings.TrimSpace(rec.Body.String()), tt.want)
 			}
 		})
+	}
+}
+
+// TestCORS answers a preflight only for the configured web clients
+func TestCORS(t *testing.T) {
+	ctrl := controller.NewController(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+	e := newEcho(ctrl, middleware.NewAuth(nil), []string{"https://admin.example.app"})
+
+	preflight := func(origin string) string {
+		req := httptest.NewRequest(http.MethodOptions, "/api/v1/finance/summary", nil)
+		req.Header.Set(echo.HeaderOrigin, origin)
+		req.Header.Set(echo.HeaderAccessControlRequestMethod, http.MethodGet)
+		rec := httptest.NewRecorder()
+		e.ServeHTTP(rec, req)
+		return rec.Header().Get(echo.HeaderAccessControlAllowOrigin)
+	}
+
+	if got := preflight("https://admin.example.app"); got != "https://admin.example.app" {
+		t.Errorf("allowed origin got %q", got)
+	}
+	if got := preflight("https://evil.example"); got != "" {
+		t.Errorf("unknown origin got %q", got)
 	}
 }

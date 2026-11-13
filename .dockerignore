@@ -1,0 +1,9 @@
+# Only the Go sources go into the image; never the local config or database
+*
+!go.mod
+!go.sum
+!cmd/
+!internal/
+!pkg/
+!migrations/
+**/*_test.go

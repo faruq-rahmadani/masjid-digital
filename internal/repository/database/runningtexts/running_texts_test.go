@@ -72,9 +72,9 @@ func newTestRepositories(t *testing.T) map[pkgdb.Driver]testRepository {
 		}
 
 		repos[driver] = testRepository{
-			repo: New(database.DatabaseClient{Querier: db}),
-			db:                      db,
-			userID:                  userID,
+			repo:   New(database.DatabaseClient{Querier: db}),
+			db:     db,
+			userID: userID,
 		}
 	}
 	return repos

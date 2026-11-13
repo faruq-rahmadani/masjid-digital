@@ -1,0 +1,20 @@
+# Render Blueprint for the API (https://render.com/docs/blueprint-spec).
+# The web clients deploy to Vercel; see docs/deploy.md.
+services:
+  - type: web
+    name: masjid-digital-api
+    runtime: docker
+    # keep it next to the database: Supabase eu-west-3 (Paris) -> frankfurt
+    region: frankfurt
+    # the free plan sleeps when idle, which drops the TV's live connection
+    plan: starter
+    healthCheckPath: /health
+    envVars:
+      - key: APP_DATABASE_DRIVER
+        value: postgres
+      - key: APP_DATABASE_DSN
+        sync: false
+      - key: APP_AUTH_JWT_SECRET
+        sync: false
+      - key: APP_HTTP_SERVER_ALLOWED_ORIGINS
+        sync: false

@@ -3477,9 +3477,8 @@ components:
           description: The creator's name; empty when nobody created it.
           example: Ahmad Fauzi
         deactivated_at:
-          type: string
+          type: [string, "null"]
           format: date-time
-          nullable: true
           description: |
             When the text was last turned off, i.e. last shown on the TV. Null while
             active and for texts never turned off. Editing an inactive text keeps it.
@@ -3587,7 +3586,7 @@ components:
         name: { type: string }
         forced_mode:
           $ref: "#/components/schemas/ScreenMode"
-        forced_until: { type: string, format: date-time, nullable: true, description: The forced mode ends here. }
+        forced_until: { type: [string, "null"], format: date-time, description: The forced mode ends here. }
     ScreenCommandRequest:
       type: object
       required: [command]
@@ -3606,12 +3605,12 @@ components:
         user_agent: { type: string }
         forced_mode:
           $ref: "#/components/schemas/ScreenMode"
-        forced_until: { type: string, format: date-time, nullable: true }
-        blocked_at: { type: string, format: date-time, nullable: true }
+        forced_until: { type: [string, "null"], format: date-time }
+        blocked_at: { type: [string, "null"], format: date-time }
         first_seen_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
         status: { type: string, enum: [online, offline], description: "Online while connected and for 2 minutes after." }
-        last_seen_at: { type: string, format: date-time, nullable: true, description: "Null when the cache has no record, e.g. after it was emptied." }
+        last_seen_at: { type: [string, "null"], format: date-time, description: "Null when the cache has no record, e.g. after it was emptied." }
         app_version: { type: string }
     Account:
       type: object

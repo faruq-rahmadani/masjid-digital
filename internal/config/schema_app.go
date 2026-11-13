@@ -18,6 +18,9 @@ type HTTPServer struct {
 	ReadTimeout     time.Duration `mapstructure:"read_timeout"`
 	WriteTimeout    time.Duration `mapstructure:"write_timeout"`
 	IdleTimeout     time.Duration `mapstructure:"idle_timeout"`
+	// AllowedOrigins are the web clients served from another origin, e.g. the admin panel
+	// on Vercel calling the API on its own domain; empty allows none (same origin only)
+	AllowedOrigins []string `mapstructure:"allowed_origins"`
 }
 
 type Logger struct {

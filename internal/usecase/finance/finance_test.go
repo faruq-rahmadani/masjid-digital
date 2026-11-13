@@ -228,11 +228,9 @@ func TestArchivePocket(t *testing.T) {
 	})
 }
 
-func code(c string) *string { return &c }
-
 func TestCategoryRules(t *testing.T) {
-	pindah := domain.Category{ID: 1, Name: "Pindah dana", Type: domain.CategoryTypeOut, Scope: domain.CategoryScopeAll, Code: code(domain.CategoryCodePindahOut)}
-	fakir := domain.Category{ID: 2, Name: "Fakir", Type: domain.CategoryTypeOut, Scope: domain.CategoryScopeZakat, Code: code("asnaf_fakir")}
+	pindah := domain.Category{ID: 1, Name: "Pindah dana", Type: domain.CategoryTypeOut, Scope: domain.CategoryScopeAll, Code: new(domain.CategoryCodePindahOut)}
+	fakir := domain.Category{ID: 2, Name: "Fakir", Type: domain.CategoryTypeOut, Scope: domain.CategoryScopeZakat, Code: new("asnaf_fakir")}
 	listrik := domain.Category{ID: 3, Name: "Listrik", Type: domain.CategoryTypeOut, Scope: domain.CategoryScopeUmumTerikat}
 
 	t.Run("a system category keeps its name", func(t *testing.T) {

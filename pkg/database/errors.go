@@ -34,8 +34,7 @@ func (d *DB) translate(err error) error {
 		return ErrNotFound
 	}
 
-	var pgErr *pgconn.PgError
-	if errors.As(err, &pgErr) {
+	if pgErr, ok := errors.AsType[*pgconn.PgError](err); ok {
 		switch pgErr.Code {
 		case pgUniqueViolation:
 			return errors.Join(ErrUniqueViolation, err)
@@ -44,8 +43,7 @@ func (d *DB) translate(err error) error {
 		}
 	}
 
-	var liteErr *sqlite.Error
-	if errors.As(err, &liteErr) {
+	if liteErr, ok := errors.AsType[*sqlite.Error](err); ok {
 		switch liteErr.Code() {
 		case sqlite3.SQLITE_CONSTRAINT_UNIQUE, sqlite3.SQLITE_CONSTRAINT_PRIMARYKEY:
 			return errors.Join(ErrUniqueViolation, err)

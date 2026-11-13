@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sort"
+	"slices"
 	"time"
 
 	"github.com/faruq-rahmadani/masjid-digital/internal/domain"
@@ -306,7 +306,7 @@ func (u *UseCase) CloseMonth(ctx context.Context, req domain.CloseMonthRequest) 
 	for id := range f.pockets {
 		ids = append(ids, id)
 	}
-	sort.Slice(ids, func(i, j int) bool { return ids[i] < ids[j] })
+	slices.Sort(ids)
 	for _, id := range ids {
 		p := f.pockets[id]
 		closing.TotalIn += p.In

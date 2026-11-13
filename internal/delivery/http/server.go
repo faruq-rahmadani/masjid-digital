@@ -25,14 +25,14 @@ type Server struct {
 // NewHttpServer creates a new HTTP server instance serving ctrl's handlers,
 // with auth guarding the routes that need a logged in user
 func NewHttpServer(cfg *config.Schema, ctrl *controller.Controller, auth *middleware.Auth) ServerItf {
-	e := newEcho(ctrl, auth)
+	e := newEcho(ctrl, auth, cfg.App.HTTPServer.AllowedOrigins)
 	setServerObj(e, cfg.App.HTTPServer)
 
 	return &Server{echo: e}
 }
 
 // newEcho returns the Echo instance with its middlewares and routes
-func newEcho(ctrl *controller.Controller, auth *middleware.Auth) *echo.Echo {
+func newEcho(ctrl *controller.Controller, auth *middleware.Auth, allowedOrigins []string) *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
 	e.HidePort = true
@@ -40,6 +40,10 @@ func newEcho(ctrl *controller.Controller, auth *middleware.Auth) *echo.Echo {
 
 	e.Use(echomiddleware.Recover())
 	e.Use(echomiddleware.RequestID())
+	if len(allowedOrigins) > 0 {
+		// auth travels in the Authorization header, never in cookies
+		e.Use(echomiddleware.CORSWithConfig(echomiddleware.CORSConfig{AllowOrigins: allowedOrigins}))
+	}
 	e.Use(echomiddleware.BodyLimitWithConfig(echomiddleware.BodyLimitConfig{
 		Limit: defaultBodyLimit,
 		// uploads set their own, larger limit on the route

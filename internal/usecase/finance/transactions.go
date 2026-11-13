@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"slices"
 
 	"github.com/faruq-rahmadani/masjid-digital/internal/domain"
 	"github.com/faruq-rahmadani/masjid-digital/pkg/apperror"
@@ -110,12 +111,7 @@ func (l *ledger) checkRow(r domain.Transaction, old []domain.Transaction, pindah
 		return invalidInput(fmt.Errorf("date %s after %s", r.Date, l.today), "tanggal tidak boleh setelah hari ini")
 	}
 	unchanged := func(match func(domain.Transaction) bool) bool {
-		for _, o := range old {
-			if match(o) {
-				return true
-			}
-		}
-		return false
+		return slices.ContainsFunc(old, match)
 	}
 
 	account, ok := l.accounts[r.AccountID]
