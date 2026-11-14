@@ -1,0 +1,26 @@
+# Serves the built SPA and forwards /api/* to the backend, so the whole app is one
+# origin on port 80. TLS is left to whatever proxy runs in front.
+:80 {
+	encode zstd gzip
+
+	# the backend, e.g. another host once it is scaled out on its own
+	handle /api/* {
+		reverse_proxy {$API_UPSTREAM:api:3000}
+	}
+
+	handle {
+		root * /srv
+
+		# hashed by Vite, so they never change under the same name
+		@assets path /assets/*
+		header @assets Cache-Control "public, max-age=31536000, immutable"
+
+		# index.html must be fetched fresh to pick up a new release
+		@html path / /index.html
+		header @html Cache-Control "no-cache"
+
+		# client-side routes such as /tv and /admin/... fall back to index.html
+		try_files {path} /index.html
+		file_server
+	}
+}

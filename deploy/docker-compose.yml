@@ -1,0 +1,68 @@
+# Self-host one mosque: Postgres, API and admin panel, with a daily database dump in ./backups.
+# The whole app is served on one port by the web service; put your own reverse proxy
+# (nginx, Caddy, Traefik, Cloudflare Tunnel...) in front of it for HTTPS.
+#
+#   cp .env.example .env    # set JWT_SECRET and DB_PASSWORD
+#   docker compose up -d
+#   docker compose run --rm api create-admin -name "Nama Admin" -phone 08123456789
+
+services:
+  db:
+    # pinned to a major version: moving to the next one needs a dump and restore
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: masjid_digital
+      POSTGRES_USER: masjid
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+    volumes:
+      - db-data:/var/lib/postgresql # Postgres 18+ keeps its data under here, not .../data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U masjid -d masjid_digital"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    image: ghcr.io/faruq-rahmadani/masjid-digital-api:${VERSION:-latest}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      MASJID_APP_AUTH_JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
+      MASJID_APP_DATABASE_DSN: postgres://masjid:${DB_PASSWORD}@db:5432/masjid_digital?sslmode=disable
+
+  web:
+    image: ghcr.io/faruq-rahmadani/masjid-digital-web:${VERSION:-latest}
+    restart: unless-stopped
+    depends_on: [api]
+    ports:
+      - "${LISTEN:-127.0.0.1}:${PORT:-8080}:80"
+
+  backup:
+    # pg_dump once a day into ./backups, keeping the last 14 days; copy them off the server
+    image: postgres:18-alpine
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGHOST: db
+      PGUSER: masjid
+      PGPASSWORD: ${DB_PASSWORD}
+      PGDATABASE: masjid_digital
+    volumes:
+      - ./backups:/backups
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        while true; do
+          pg_dump -Fc -f /backups/masjid-$$(date +%F).dump && echo "backup done"
+          find /backups -name '*.dump' -mtime +14 -delete
+          sleep 86400
+        done
+
+volumes:
+  db-data:

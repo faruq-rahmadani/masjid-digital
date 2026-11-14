@@ -92,6 +92,7 @@ A mobile-first web app for pengurus. Each role sees only the menus it may use (s
 cmd/
   http/          # HTTP server entrypoint and dependency wiring (wire.go)
   migrate/       # database migration CLI
+  create-admin/  # creates a super_admin, e.g. the first user
 internal/
   config/        # config.yaml schema and loader
   domain/        # entities, request structs, validation (no framework imports)
@@ -103,6 +104,7 @@ mock/            # gomock mocks, generated
 pkg/             # reusable packages: apperror, cache, database, hasher, token, env
 web/             # React client (see web/README.md)
 web_public/      # public product site and user docs, static (see web_public/README.md)
+deploy/          # self-hosting with Docker Compose: compose files, image config
 docs/            # API spec (openapi.yaml), design notes, README screenshots
 ```
 
@@ -141,7 +143,12 @@ npm install
 npm run dev          # http://localhost:5173, /api is proxied to the Go server
 ```
 
-> There is no way to create the first `super_admin` yet: every user endpoint requires one.
+Every user endpoint requires a `super_admin`, so create the first one from the command line, then
+add everyone else from the admin panel:
+
+```sh
+go run ./cmd/create-admin -name "Nama Admin" -phone 08123456789   # asks for the password
+```
 
 ## Configuration
 
@@ -164,8 +171,72 @@ Every option is documented in [`config.yaml.example`](config.yaml.example). The 
 | `app.auth.token_ttl`            | access token lifetime, e.g. `24h`                                |
 | `app.cache.driver` / `dsn`      | `memory` or `redis` (`redis://:password@localhost:6379/0`)       |
 
+An environment variable overrides any key present in the config file: `MASJID_` plus the key path
+in upper case with dots as underscores, e.g. `MASJID_APP_AUTH_JWT_SECRET` for `app.auth.jwt_secret`.
+
 With the `memory` cache, sessions are lost on restart (everyone logs in again) and are not shared
 between instances; use Redis when running more than one.
+
+## Self-hosting with Docker
+
+Each mosque runs its own deployment: Postgres, `masjid-digital-api` (the Go backend) and
+`masjid-digital-web` (the admin panel and TV display). The web container serves the whole app on
+one port and forwards `/api/*` to the backend. Images are published to ghcr.io for amd64 and arm64.
+
+```sh
+mkdir masjid && cd masjid
+# copy docker-compose.yml and .env.example from deploy/
+cp .env.example .env          # set JWT_SECRET and DB_PASSWORD
+docker compose up -d          # http://127.0.0.1:8080
+docker compose run --rm api create-admin -name "Nama Admin" -phone 08123456789
+```
+
+HTTPS is up to you: point any reverse proxy at that one port. With Caddy, which gets the
+certificate by itself:
+
+```
+masjid.example.com {
+	reverse_proxy 127.0.0.1:8080
+}
+```
+
+With nginx (certificate from certbot), raise the body limit for slide uploads (up to 6 MB) and
+turn off buffering so the TV's live updates are not held back:
+
+```nginx
+server {
+    server_name masjid.example.com;
+    client_max_body_size 6m;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_buffering off;
+        proxy_read_timeout 1h;
+    }
+}
+```
+
+To use it on the mosque's LAN without a proxy, set `LISTEN=0.0.0.0` in `.env`.
+
+Postgres keeps its data in the `db-data` volume, and the `backup` service writes a `pg_dump` to
+`./backups` every day (the last 14 are kept); copy them off the server. Restore one with
+`docker compose exec -T db pg_restore -U masjid -d masjid_digital --clean < backups/<file>.dump`.
+
+The API image reads [`deploy/config.yaml`](deploy/config.yaml), so change any other setting with a
+`MASJID_*` environment variable on the `api` service. The web image forwards `/api/*` to
+`API_UPSTREAM` (default `api:3000`), e.g. to a backend on another host.
+
+To build the images from a checkout instead, e.g. to try a change:
+
+```sh
+cd deploy
+JWT_SECRET=$(openssl rand -base64 32) DB_PASSWORD=$(openssl rand -hex 24) \
+  docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
+```
 
 ## Database migrations
 

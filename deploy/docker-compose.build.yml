@@ -1,0 +1,11 @@
+# Build the images from this checkout instead of pulling them, e.g. to try a change:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
+#
+# then open http://localhost:8080
+
+services:
+  api:
+    build: ..
+  web:
+    build: ../web
