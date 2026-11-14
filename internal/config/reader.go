@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/faruq-rahmadani/masjid-digital/pkg/env"
 	"github.com/spf13/viper"
@@ -14,7 +15,14 @@ var configFiles = map[string]string{
 	env.EnvProduction:  "/etc/masjid-digital-config/config.yaml",
 }
 
-// readYaml reads the configuration from the config file of the given environment
+// envPrefix starts every environment variable that overrides a config key. The
+// rest is the key path in upper case with dots as underscores, e.g.
+// MASJID_APP_AUTH_JWT_SECRET overrides app.auth.jwt_secret.
+const envPrefix = "MASJID"
+
+// readYaml reads the configuration from the config file of the given environment.
+// An environment variable overrides a key present in the file, so a container
+// can ship a full config and take secrets from its environment.
 func readYaml(environment string) (*Schema, error) {
 	configFile, ok := configFiles[environment]
 	if !ok {
@@ -25,6 +33,9 @@ func readYaml(environment string) (*Schema, error) {
 
 	v := viper.New()
 	v.SetConfigFile(configFile)
+	v.SetEnvPrefix(envPrefix)
+	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	v.AutomaticEnv()
 
 	if err := v.ReadInConfig(); err != nil {
 		return nil, err

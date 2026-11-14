@@ -1,5 +1,7 @@
 # Local development: cp config.yaml.example config.yaml
 # Production (ENV=production): /etc/masjid-digital-config/config.yaml
+# Any key below can be overridden by an environment variable: MASJID_ + the key path in upper case
+# with dots as underscores, e.g. MASJID_APP_AUTH_JWT_SECRET for app.auth.jwt_secret.
 
 app:
   name: masjid-digital

@@ -1,0 +1,10 @@
+# Only what the API image builds from; everything else stays out of the context
+*
+!go.mod
+!go.sum
+!cmd/
+!internal/
+!migrations/
+!pkg/
+!deploy/config.yaml
+**/*_test.go
