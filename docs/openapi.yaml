@@ -43,7 +43,8 @@ info:
     Phones are stored in E.164 (`+6281234567890`). When creating or updating,
     `0812-3456-7890`, `6281234567890` and `+62 812 3456 7890` are all accepted
     and normalized; Indonesian numbers must be mobile numbers (`+628...`).
-    On login the identifier is matched as is, so send the phone in E.164.
+    Login normalizes the identifier the same way (and lowercases an email), so
+    any of these forms logs in.
 servers:
   - url: http://localhost:3000
     description: Local development

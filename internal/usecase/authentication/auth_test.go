@@ -60,6 +60,11 @@ func newTestUsecase(t *testing.T) (*AuthenticationUseCase, testDeps) {
 	return uc, deps
 }
 
+// localPhone turns +6281234567890 into 081234567890, the way people type it
+func localPhone(e164 string) string {
+	return "0" + strings.TrimPrefix(e164, "+62")
+}
+
 func loginRequest(identifier, password string) *domain.LoginRequest {
 	return &domain.LoginRequest{Identifier: identifier, Password: password}
 }
@@ -80,6 +85,15 @@ func TestLogin(t *testing.T) {
 			d.users.EXPECT().GetByPhone(gomock.Any(), ahmad.Phone).Return(ahmad, nil)
 		}},
 		{name: "by email", identifier: ahmad.Email, expectFind: func(d testDeps) {
+			d.users.EXPECT().GetByEmail(gomock.Any(), ahmad.Email).Return(ahmad, nil)
+		}},
+		{name: "by local phone", identifier: localPhone(ahmad.Phone), expectFind: func(d testDeps) {
+			d.users.EXPECT().GetByPhone(gomock.Any(), ahmad.Phone).Return(ahmad, nil)
+		}},
+		{name: "by phone with country code and separators", identifier: "62 " + ahmad.Phone[3:6] + "-" + ahmad.Phone[6:], expectFind: func(d testDeps) {
+			d.users.EXPECT().GetByPhone(gomock.Any(), ahmad.Phone).Return(ahmad, nil)
+		}},
+		{name: "by email in another case", identifier: " " + strings.ToUpper(ahmad.Email), expectFind: func(d testDeps) {
 			d.users.EXPECT().GetByEmail(gomock.Any(), ahmad.Email).Return(ahmad, nil)
 		}},
 	}
@@ -118,6 +132,8 @@ func TestLoginInvalidCredentials(t *testing.T) {
 			d.users.EXPECT().GetByEmail(gomock.Any(), "budi@example.com").Return(domain.User{}, errUserNotFound)
 		}},
 		// rejected before any lookup
+		{name: "malformed phone", req: loginRequest("12345", "bismillah123"), expect: func(testDeps) {}},
+		{name: "malformed email", req: loginRequest("budi@", "bismillah123"), expect: func(testDeps) {}},
 		{name: "password too long", req: loginRequest(ahmad.Phone, strings.Repeat("a", maxPasswordLength+1)), expect: func(testDeps) {}},
 	}
 
