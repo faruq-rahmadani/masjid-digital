@@ -115,13 +115,23 @@ func (u *AuthenticationUseCase) Logout(ctx context.Context, session *domain.Auth
 // findUser looks the identifier up as an email when it contains @, otherwise as a
 // phone number. The identifier is matched as is: phones in E.164, emails lowercase.
 func (u *AuthenticationUseCase) findUser(ctx context.Context, req *domain.LoginRequest) (domain.User, error) {
+	// normalized like on create, so 0812-3456-7890 finds the user stored as +6281234567890;
+	// a malformed identifier matches nobody and gets the shared invalid credentials error
 	method := req.IdentifierMethod()
 	switch method {
 	case domain.IdentifierMethodEmail:
-		return u.repo.GetByEmail(ctx, req.Identifier)
+		email, err := domain.NormalizeEmail(req.Identifier)
+		if err != nil || email == "" {
+			return domain.User{}, domain.ErrUserNotFound
+		}
+		return u.repo.GetByEmail(ctx, email)
 
 	case domain.IdentifierMethodPhoneNumber:
-		return u.repo.GetByPhone(ctx, req.Identifier)
+		phone, err := domain.NormalizePhone(req.Identifier)
+		if err != nil {
+			return domain.User{}, domain.ErrUserNotFound
+		}
+		return u.repo.GetByPhone(ctx, phone)
 
 	default:
 		// same path as an unknown user, so the client sees the shared invalid credentials error
