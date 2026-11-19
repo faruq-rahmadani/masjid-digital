@@ -1,5 +1,14 @@
 # Serves the built SPA and forwards /api/* to the backend, so the whole app is one
 # origin on port 80. TLS is left to whatever proxy runs in front.
+
+{
+	servers {
+		# keep the X-Forwarded-For of the proxy in front (on a private network), so the
+		# backend's rate limits see the visitor's IP instead of that proxy's
+		trusted_proxies static private_ranges
+	}
+}
+
 :80 {
 	encode zstd gzip
 

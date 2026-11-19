@@ -5,13 +5,15 @@ package apperror
 type Code string
 
 const (
-	CodeInvalidInput    Code = "INVALID_INPUT"   // request data is malformed or missing
-	CodeUnauthenticated Code = "UNAUTHENTICATED" // no valid login
-	CodeForbidden       Code = "FORBIDDEN"       // logged in, but not allowed
-	CodeNotFound        Code = "NOT_FOUND"       // resource does not exist
-	CodeAlreadyExists   Code = "ALREADY_EXISTS"  // resource is a duplicate, e.g. phone taken
-	CodeBusinessRule    Code = "BUSINESS_RULE"   // valid data that breaks a rule, e.g. spending more than the balance
-	CodeInternal        Code = "INTERNAL"        // unexpected failure
+	CodeInvalidInput    Code = "INVALID_INPUT"     // request data is malformed or missing
+	CodeUnauthenticated Code = "UNAUTHENTICATED"   // no valid login
+	CodeForbidden       Code = "FORBIDDEN"         // logged in, but not allowed
+	CodeNotFound        Code = "NOT_FOUND"         // resource does not exist
+	CodeAlreadyExists   Code = "ALREADY_EXISTS"    // resource is a duplicate, e.g. phone taken
+	CodeBusinessRule    Code = "BUSINESS_RULE"     // valid data that breaks a rule, e.g. spending more than the balance
+	CodeTooManyRequests Code = "TOO_MANY_REQUESTS" // rate limited, try again later
+	CodeInternal        Code = "INTERNAL"          // unexpected failure
+	CodeUnavailable     Code = "UNAVAILABLE"       // a feature that is not configured, or a service it needs is down
 )
 
 type AppError struct {

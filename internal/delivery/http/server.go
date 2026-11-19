@@ -37,6 +37,10 @@ func newEcho(ctrl *controller.Controller, auth *middleware.Auth) *echo.Echo {
 	e.HideBanner = true
 	e.HidePort = true
 	e.HTTPErrorHandler = newErrorHandler()
+	// c.RealIP() (the rate limits' key) is the rightmost X-Forwarded-For address that is not a
+	// private, loopback or link-local one, i.e. the address the outermost proxy saw. A client
+	// connecting directly is keyed by its own address, whatever header it sends.
+	e.IPExtractor = echo.ExtractIPFromXFFHeader()
 
 	e.Use(echomiddleware.Recover())
 	e.Use(echomiddleware.RequestID())

@@ -1,10 +1,12 @@
 import './styles.css'
 import { applyDemoLinks, demoUrls } from './demoLinks'
+import { inquiryUrl, setupInquiryForm } from './inquiry'
 import { setupTabs } from './tabs'
 
 // demo links first: the tabs load the visible demo frame from the URLs they set
 applyDemoLinks(document, demoUrls(import.meta.env))
 setupTabs(document)
+setupInquiryForm(document, inquiryUrl(import.meta.env))
 
 // The phone menu: one button opens and closes the nav, and a picked link closes it.
 const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]')

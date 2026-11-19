@@ -141,7 +141,10 @@ func newTestRouter(t *testing.T) *echo.Echo {
 	finance.EXPECT().UpdateTVSetting(gomock.Any(), gomock.Any()).Return(domain.FinanceTVSetting{}, nil).AnyTimes()
 	finance.EXPECT().GetDisplay(gomock.Any()).Return(domain.FinanceDisplay{}, nil).AnyTimes()
 
-	return newEcho(controller.NewController(users, auth, mosqueProfile, prayerTime, runningText, iqamah, fridayDuty, slide, screen, activityLog, finance), middleware.NewAuth(authenticator))
+	inquiry := mock.NewMockInquiryUsecaseItf(ctrl)
+	inquiry.EXPECT().Submit(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+	return newEcho(controller.NewController(users, auth, mosqueProfile, prayerTime, runningText, iqamah, fridayDuty, slide, screen, activityLog, finance, inquiry), middleware.NewAuth(authenticator))
 }
 
 // TestRouteAccess pins who may call each route, so a route added without its
@@ -254,6 +257,7 @@ func TestRouteAccess(t *testing.T) {
 		{http.MethodGet, "/api/v1/finance/tv-setting", "", anyUser, ""},
 		{http.MethodPut, "/api/v1/finance/tv-setting", `{}`, superBendahara, ""},
 		{http.MethodGet, "/api/public/v1/finance/display", "", public, ""},
+		{http.MethodPost, "/api/public/v1/inquiries", "{}", public, ""},
 	}
 
 	callers := []struct {
@@ -354,5 +358,46 @@ func TestBodyLimits(t *testing.T) {
 				t.Errorf("status = %d (%s), want %d", rec.Code, strings.TrimSpace(rec.Body.String()), tt.want)
 			}
 		})
+	}
+}
+
+// TestInquiryRateLimit checks the inquiry form is limited per client, the client being the
+// address the outermost proxy saw, not one the client wrote in X-Forwarded-For
+func TestInquiryRateLimit(t *testing.T) {
+	e := newTestRouter(t)
+
+	post := func(remoteAddr, forwardedFor string) int {
+		req := httptest.NewRequest(http.MethodPost, "/api/public/v1/inquiries", strings.NewReader("{}"))
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		req.RemoteAddr = remoteAddr
+		if forwardedFor != "" {
+			req.Header.Set(echo.HeaderXForwardedFor, forwardedFor)
+		}
+		rec := httptest.NewRecorder()
+		e.ServeHTTP(rec, req)
+		return rec.Code
+	}
+
+	// behind two proxies on the Docker network; the client tried to pass itself off as another IP
+	const viaProxies = "172.18.0.4:51000"
+	for i := range inquiryBurstPerClient {
+		if got := post(viaProxies, "198.51.100.1, 203.0.113.7, 172.18.0.3"); got != http.StatusCreated {
+			t.Fatalf("request %d: status = %d, want 201", i+1, got)
+		}
+	}
+	if got := post(viaProxies, "198.51.100.2, 203.0.113.7, 172.18.0.3"); got != http.StatusTooManyRequests {
+		t.Errorf("past the burst, another spoofed IP: status = %d, want 429", got)
+	}
+	if got := post(viaProxies, "203.0.113.8, 172.18.0.3"); got != http.StatusCreated {
+		t.Errorf("another client through the same proxies: status = %d, want 201", got)
+	}
+
+	// a client reaching the API directly cannot pick its key with the header
+	const direct = "192.0.2.50:40000"
+	for range inquiryBurstPerClient {
+		post(direct, "")
+	}
+	if got := post(direct, "203.0.113.99"); got != http.StatusTooManyRequests {
+		t.Errorf("direct client with a forged header: status = %d, want 429", got)
 	}
 }
