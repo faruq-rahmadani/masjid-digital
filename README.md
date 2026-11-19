@@ -170,9 +170,20 @@ Every option is documented in [`config.yaml.example`](config.yaml.example). The 
 | `app.auth.jwt_secret`           | required, at least 32 bytes                                      |
 | `app.auth.token_ttl`            | access token lifetime, e.g. `24h`                                |
 | `app.cache.driver` / `dsn`      | `memory` or `redis` (`redis://:password@localhost:6379/0`)       |
+| `app.inquiry.telegram_bot_token` / `telegram_chat_id` | the Telegram bot and chat the public site's form is sent to; empty turns the form off (503) |
+| `app.inquiry.env_tag`           | e.g. `staging`, shown as `[STAGING]` on each form message; empty in production |
 
 An environment variable overrides any key present in the config file: `MASJID_` plus the key path
 in upper case with dots as underscores, e.g. `MASJID_APP_AUTH_JWT_SECRET` for `app.auth.jwt_secret`.
+
+The public site's "Daftar" form posts to `POST /api/public/v1/inquiries`, which sends it to the
+Telegram chat and stores nothing. It is rate limited in memory per client IP (5, then one every
+10 minutes) and in total (30, then one every 2 minutes). The client IP is the rightmost
+`X-Forwarded-For` address outside the private ranges, so every proxy in front of the API must be on
+a private network and append to that header (Caddy: `trusted_proxies static private_ranges`, as in
+`web/Caddyfile`). To set up the chat: create a bot with @BotFather, add it to a group with the
+team, send a message in the group, and read the group's ID (negative) from
+`https://api.telegram.org/bot<token>/getUpdates`.
 
 With the `memory` cache, sessions are lost on restart (everyone logs in again) and are not shared
 between instances; use Redis when running more than one.

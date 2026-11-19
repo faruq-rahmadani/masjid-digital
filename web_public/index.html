@@ -45,6 +45,7 @@
             <li><a class="text-on-brand-muted hover:text-on-brand block py-2" href="#panel">Panel pengurus</a></li>
             <li><a class="text-on-brand-muted hover:text-on-brand block py-2" href="#cara-pasang">Cara pasang</a></li>
             <li><a class="text-on-brand-muted hover:text-on-brand block py-2" href="/docs/">Dokumentasi</a></li>
+            <li><a class="text-on-brand-muted hover:text-on-brand block py-2" href="#daftar">Daftar</a></li>
           </ul>
           <a data-demo-only href="#demo" class="btn btn-gold h-10 text-sm max-md:w-full">Coba demo</a>
         </nav>
@@ -405,6 +406,94 @@
           </div>
         </div>
       </section>
+      <!-- Inquiry form: sent to the team's Telegram by the API (POST /api/public/v1/inquiries), not stored -->
+      <section id="daftar" class="scroll-mt-16">
+        <div class="mx-auto grid max-w-6xl gap-10 px-4 py-20 sm:px-6 lg:grid-cols-[1fr_32rem] lg:gap-16">
+          <div>
+            <h2 class="max-w-xl text-3xl font-extrabold tracking-tight text-balance sm:text-4xl">Ingin memakai Masjid Digital di masjid Anda?</h2>
+            <p class="text-ink-muted mt-4 max-w-xl text-lg leading-relaxed">
+              Isi formulir ini. Tim kami akan menghubungi Anda lewat WhatsApp untuk membantu pemasangan
+              dan menjawab pertanyaan.
+            </p>
+            <p class="text-ink-muted mt-6 max-w-xl text-sm leading-relaxed">
+              Data Anda hanya dipakai untuk menghubungi Anda dan tidak ditampilkan di mana pun.
+            </p>
+          </div>
+
+          <div class="border-line bg-card rounded-3xl border p-6 sm:p-8">
+            <form data-inquiry class="grid gap-5">
+              <div class="grid gap-1.5">
+                <label for="inquiry-name" class="field-label">Nama lengkap</label>
+                <input id="inquiry-name" name="full_name" required maxlength="100" autocomplete="name" class="field-input" />
+              </div>
+              <div class="grid gap-1.5">
+                <label for="inquiry-phone" class="field-label">Nomor ponsel (WhatsApp)</label>
+                <input
+                  id="inquiry-phone"
+                  name="phone"
+                  type="tel"
+                  inputmode="tel"
+                  required
+                  maxlength="20"
+                  autocomplete="tel"
+                  placeholder="0812 3456 7890"
+                  class="field-input"
+                />
+              </div>
+              <div class="grid gap-1.5">
+                <label for="inquiry-domicile" class="field-label">Domisili</label>
+                <input id="inquiry-domicile" name="domicile" required maxlength="100" placeholder="Kota atau kabupaten, mis. Banjarbaru" class="field-input" />
+              </div>
+              <div class="grid gap-1.5">
+                <label for="inquiry-reason" class="field-label">Kenapa Anda tertarik?</label>
+                <textarea
+                  id="inquiry-reason"
+                  name="reason"
+                  required
+                  maxlength="1000"
+                  rows="4"
+                  placeholder="Mis. ingin menampilkan jadwal sholat dan pengumuman di TV masjid kami"
+                  class="field-input h-auto py-3"
+                ></textarea>
+              </div>
+
+              <fieldset class="border-line-soft grid gap-1.5 border-t pt-5">
+                <legend class="text-ink-muted float-left mb-3 w-full text-xs font-bold tracking-widest uppercase">Informasi lainnya</legend>
+                <label for="inquiry-source" class="field-label">Dari mana Anda mengenal Masjid Digital?</label>
+                <select id="inquiry-source" name="source" class="field-input">
+                  <option value="">Pilih (opsional)</option>
+                  <option>Pencarian Google</option>
+                  <option>Media sosial</option>
+                  <option>Pengurus masjid lain</option>
+                  <option>Grup WhatsApp</option>
+                  <option>Teman, keluarga, atau kolega</option>
+                  <option>Lainnya</option>
+                </select>
+              </fieldset>
+
+              <!-- honeypot: hidden from people, so only bots fill it in; the API drops those -->
+              <div aria-hidden="true" class="absolute -left-[9999px] h-px w-px overflow-hidden">
+                <label for="inquiry-website">Jangan diisi</label>
+                <input id="inquiry-website" name="website" tabindex="-1" autocomplete="off" />
+              </div>
+
+              <label class="flex items-start gap-3 text-sm leading-relaxed">
+                <input type="checkbox" name="consent" required class="accent-brand mt-0.5 size-5 shrink-0" />
+                <span>Ya, saya setuju dihubungi tim Masjid Digital untuk tindak lanjut.</span>
+              </label>
+
+              <p data-inquiry-status role="alert" hidden class="bg-gold-soft text-ink rounded-xl px-4 py-3 text-sm font-semibold"></p>
+
+              <button type="submit" class="btn btn-brand w-full disabled:cursor-wait disabled:opacity-70">Kirim</button>
+            </form>
+
+            <div data-inquiry-success hidden tabindex="-1" class="py-6 text-center outline-none">
+              <p class="text-2xl font-extrabold tracking-tight">Terima kasih, <span data-inquiry-name></span>.</p>
+              <p class="text-ink-muted mt-3 leading-relaxed">Pesan Anda sudah kami terima. Kami akan menghubungi Anda lewat WhatsApp.</p>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
 
     <footer class="bg-brand-deep text-on-brand-muted">
@@ -417,6 +506,7 @@
           <ul class="flex flex-wrap gap-x-6 gap-y-2">
             <li><a class="hover:text-on-brand" href="/docs/">Dokumentasi</a></li>
             <li><a class="hover:text-on-brand" href="#tanya-jawab">Tanya jawab</a></li>
+            <li><a class="hover:text-on-brand" href="#daftar">Daftar</a></li>
             <li data-demo-only><a class="hover:text-on-brand" href="#demo">Coba demo</a></li>
           </ul>
         </nav>

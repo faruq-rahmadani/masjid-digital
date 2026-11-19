@@ -35,4 +35,9 @@ app:
     driver: memory
     dsn: ""
 
+  inquiry:
+    telegram_bot_token: ""
+    telegram_chat_id: ""
+    env_tag: ""
+
 client: {}

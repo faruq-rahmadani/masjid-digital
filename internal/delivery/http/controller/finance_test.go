@@ -13,7 +13,7 @@ import (
 func newFinanceController(t *testing.T) (*Controller, *mock.MockFinanceUsecaseItf) {
 	t.Helper()
 	finance := mock.NewMockFinanceUsecaseItf(gomock.NewController(t))
-	return NewController(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, finance), finance
+	return NewController(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, finance, nil), finance
 }
 
 func TestCreateAccountTakesTheCreatorFromTheSession(t *testing.T) {

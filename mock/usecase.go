@@ -1762,3 +1762,41 @@ func (mr *MockFinanceSettingRepositoryItfMockRecorder) UpdateTVSetting(ctx, sett
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTVSetting", reflect.TypeOf((*MockFinanceSettingRepositoryItf)(nil).UpdateTVSetting), ctx, setting, updatedBy)
 }
+
+// MockInquiryNotifierItf is a mock of InquiryNotifierItf interface.
+type MockInquiryNotifierItf struct {
+	ctrl     *gomock.Controller
+	recorder *MockInquiryNotifierItfMockRecorder
+	isgomock struct{}
+}
+
+// MockInquiryNotifierItfMockRecorder is the mock recorder for MockInquiryNotifierItf.
+type MockInquiryNotifierItfMockRecorder struct {
+	mock *MockInquiryNotifierItf
+}
+
+// NewMockInquiryNotifierItf creates a new mock instance.
+func NewMockInquiryNotifierItf(ctrl *gomock.Controller) *MockInquiryNotifierItf {
+	mock := &MockInquiryNotifierItf{ctrl: ctrl}
+	mock.recorder = &MockInquiryNotifierItfMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockInquiryNotifierItf) EXPECT() *MockInquiryNotifierItfMockRecorder {
+	return m.recorder
+}
+
+// Send mocks base method.
+func (m *MockInquiryNotifierItf) Send(ctx context.Context, text string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Send", ctx, text)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Send indicates an expected call of Send.
+func (mr *MockInquiryNotifierItfMockRecorder) Send(ctx, text any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockInquiryNotifierItf)(nil).Send), ctx, text)
+}

@@ -44,6 +44,14 @@ the demo host must allow being framed by this site: send no `X-Frame-Options`, o
 Every visitor who opens the TV demo registers as a new screen on the demo server (BARU, at most
 50). Reset the demo's data now and then, e.g. nightly.
 
+## Daftar form
+
+The "Daftar" section (`#daftar`) posts to the API's `POST /api/public/v1/inquiries`, which sends it
+to the team's Telegram (see the root README, `app.inquiry`). By default it posts to that path on
+the site's own origin, so whatever serves the site must forward `/api/*` to the API: the dev
+server does (to `VITE_API_PROXY_TARGET`, default `http://localhost:3000`), and in production the
+web server in front must. `VITE_INQUIRY_URL` points it elsewhere, which then needs CORS on the API.
+
 ## Screenshots
 
 The images are the ones the repo README shows, in `../docs/screenshots`. They are not copied

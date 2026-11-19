@@ -2,6 +2,7 @@ package http
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/faruq-rahmadani/masjid-digital/internal/delivery/http/controller"
 	"github.com/faruq-rahmadani/masjid-digital/internal/delivery/http/middleware"
@@ -19,6 +20,16 @@ const (
 	slideUploadBodyLimit = "6M"
 	// receiptUploadBodyLimit fits a receipt of domain.MaxReceiptPhotoSize plus the multipart framing
 	receiptUploadBodyLimit = "2M"
+)
+
+// The inquiry form is public and each submission pings the team on Telegram, so it is rate limited
+// per client (a few tries, for typos, then one every 10 minutes) and in total (whatever the
+// number of IPs, at most about 30 an hour after the first burst).
+const (
+	inquiryBurstPerClient    = 5
+	inquiryIntervalPerClient = 10 * time.Minute
+	inquiryBurstTotal        = 30
+	inquiryIntervalTotal     = 2 * time.Minute
 )
 
 // largeBodyRoutes are the routes (as registered, with the /api/v1 prefix) that
@@ -56,6 +67,11 @@ func registerRouters(e *echo.Echo, ctrl *controller.Controller, auth *middleware
 	public.GET("/slides/:id/image", ctrl.GetSlideImage)               // any slide, so the admin list's <img> needs no token
 	public.GET("/screens/:device_id/events", ctrl.StreamScreenEvents) // the TV's live connection (SSE)
 	public.GET("/finance/display", ctrl.GetFinanceDisplay)            // the TV kas header
+	// the public site's inquiry form, forwarded to the team's Telegram
+	public.POST("/inquiries", ctrl.SubmitInquiry,
+		middleware.RateLimit(inquiryIntervalPerClient, inquiryBurstPerClient, middleware.ByClientIP),
+		middleware.RateLimit(inquiryIntervalTotal, inquiryBurstTotal, middleware.Everyone),
+	)
 
 	v1 := e.Group("/api/v1")
 	v1.POST("/auth/login", ctrl.Login)

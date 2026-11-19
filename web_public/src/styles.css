@@ -75,6 +75,13 @@
   .btn-ghost {
     @apply border border-line text-ink hover:bg-card;
   }
+  /* the inquiry form's fields */
+  .field-label {
+    @apply text-sm font-bold;
+  }
+  .field-input {
+    @apply h-12 w-full rounded-xl border border-line bg-canvas/40 px-4 text-base text-ink placeholder:text-ink-muted/70 focus-visible:border-brand;
+  }
   /* long-form text on the docs page */
   .prose-doc h2 {
     @apply mt-14 mb-3 scroll-mt-24 text-2xl font-extrabold tracking-tight first:mt-0;
