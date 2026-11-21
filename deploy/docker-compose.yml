@@ -32,6 +32,9 @@ services:
     environment:
       MASJID_APP_AUTH_JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
       MASJID_APP_DATABASE_DSN: postgres://masjid:${DB_PASSWORD}@db:5432/masjid_digital?sslmode=disable
+      MASJID_APP_INQUIRY_TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      MASJID_APP_INQUIRY_TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+      MASJID_APP_INQUIRY_ENV_TAG: ${INQUIRY_ENV_TAG:-}
 
   web:
     image: ghcr.io/faruq-rahmadani/masjid-digital-web:${VERSION:-latest}
