@@ -103,9 +103,8 @@ migrations/      # goose SQL migrations, one folder per driver (sqlite, postgres
 mock/            # gomock mocks, generated
 pkg/             # reusable packages: apperror, cache, database, hasher, token, env
 web/             # React client (see web/README.md)
-web_public/      # public product site and user docs, static (see web_public/README.md)
 deploy/          # self-hosting with Docker Compose: compose files, image config
-docs/            # API spec (openapi.yaml), design notes, README screenshots
+docs/            # API spec (openapi.yaml), design notes, README screenshots (copied to the public site)
 ```
 
 `internal/domain/README.md` and `internal/repository/README.md` describe the rules of each layer.
@@ -131,8 +130,8 @@ go run ./cmd/http    # http://localhost:3000, migrations run on startup
 
 Check it is up with `curl localhost:3000/health`.
 
-The public product site with the user documentation lives in `web_public/` (static HTML; set the
-demo links in its `.env`, see [web_public/README.md](web_public/README.md)).
+The public product site with the user documentation (and the "Daftar" form) lives in its own
+repository, masjid-digital-public.
 
 Frontend, in another terminal:
 
