@@ -42,11 +42,4 @@ app:
     driver: memory
     dsn: ""
 
-  # The public site's inquiry form (POST /api/public/v1/inquiries) sends each submission to a
-  # Telegram chat; nothing is stored. Empty token or chat ID: the form answers 503.
-  inquiry:
-    telegram_bot_token: "" # from @BotFather; set MASJID_APP_INQUIRY_TELEGRAM_BOT_TOKEN
-    telegram_chat_id: "" # a user ID, or a group's (negative) ID with the bot in the group
-    env_tag: local # shown as [LOCAL] on each message; leave empty in production
-
 client: {}

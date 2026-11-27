@@ -28,13 +28,11 @@ import (
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/database/users"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/realtime/activitylogbus"
 	"github.com/faruq-rahmadani/masjid-digital/internal/repository/realtime/screenhub"
-	"github.com/faruq-rahmadani/masjid-digital/internal/repository/telegram"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/activitylog"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/authentication"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/finance"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/fridayduty"
-	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/inquiry"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/iqamah"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/mosqueprofile"
 	"github.com/faruq-rahmadani/masjid-digital/internal/usecase/prayertime"
@@ -77,7 +75,6 @@ type usecases struct {
 	screen        controller.ScreenUsecaseItf
 	activityLog   *activitylog.UseCase // used by both the controller and the activity log bus
 	finance       controller.FinanceUsecaseItf
-	inquiry       controller.InquiryUsecaseItf
 }
 
 // handlers is what the HTTP server serves
@@ -124,7 +121,7 @@ func newHandlers(ctx context.Context, cfg *config.Schema) (h handlers, cleanup f
 	}
 
 	return handlers{
-		controller: controller.NewController(ucs.user, ucs.auth, ucs.mosqueProfile, ucs.prayerTime, ucs.runningText, ucs.iqamah, ucs.fridayDuty, ucs.slide, ucs.screen, ucs.activityLog, ucs.finance, ucs.inquiry),
+		controller: controller.NewController(ucs.user, ucs.auth, ucs.mosqueProfile, ucs.prayerTime, ucs.runningText, ucs.iqamah, ucs.fridayDuty, ucs.slide, ucs.screen, ucs.activityLog, ucs.finance),
 		auth:       middleware.NewAuth(ucs.auth),
 	}, cleanup, nil
 }
@@ -179,18 +176,7 @@ func newUsecases(cfg *config.Schema, repos repositories, activityLogBus usecase.
 		screen:        screen.New(repos.screens, repos.screenPresence, repos.screenHub, repos.mosqueProfiles, activityLogBus),
 		activityLog:   activityLog,
 		finance:       finance.New(repos.finance, activityLogBus),
-		inquiry:       newInquiryUsecase(cfg.App.Inquiry),
 	}, nil
-}
-
-// newInquiryUsecase sends the public site's inquiries to the configured Telegram chat. Without
-// one the form answers 503, so a deployment without the public site needs no bot.
-func newInquiryUsecase(cfg config.Inquiry) *inquiry.UseCase {
-	if cfg.TelegramBotToken == "" || cfg.TelegramChatID == "" {
-		log.Print("inquiry form disabled: app.inquiry.telegram_bot_token or telegram_chat_id is empty")
-		return inquiry.New(nil, cfg.EnvTag)
-	}
-	return inquiry.New(telegram.New(cfg.TelegramBotToken, cfg.TelegramChatID), cfg.EnvTag)
 }
 
 // newUserUsecase builds the user usecase with its AfterUpdate and AfterPasswordReset hooks

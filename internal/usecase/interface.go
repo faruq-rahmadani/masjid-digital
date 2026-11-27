@@ -248,8 +248,3 @@ type FinanceSettingRepositoryItf interface {
 	GetTVSetting(ctx context.Context) (domain.FinanceTVSetting, error)
 	UpdateTVSetting(ctx context.Context, setting domain.FinanceTVSetting, updatedBy int64) error
 }
-
-// InquiryNotifierItf delivers an inquiry from the public site to the team, e.g. a Telegram chat
-type InquiryNotifierItf interface {
-	Send(ctx context.Context, text string) error
-}

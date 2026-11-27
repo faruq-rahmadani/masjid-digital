@@ -17,9 +17,7 @@ var httpStatuses = map[apperror.Code]int{
 	apperror.CodeNotFound:        http.StatusNotFound,
 	apperror.CodeAlreadyExists:   http.StatusConflict,
 	apperror.CodeBusinessRule:    http.StatusUnprocessableEntity,
-	apperror.CodeTooManyRequests: http.StatusTooManyRequests,
 	apperror.CodeInternal:        http.StatusInternalServerError,
-	apperror.CodeUnavailable:     http.StatusServiceUnavailable,
 }
 
 // echoMessages replaces the English text of Echo's own errors that users can
