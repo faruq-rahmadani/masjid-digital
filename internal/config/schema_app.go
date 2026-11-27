@@ -9,7 +9,6 @@ type App struct {
 	Database   Database   `mapstructure:"database"`
 	Auth       Auth       `mapstructure:"auth"`
 	Cache      Cache      `mapstructure:"cache"`
-	Inquiry    Inquiry    `mapstructure:"inquiry"`
 }
 
 type HTTPServer struct {
@@ -47,12 +46,4 @@ type Auth struct {
 type Cache struct {
 	Driver string `mapstructure:"driver"` // memory | redis
 	DSN    string `mapstructure:"dsn"`    // redis only
-}
-
-// Inquiry configures the public site's inquiry form: each submission is sent to a
-// Telegram chat and not stored. The form answers 503 while the bot token or chat ID is empty.
-type Inquiry struct {
-	TelegramBotToken string `mapstructure:"telegram_bot_token"` // from @BotFather
-	TelegramChatID   string `mapstructure:"telegram_chat_id"`   // a user, or a group with the bot in it (negative ID)
-	EnvTag           string `mapstructure:"env_tag"`            // e.g. local or staging, shown as [LOCAL] on each message; empty in production
 }

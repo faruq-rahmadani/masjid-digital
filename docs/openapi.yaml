@@ -33,9 +33,7 @@ info:
     | `NOT_FOUND`       | 404    |
     | `ALREADY_EXISTS`  | 409    |
     | `BUSINESS_RULE`   | 422    |
-    | `TOO_MANY_REQUESTS` | 429  |
     | `INTERNAL`        | 500    |
-    | `UNAVAILABLE`     | 503    |
 
     Request bodies are limited to 1 MB (3 MB for the logo upload, 6 MB for a
     slide upload); a larger
@@ -100,7 +98,7 @@ tags:
       terikat kas. Balances are computed from the last book closing plus the transactions after
       it, never stored. Read by any role; changed by `super_admin` and `bendahara`.
   - name: Public
-    description: No login. Read only for screens anyone can see (the TV display), plus the public site's inquiry form.
+    description: Read only, no login, for screens anyone can see (the TV display).
 
 security:
   - bearerAuth: []
@@ -3011,64 +3009,6 @@ paths:
         "500":
           $ref: "#/components/responses/Internal"
 
-  /api/public/v1/inquiries:
-    post:
-      tags: [Public]
-      summary: Send the public site's inquiry form
-      operationId: submitInquiry
-      description: |
-        No login. Forwards the form to the team's Telegram chat (`app.inquiry`); nothing is
-        stored. A non-empty `app.inquiry.env_tag` (e.g. `staging`) starts the message with
-        `[STAGING]`. A request with the honeypot `website` filled in gets `201` but is not sent.
-
-        Rate limited in memory, per API instance: 5 requests per client, then one every
-        10 minutes; and 30 in total, then one every 2 minutes. The client is the rightmost
-        `X-Forwarded-For` address outside the private, loopback and link-local ranges, or the
-        connecting address when there is none.
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/InquiryRequest"
-      responses:
-        "201":
-          description: Sent.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Message"
-              example:
-                message: terima kasih, pesan Anda sudah kami terima
-        "400":
-          description: A field is missing, too long, the phone is not valid, or consent is false.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: INVALID_INPUT
-                message: nomor ponsel tidak valid
-        "429":
-          description: Rate limited.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: TOO_MANY_REQUESTS
-                message: terlalu banyak percobaan, silakan coba lagi nanti
-        "503":
-          description: The Telegram chat is not configured, or Telegram did not take the message.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: UNAVAILABLE
-                message: pesan belum terkirim, silakan coba lagi beberapa saat lagi
-
 components:
   securitySchemes:
     bearerAuth:
@@ -3101,7 +3041,7 @@ components:
       properties:
         code:
           type: string
-          enum: [INVALID_INPUT, UNAUTHENTICATED, FORBIDDEN, NOT_FOUND, ALREADY_EXISTS, BUSINESS_RULE, TOO_MANY_REQUESTS, INTERNAL, UNAVAILABLE]
+          enum: [INVALID_INPUT, UNAUTHENTICATED, FORBIDDEN, NOT_FOUND, ALREADY_EXISTS, BUSINESS_RULE, INTERNAL]
         message:
           type: string
           description: Indonesian message to show to the user.
@@ -3112,29 +3052,6 @@ components:
       properties:
         message:
           type: string
-
-    InquiryRequest:
-      type: object
-      required: [full_name, phone, domicile, reason, consent]
-      properties:
-        full_name: {type: string, maxLength: 100, example: Ahmad Fauzi}
-        phone:
-          type: string
-          example: 0812-3456-7890
-          description: An Indonesian mobile number in any of the forms under Phone numbers.
-        domicile: {type: string, maxLength: 100, example: Banjarbaru}
-        reason: {type: string, maxLength: 1000, example: Ingin menampilkan jadwal sholat di TV masjid.}
-        source:
-          type: string
-          maxLength: 100
-          description: Optional, where they heard of Masjid Digital.
-          example: Media sosial
-        consent:
-          type: boolean
-          description: Must be true, agreeing to be contacted.
-        website:
-          type: string
-          description: Honeypot, hidden on the form. Leave empty.
 
     UserRole:
       type: string
